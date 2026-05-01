@@ -1,0 +1,94 @@
+# =============================================================
+# Variables de entorno con credenciales — NUNCA subir
+# =============================================================
+.env
+.env.local
+.env.*.local
+
+# Credenciales de Google Drive y otros servicios
+credentials.json
+service_account.json
+google-credentials.json
+*.credentials.json
+
+# Streamlit secrets
+secrets.toml
+.streamlit/secrets.toml
+
+# =============================================================
+# Datos del observador — NUNCA subir
+# =============================================================
+# Carpeta de backups locales (CSV con datos reales)
+backups/
+backup_*/
+
+# Archivos exportados con datos reales que pudieran caer aquí
+*.csv
+*_export.csv
+data_real/
+
+# =============================================================
+# Python
+# =============================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+ENV/
+
+# =============================================================
+# Tests y cobertura
+# =============================================================
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# =============================================================
+# IDE
+# =============================================================
+.codex
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =============================================================
+# OS
+# =============================================================
+.DS_Store
+Thumbs.db
+
+# =============================================================
+# Archivos temporales
+# =============================================================
+*.tmp
+*~
+
+# Cuadernos Jupyter (si en algún momento se usan para explorar)
+.ipynb_checkpoints/
+
+# Logs
+*.log
+logs/
