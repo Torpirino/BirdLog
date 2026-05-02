@@ -37,21 +37,6 @@ def render_sidebar(paginas: Iterable[str]) -> str:
     return opciones[etiquetas.index(seleccion)]
 
 
-def acciones_superiores() -> None:
-    """Muestra acciones compactas al inicio del área principal."""
-    _, derecha = st.columns([0.82, 0.18], vertical_alignment="top")
-    with derecha:
-        tema_actual = _tema_actual()
-        st.session_state.setdefault("tema_preferido", tema_actual)
-        st.segmented_control(
-            "Tema",
-            ["Claro", "Oscuro"],
-            key="tema_preferido",
-            label_visibility="collapsed",
-            help="Preferencia visual. Para aplicar el tema global usa ⋮ > Settings.",
-        )
-
-
 def encabezado_pagina(titulo: str, subtitulo: str, icono: str = "🌿") -> None:
     """Muestra solo el título de la página."""
     st.title(titulo)
@@ -154,12 +139,3 @@ def estado_conexion(estado: EstadoConexion) -> None:
             st.success(estado.mensaje)
         else:
             st.warning(estado.mensaje)
-
-
-def _tema_actual() -> str:
-    """Lee el tipo de tema si Streamlit lo expone."""
-    try:
-        tipo = st.context.theme.type
-    except Exception:
-        tipo = "light"
-    return "Oscuro" if tipo == "dark" else "Claro"

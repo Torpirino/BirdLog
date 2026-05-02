@@ -12,7 +12,7 @@ if str(RAIZ_PROYECTO) not in sys.path:
     sys.path.insert(0, str(RAIZ_PROYECTO))
 
 from dashboard.lib.conexion import probar_conexion
-from dashboard.lib.ui import acciones_superiores, aplicar_estilos, estado_conexion, render_sidebar
+from dashboard.lib.ui import aplicar_estilos, estado_conexion, render_sidebar
 
 
 PAGINAS = {
@@ -39,7 +39,6 @@ def main() -> None:
 
     pagina = render_sidebar(PAGINAS.keys())
     estado_conexion(probar_conexion())
-    acciones_superiores()
     modulo = import_module(PAGINAS[pagina])
     modulo.render()
 

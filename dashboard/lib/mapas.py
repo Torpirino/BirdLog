@@ -83,11 +83,10 @@ def mapa_lugares(
     nombre_capa: str = "Lugares",
     epsg_origen: int = EPSG_UTM_DEFAULT,
 ) -> folium.Map:
-    """Crea un mapa con una capa de lugares."""
+    """Crea un mapa limpio con marcadores de lugares."""
     datos = anadir_latlon(lugares, epsg_origen=epsg_origen)
     mapa = crear_mapa_base(_centro_desde_datos(datos))
     capa_marcadores(mapa, datos, nombre_capa, popup_columnas=_columnas_popup_lugar(datos))
-    folium.LayerControl(collapsed=False).add_to(mapa)
     return mapa
 
 
@@ -95,11 +94,10 @@ def mapa_lugares_por_tipo(
     lugares: pd.DataFrame,
     epsg_origen: int = EPSG_UTM_DEFAULT,
 ) -> folium.Map:
-    """Crea mapa general con una capa por tipo de lugar."""
+    """Crea mapa general filtrado por tipo sin control interno de capas."""
     datos = anadir_latlon(lugares, epsg_origen=epsg_origen)
     mapa = crear_mapa_base(_centro_desde_datos(datos))
     if datos.empty or "tipo_lugar" not in datos.columns:
-        folium.LayerControl(collapsed=False).add_to(mapa)
         return mapa
     for tipo_lugar, grupo in datos.groupby("tipo_lugar", dropna=False):
         capa_marcadores(
@@ -109,7 +107,6 @@ def mapa_lugares_por_tipo(
             color=COLORES_TIPO_LUGAR.get(str(tipo_lugar), "green"),
             popup_columnas=_columnas_popup_lugar(grupo),
         )
-    folium.LayerControl(collapsed=False).add_to(mapa)
     return mapa
 
 
