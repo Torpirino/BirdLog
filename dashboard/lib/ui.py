@@ -2,6 +2,7 @@
 
 from collections.abc import Iterable
 
+import pandas as pd
 import streamlit as st
 
 from dashboard.lib.conexion import EstadoConexion
@@ -80,6 +81,23 @@ def tarjeta_metrica(titulo: str, valor: str, ayuda: str = "") -> None:
     st.metric(titulo, valor, help=ayuda or None)
 
 
+def rejilla_metricas(metricas: list[tuple[str, str, str]]) -> None:
+    """Dibuja métricas en columnas equilibradas."""
+    columnas = st.columns(len(metricas) or 1)
+    for columna, (titulo, valor, ayuda) in zip(columnas, metricas, strict=False):
+        with columna:
+            tarjeta_metrica(titulo, valor, ayuda)
+
+
+def panel(titulo: str, texto: str | None = None):
+    """Crea un contenedor con borde y título."""
+    contenedor = st.container(border=True)
+    contenedor.subheader(titulo)
+    if texto:
+        contenedor.caption(texto)
+    return contenedor
+
+
 def bloque_placeholder(titulo: str, texto: str) -> None:
     """Muestra un bloque elegante para páginas aún no implementadas."""
     with st.container(border=True):
@@ -90,6 +108,34 @@ def bloque_placeholder(titulo: str, texto: str) -> None:
 def bloque_info(texto: str) -> None:
     """Muestra una nota informativa contenida."""
     st.info(texto)
+
+
+def tabla_datos(df: pd.DataFrame, mensaje_vacio: str = "No hay datos para mostrar.") -> None:
+    """Muestra una tabla clara o un aviso si está vacía."""
+    if df.empty:
+        st.info(mensaje_vacio)
+        return
+    st.dataframe(df, use_container_width=True, hide_index=True)
+
+
+def mostrar_enlaces_fotos(enlaces: list[dict[str, str]]) -> None:
+    """Muestra enlaces de fotos de Drive sin embeber credenciales."""
+    if not enlaces:
+        st.caption("Sin fotos asociadas.")
+        return
+    for enlace in enlaces:
+        st.link_button(enlace["descripcion"], enlace["url"])
+
+
+def aviso_estado(tipo: str, mensaje: str) -> None:
+    """Muestra un aviso de estado homogéneo."""
+    avisos = {
+        "ok": st.success,
+        "info": st.info,
+        "warning": st.warning,
+        "error": st.error,
+    }
+    avisos.get(tipo, st.info)(mensaje)
 
 
 def estado_conexion(estado: EstadoConexion) -> None:
