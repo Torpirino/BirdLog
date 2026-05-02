@@ -9,10 +9,11 @@
 ## Estado actual
 
 - **Fase activa**: Fase 6 — Dashboard Streamlit completada y pulida
-- **Última sesión**: 2026-05-02
-- **Próxima tarea**: Revisión manual del dashboard con el observador y
-  preparar uso real. 9 páginas navegables, 58 tests pasan, patrón
-  relacional Visitas ↔ Lindus implementado.
+- **Última sesión**: 2026-05-03
+- **Próxima tarea**: Revisión del dashboard con el observador con datos
+  reales. 9 páginas navegables, 58 tests pasan. Patrón maestro-detalle
+  aplicado en las 5 páginas de consulta biológica. Datos sintéticos se
+  mantienen en Supabase dev para pruebas.
 
 ---
 
@@ -51,6 +52,36 @@
 ---
 
 ## Tareas completadas
+
+### Sesión 2026-05-03: Revisión visual/funcional del dashboard (completado)
+- [x] **Revisión completa de las 9 páginas**: Inicio, Visitas, Mapa general,
+      Lindus, Cajas nido, Nidos rapaces, Cebos avispones, Mamíferos puentes,
+      Edición / Catálogos.
+- [x] **Patrón maestro-detalle aplicado** en las 4 páginas de consulta que
+      aún usaban `st.selectbox` + JSON crudo: Cajas nido, Nidos rapaces,
+      Cebos avispones y Mamíferos puentes. Ahora todas las páginas de consulta
+      biológica tienen tabla seleccionable por clic de fila (API nativa
+      `on_select="rerun"` + `selection_mode="single-row"`) y panel de detalle
+      con ficha legible: etiquetas humanas, sin NULL/None/NaN visibles, sin
+      `[SINTETICO_TEST]`, sección "Meteorología de la visita" y botón
+      "Ver visita" que navega a la página Visitas.
+- [x] **Bug precarga en Edición/Catálogos corregido**: al editar un registro
+      el formulario aparecía vacío. Causa raíz: los widgets del formulario
+      usaban `key = f"{tabla}_{campo}"` sin incluir el ID del registro, por
+      lo que Streamlit mantenía el valor anterior de `session_state` al
+      cambiar de registro. Solución: añadir `prefijo_key` a `_formulario` y
+      `_widget_campo` con esquema `edit_{tabla}_{id_registro}_{campo}`. Alta
+      y edición ya no comparten keys.
+- [x] **Datos sintéticos**: se mantienen en Supabase dev sin modificar.
+- [x] Comprobaciones finales: `py_compile` (20 archivos), imports (10 páginas),
+      `pytest` (58 tests OK), `streamlit run`, HTTP 200, sin cambios en SQL
+      ni `.env`, `git diff --check` limpio, sin secretos en diff.
+- [x] Commits creados:
+      `ec46307 style(dashboard): mejorar detalle de cajas nido`,
+      `a4990ce style(dashboard): mejorar detalle de nidos rapaces`,
+      `dff201e style(dashboard): mejorar detalle de cebos avispones`,
+      `1ee49a6 style(dashboard): mejorar detalle de mamiferos puentes`,
+      `08035ac fix(dashboard): precargar valores al editar registros`.
 
 ### Sesión 2026-05-02: Página Visitas y navegación relacional (completado)
 - [x] **Página Visitas** (`dashboard/paginas/02_visitas.py`) creada con
@@ -278,13 +309,19 @@
   botones, el título centralizado en `app.py` y que las páginas no pintan
   cabecera propia.
 - `dashboard/paginas/04_cajas_nido.py`: consulta de cajas nido con métricas,
-  gráficos, mapa, tabla, detalle y fotos.
+  gráficos, mapa, tabla seleccionable por clic de fila, ficha detalle
+  maestro-detalle con bloque Visita y botón "Ver visita", y fotos.
 - `dashboard/paginas/05_nidos_rapaces.py`: histórico de nidos rapaces con
-  ficha de revisión, mapa y fotos.
+  tabla seleccionable, ficha detalle maestro-detalle con texto de revisión
+  completo, bloque Visita y botón "Ver visita", mapa y fotos.
 - `dashboard/paginas/06_cebos_avispones.py`: seguimiento de cebos con
-  acumulados calculados, composición, mapa y detalle.
+  acumulados calculados, composición, mapa, tabla seleccionable, ficha
+  detalle maestro-detalle con sección de capturas, bloque Visita y
+  botón "Ver visita".
 - `dashboard/paginas/07_mamiferos_puentes.py`: consulta de mamíferos en
-  puentes con filtros espaciales, evidencias, diversidad y fotos.
+  puentes con filtros, gráficos, mapa, tabla seleccionable, ficha detalle
+  maestro-detalle con valores humanizados (PRESENTE/AUSENTE/POSIBLE,
+  evidencias), bloque Visita y botón "Ver visita".
 - `dashboard/paginas/08_edicion.py`: edición de catálogos y tablas de
   campo con altas, modificaciones y borrado seguro.
 - `dashboard/lib/consultas.py`: carga paginada de tablas Supabase,
@@ -335,30 +372,29 @@
 
 ## Handoff
 
-Fase 5 queda completada. Las fotos viven en Drive bajo
-`Fotos/YYYY-MM-DD_Lugar/`; la sincronización es un proceso separado del
-pipeline de `.txt`. `src/fotos/sincronizar.py` escanea carpetas, deduce
-fecha y lugar, localiza la visita en Supabase y registra URLs nuevas en
-`fotos` evitando duplicados.
+Fase 6 queda completada y revisada. Todos los problemas detectados en la
+revisión visual del dashboard han sido corregidos y commiteados.
 
-Siguiente agente: no tocar prod. Fase 6 queda completada y pulida.
-
-**Estado del dashboard (2026-05-02)**:
+**Estado del dashboard (2026-05-03)**:
 - 9 páginas navegables con botones (sin radio); título centralizado en
-  `app.py`; bug de títulos resuelto definitivamente.
-- Página Visitas: listado, filtros, detalle, meteorología, resumen de
-  registros asociados; caso LINDUS completo.
-- Página Lindus: tabla seleccionable por clic de fila, ficha detalle
-  maestro-detalle con bloque Visita y botón "Ver visita".
-- Meteorología en Lindus denominada "Meteorología de la visita".
+  `app.py`.
+- Patrón maestro-detalle aplicado en las 5 páginas de consulta biológica:
+  Lindus, Cajas nido, Nidos rapaces, Cebos avispones, Mamíferos puentes.
+  Todas tienen tabla seleccionable por clic de fila, ficha de detalle
+  con etiquetas humanas, bloque Visita y botón "Ver visita".
+- Ninguna página muestra JSON crudo, NULL/None/NaN visibles ni
+  `[SINTETICO_TEST]` al usuario.
+- Formulario de edición (Edición / Catálogos) precarga correctamente los
+  valores del registro seleccionado para todas las tablas.
 - 58 tests pasando.
 - El dashboard arranca sin errores desde `streamlit run dashboard/app.py`.
+- Datos sintéticos se mantienen en Supabase dev para pruebas.
 
-**Próxima tarea recomendada**: revisión manual con el observador con datos
-reales; después, corregir incidencias y preparar uso regular.
+**Próxima tarea recomendada**: revisión del dashboard con el observador
+usando datos reales. Tomar nota de incidencias y corregirlas antes del
+uso regular.
 
 **Pendientes técnicos**:
 - Limpiar visitas de prueba duplicadas en Supabase dev (`id_visita` 3, 4, 5, 6
   y cebos asociados).
-- Incidencia IDs autogenerados: resuelta en dev y en `sql/002_esquema_v2.sql`
-  (commit `70544ff`). Pendiente aplicar esquema v2 en prod.
+- Aplicar esquema v2 en prod cuando se decida activar el entorno de producción.
