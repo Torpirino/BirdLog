@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from contextlib import AbstractContextManager
 
 import pandas as pd
 import streamlit as st
@@ -35,8 +34,22 @@ def render_sidebar(paginas: Iterable[str]) -> str:
         st.caption("Datos de fauna")
         etiquetas = [f"{ICONOS.get(p, '•')}  {p}" for p in opciones]
         seleccion = st.radio("Navegación", etiquetas, label_visibility="collapsed")
-        st.caption("Tema claro/oscuro: menú ⋮ > Settings.")
     return opciones[etiquetas.index(seleccion)]
+
+
+def acciones_superiores() -> None:
+    """Muestra acciones compactas al inicio del área principal."""
+    _, derecha = st.columns([0.82, 0.18], vertical_alignment="top")
+    with derecha:
+        tema_actual = _tema_actual()
+        st.session_state.setdefault("tema_preferido", tema_actual)
+        st.segmented_control(
+            "Tema",
+            ["Claro", "Oscuro"],
+            key="tema_preferido",
+            label_visibility="collapsed",
+            help="Preferencia visual. Para aplicar el tema global usa ⋮ > Settings.",
+        )
 
 
 def encabezado_pagina(titulo: str, subtitulo: str, icono: str = "🌿") -> None:
@@ -44,9 +57,9 @@ def encabezado_pagina(titulo: str, subtitulo: str, icono: str = "🌿") -> None:
     st.title(titulo)
 
 
-def panel_filtros() -> AbstractContextManager:
-    """Devuelve un popover compacto para filtros de página."""
-    return st.popover("Filtros", use_container_width=False)
+def panel_filtros():
+    """Contenedor visible y compacto para filtros de página."""
+    return st.container(border=True)
 
 
 def separador_seccion(texto: str) -> None:
@@ -141,3 +154,12 @@ def estado_conexion(estado: EstadoConexion) -> None:
             st.success(estado.mensaje)
         else:
             st.warning(estado.mensaje)
+
+
+def _tema_actual() -> str:
+    """Lee el tipo de tema si Streamlit lo expone."""
+    try:
+        tipo = st.context.theme.type
+    except Exception:
+        tipo = "light"
+    return "Oscuro" if tipo == "dark" else "Claro"
