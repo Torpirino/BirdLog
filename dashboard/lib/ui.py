@@ -29,16 +29,26 @@ def aplicar_estilos() -> None:
 def render_sidebar(paginas: Iterable[str]) -> str:
     """Dibuja el menú lateral y devuelve la página activa."""
     opciones = list(paginas)
+    if not opciones:
+        raise ValueError("El dashboard necesita al menos una página.")
+    pagina_actual = st.session_state.get("pagina_activa")
+    if pagina_actual not in opciones:
+        st.session_state["pagina_activa"] = opciones[0]
+
     with st.sidebar:
         st.markdown("## BirdLog")
         st.caption("Datos de fauna")
-        return st.radio(
-            "Navegación",
-            opciones,
-            format_func=lambda pagina: f"{ICONOS.get(pagina, '•')}  {pagina}",
-            label_visibility="collapsed",
-            key="pagina_activa",
-        )
+        for pagina in opciones:
+            activa = pagina == st.session_state["pagina_activa"]
+            if st.button(
+                f"{ICONOS.get(pagina, '•')}  {pagina}",
+                key=f"nav_{pagina}",
+                type="primary" if activa else "secondary",
+                use_container_width=True,
+            ):
+                st.session_state["pagina_activa"] = pagina
+                st.rerun()
+        return st.session_state["pagina_activa"]
 
 
 def encabezado_pagina(titulo: str) -> None:

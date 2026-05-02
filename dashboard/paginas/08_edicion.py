@@ -21,7 +21,7 @@ from dashboard.lib.edicion import (
     validar_registro,
     ORDEN_TABLAS,
 )
-from dashboard.lib.ui import bloque_info, encabezado_pagina, tabla_datos
+from dashboard.lib.ui import bloque_info, tabla_datos
 
 
 ACCIONES = ["Ver", "Añadir", "Editar", "Borrar"]
@@ -36,7 +36,6 @@ def _cargar_datos() -> dict[str, pd.DataFrame]:
 
 def render() -> None:
     """Renderiza la página de edición."""
-    encabezado_pagina("Edición / Catálogos")
     bloque_info("Esta página modifica Supabase. Revisa cada acción antes de guardar o borrar.")
     try:
         tablas = _cargar_datos()

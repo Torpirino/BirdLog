@@ -9,7 +9,7 @@ from streamlit_folium import st_folium
 from dashboard.lib.consultas import cargar_tablas_dashboard, lugares_con_actividad
 from dashboard.lib.filtros import filtrar_valores, opciones_unicas
 from dashboard.lib.mapas import mapa_lugares_por_tipo
-from dashboard.lib.ui import encabezado_pagina, panel_filtros, tabla_datos
+from dashboard.lib.ui import panel_filtros, tabla_datos
 
 
 TIPOS_LUGAR = [
@@ -36,7 +36,6 @@ def _cargar_datos() -> dict[str, pd.DataFrame]:
 
 def render() -> None:
     """Renderiza el mapa general."""
-    encabezado_pagina("Mapa general")
     try:
         tablas = _cargar_datos()
     except Exception as exc:

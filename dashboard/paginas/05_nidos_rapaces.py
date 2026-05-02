@@ -8,7 +8,7 @@ from dashboard.lib.consultas import cargar_tablas_consulta, etiqueta_registro, o
 from dashboard.lib.filtros import filtrar_fecha, filtrar_lugar, filtrar_valores, opciones_unicas
 from dashboard.lib.fotos import enlaces_drive, filtrar_fotos_asociadas
 from dashboard.lib.mapas import mapa_lugares
-from dashboard.lib.ui import encabezado_pagina, mostrar_enlaces_fotos, panel_filtros, rejilla_metricas, sin_datos, tabla_datos
+from dashboard.lib.ui import mostrar_enlaces_fotos, panel_filtros, rejilla_metricas, sin_datos, tabla_datos
 
 
 @st.cache_data(ttl=120)
@@ -19,7 +19,6 @@ def _cargar_datos() -> dict[str, pd.DataFrame]:
 
 def render() -> None:
     """Renderiza la página de nidos rapaces."""
-    encabezado_pagina("Nidos rapaces")
     try:
         tablas = _cargar_datos()
     except Exception as exc:

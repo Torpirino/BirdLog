@@ -9,7 +9,7 @@ from dashboard.lib.filtros import filtrar_fecha, filtrar_lugar, filtrar_valores,
 from dashboard.lib.fotos import enlaces_drive, filtrar_fotos_asociadas
 from dashboard.lib.graficos import grafico_barras, grafico_lineas
 from dashboard.lib.mapas import mapa_lugares
-from dashboard.lib.ui import bloque_grafico, encabezado_pagina, mostrar_enlaces_fotos, panel_filtros, rejilla_metricas, sin_datos, tabla_datos
+from dashboard.lib.ui import bloque_grafico, mostrar_enlaces_fotos, panel_filtros, rejilla_metricas, sin_datos, tabla_datos
 
 
 @st.cache_data(ttl=120)
@@ -20,7 +20,6 @@ def _cargar_datos() -> dict[str, pd.DataFrame]:
 
 def render() -> None:
     """Renderiza la página de cajas nido."""
-    encabezado_pagina("Cajas nido")
     try:
         tablas = _cargar_datos()
     except Exception as exc:
