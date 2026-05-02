@@ -8,11 +8,11 @@
 
 ## Estado actual
 
-- **Fase activa**: Fase 6 — Dashboard Streamlit completada
+- **Fase activa**: Fase 6 — Dashboard Streamlit completada y pulida
 - **Última sesión**: 2026-05-02
 - **Próxima tarea**: Revisión manual del dashboard con el observador y
-  preparar uso real. La incidencia de IDs autogenerados queda resuelta en
-  Supabase dev y en `sql/002_esquema_v2.sql`.
+  preparar uso real. 9 páginas navegables, 58 tests pasan, patrón
+  relacional Visitas ↔ Lindus implementado.
 
 ---
 
@@ -51,6 +51,50 @@
 ---
 
 ## Tareas completadas
+
+### Sesión 2026-05-02: Página Visitas y navegación relacional (completado)
+- [x] **Página Visitas** (`dashboard/paginas/02_visitas.py`) creada con
+      listado, filtros, panel de detalle, meteorología asociada y resumen de
+      registros por tipo. Caso LINDUS implementado completamente; resto de
+      tipos de visita preparados como pendiente.
+- [x] **Navegación actualizada a 9 páginas**: Inicio, Visitas, Mapa general,
+      Lindus, Cajas nido, Nidos rapaces, Cebos avispones, Mamíferos puentes,
+      Edición / Catálogos.
+- [x] **Patrón relacional Visitas ↔ Lindus**: desde el detalle de una
+      observación Lindus se puede navegar a la visita correspondiente (botón
+      "Ver visita"); la sección de meteorología en Lindus pasa a llamarse
+      "Meteorología de la visita"; el panel de detalle Lindus incluye bloque
+      Visita.
+- [x] Comprobaciones reportadas: `py_compile` OK, imports OK, 58 tests
+      pasando, Streamlit OK, HTTP 200, sin cambios en SQL, `.env` ni secretos.
+- [x] Commit creado:
+      `c8dcc9a feat(dashboard): añadir pagina visitas y navegacion con Lindus`.
+
+### Sesión 2026-05-02: Corrección de títulos y pulido Lindus (completado)
+- [x] **Bug títulos**: diagnóstico técnico del bug en que "Inicio" aparecía
+      en todas las páginas. Causa raíz: `st.radio` sin `key` reiniciaba al
+      índice 0 en cada rerun interactivo. Solución: sustituir por botones
+      individuales con `st.session_state["pagina_activa"]` y `st.rerun()` en
+      `dashboard/lib/ui.py`; centralizar `encabezado_pagina(pagina)` en
+      `dashboard/app.py`; eliminar cabecera propia de las 8 páginas.
+- [x] **Detalle Lindus**: reemplazar el volcado JSON crudo (`st.write({...})`)
+      por ficha estructurada con layout maestro-detalle —tabla a la izquierda
+      (3/5), tarjeta legible a la derecha (2/5)—, sin tipos Python internos
+      (`Timestamp(...)`, `np.int64(...)`). Meteorología asociada renderizada
+      con columnas renombradas.
+- [x] **Selección desde tabla Lindus**: eliminar `st.selectbox("Ver detalle")`
+      redundante; tabla con `on_select="rerun"` + `selection_mode="single-row"`
+      (API nativa de Streamlit ≥ 1.35); formato DD/MM/YYYY en fechas, HH:MM en
+      horas, sin marcadores `[SINTETICO_TEST]`, altura 420 px, índice oculto.
+- [x] Tests actualizados en `tests/test_dashboard_titulos.py`: 4 tests que
+      verifican que las páginas no pintan cabecera propia, que `app.py` la
+      centraliza, y que la navegación usa botones en vez de radio.
+- [x] Comprobaciones realizadas: `pytest` (58 tests OK), `py_compile` de todas
+      las páginas, arranque del dashboard, revisión de secretos en diff.
+- [x] Commits creados:
+      `c29a98e fix(dashboard): corregir titulo activo por pagina`,
+      `0380f5f style(dashboard): mejorar detalle de observaciones lindus`,
+      `5889f3f style(dashboard): seleccionar observaciones lindus desde tabla`.
 
 ### Incidencia: IDs autogenerados en Supabase (resuelta 2026-05-02)
 - [x] Diagnóstico de las 11 PKs `id_*` mediante `information_schema` en
@@ -222,8 +266,17 @@
 - `src/fotos/sincronizar.py`: sincroniza fotos desde carpetas Drive
   `YYYY-MM-DD_Lugar`, busca la visita correspondiente y registra URLs en
   la tabla `fotos`.
-- `dashboard/paginas/03_lindus.py`: consulta Lindus con filtros, gráficos,
-  detalle, meteorología y fotos.
+- `dashboard/paginas/02_visitas.py`: listado de visitas con filtros, panel
+  de detalle, meteorología asociada, resumen de registros por tipo y
+  navegación relacional hacia la página de origen (Lindus implementado;
+  resto pendiente).
+- `dashboard/paginas/03_lindus.py`: consulta Lindus con filtros, métricas,
+  gráficos, tabla seleccionable (click directo en fila), ficha de detalle
+  maestro-detalle con bloque Visita y botón "Ver visita", meteorología
+  ("Meteorología de la visita") y fotos Drive.
+- `tests/test_dashboard_titulos.py`: tests que verifican la navegación por
+  botones, el título centralizado en `app.py` y que las páginas no pintan
+  cabecera propia.
 - `dashboard/paginas/04_cajas_nido.py`: consulta de cajas nido con métricas,
   gráficos, mapa, tabla, detalle y fotos.
 - `dashboard/paginas/05_nidos_rapaces.py`: histórico de nidos rapaces con
@@ -288,13 +341,24 @@ pipeline de `.txt`. `src/fotos/sincronizar.py` escanea carpetas, deduce
 fecha y lugar, localiza la visita en Supabase y registra URLs nuevas en
 `fotos` evitando duplicados.
 
-Siguiente agente: no tocar prod. Fase 6 queda completada con dashboard
-Streamlit local, 8 páginas navegables, consultas, mapas, gráficos, fotos,
-edición, altas y borrado seguro. La próxima tarea recomendada es una revisión
-manual con el observador; después, corregir incidencias detectadas y preparar
-uso real.
+Siguiente agente: no tocar prod. Fase 6 queda completada y pulida.
 
-Atención: queda una tarea general antes de dar por cerrado el entorno dev:
-limpiar visitas de prueba duplicadas (`id_visita` 3, 4, 5, 6 y cebos
-asociados). La incidencia de IDs autogenerados queda resuelta tanto en
-Supabase dev como en `sql/002_esquema_v2.sql` (commit `70544ff`).
+**Estado del dashboard (2026-05-02)**:
+- 9 páginas navegables con botones (sin radio); título centralizado en
+  `app.py`; bug de títulos resuelto definitivamente.
+- Página Visitas: listado, filtros, detalle, meteorología, resumen de
+  registros asociados; caso LINDUS completo.
+- Página Lindus: tabla seleccionable por clic de fila, ficha detalle
+  maestro-detalle con bloque Visita y botón "Ver visita".
+- Meteorología en Lindus denominada "Meteorología de la visita".
+- 58 tests pasando.
+- El dashboard arranca sin errores desde `streamlit run dashboard/app.py`.
+
+**Próxima tarea recomendada**: revisión manual con el observador con datos
+reales; después, corregir incidencias y preparar uso regular.
+
+**Pendientes técnicos**:
+- Limpiar visitas de prueba duplicadas en Supabase dev (`id_visita` 3, 4, 5, 6
+  y cebos asociados).
+- Incidencia IDs autogenerados: resuelta en dev y en `sql/002_esquema_v2.sql`
+  (commit `70544ff`). Pendiente aplicar esquema v2 en prod.
