@@ -10,6 +10,13 @@ from pyproj import Transformer
 EPSG_UTM_DEFAULT = 25830
 EPSG_LATLON = 4326
 CENTRO_NAVARRA = (42.8, -1.65)
+COLORES_TIPO_LUGAR = {
+    "CAJA_NIDO": "green",
+    "NIDO_RAPAZ": "darkred",
+    "CEBO_AVISPON": "orange",
+    "PUENTE": "blue",
+    "CONTEO_MIGRATORIO": "purple",
+}
 
 
 def convertir_utm_a_latlon(
@@ -31,6 +38,11 @@ def anadir_latlon(
     if df.empty or not {columna_x, columna_y}.issubset(df.columns):
         return df
     datos = df.copy()
+    datos[columna_x] = pd.to_numeric(datos[columna_x], errors="coerce")
+    datos[columna_y] = pd.to_numeric(datos[columna_y], errors="coerce")
+    datos = datos.dropna(subset=[columna_x, columna_y])
+    if datos.empty:
+        return datos
     coords = datos.apply(
         lambda fila: convertir_utm_a_latlon(fila[columna_x], fila[columna_y], epsg_origen),
         axis=1,
@@ -75,6 +87,28 @@ def mapa_lugares(
     datos = anadir_latlon(lugares, epsg_origen=epsg_origen)
     mapa = crear_mapa_base(_centro_desde_datos(datos))
     capa_marcadores(mapa, datos, nombre_capa, popup_columnas=_columnas_popup_lugar(datos))
+    folium.LayerControl(collapsed=False).add_to(mapa)
+    return mapa
+
+
+def mapa_lugares_por_tipo(
+    lugares: pd.DataFrame,
+    epsg_origen: int = EPSG_UTM_DEFAULT,
+) -> folium.Map:
+    """Crea mapa general con una capa por tipo de lugar."""
+    datos = anadir_latlon(lugares, epsg_origen=epsg_origen)
+    mapa = crear_mapa_base(_centro_desde_datos(datos))
+    if datos.empty or "tipo_lugar" not in datos.columns:
+        folium.LayerControl(collapsed=False).add_to(mapa)
+        return mapa
+    for tipo_lugar, grupo in datos.groupby("tipo_lugar", dropna=False):
+        capa_marcadores(
+            mapa,
+            grupo,
+            str(tipo_lugar),
+            color=COLORES_TIPO_LUGAR.get(str(tipo_lugar), "green"),
+            popup_columnas=_columnas_popup_lugar(grupo),
+        )
     folium.LayerControl(collapsed=False).add_to(mapa)
     return mapa
 
