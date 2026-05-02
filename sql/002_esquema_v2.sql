@@ -38,7 +38,7 @@ DROP TABLE IF EXISTS observadores CASCADE;
 -- especies
 -- ------------------------------------------------------------
 CREATE TABLE especies (
-    id_especie      INTEGER PRIMARY KEY,
+    id_especie      INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     nombre_cientifico TEXT NOT NULL UNIQUE,
     nombre_comun    TEXT,
     grupo           TEXT CHECK (grupo IN (
@@ -56,7 +56,7 @@ CREATE TABLE especies (
 -- observadores
 -- ------------------------------------------------------------
 CREATE TABLE observadores (
-    id_observador       INTEGER PRIMARY KEY,
+    id_observador       INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     nombre_observador   TEXT NOT NULL UNIQUE
 );
 
@@ -65,7 +65,7 @@ CREATE TABLE observadores (
 -- lugares
 -- ------------------------------------------------------------
 CREATE TABLE lugares (
-    id_lugar        INTEGER PRIMARY KEY,
+    id_lugar        INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     nombre_lugar    TEXT NOT NULL UNIQUE,
     tipo_lugar      TEXT NOT NULL CHECK (tipo_lugar IN (
                         'CONTEO_MIGRATORIO',
@@ -87,7 +87,7 @@ CREATE INDEX idx_lugares_municipio ON lugares(municipio);
 -- visitas
 -- ------------------------------------------------------------
 CREATE TABLE visitas (
-    id_visita       INTEGER PRIMARY KEY,
+    id_visita       INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_lugar        INTEGER NOT NULL REFERENCES lugares(id_lugar),
     id_observador   INTEGER NOT NULL REFERENCES observadores(id_observador),
     tipo_visita     TEXT NOT NULL CHECK (tipo_visita IN (
@@ -115,7 +115,7 @@ CREATE INDEX idx_visitas_tipo ON visitas(tipo_visita);
 -- 1 visita → 1 fila para el resto de estudios
 -- ------------------------------------------------------------
 CREATE TABLE meteorologia (
-    id_meteo            INTEGER PRIMARY KEY,
+    id_meteo            INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_visita           INTEGER NOT NULL REFERENCES visitas(id_visita),
     hora                TIME NOT NULL,
     temperatura         DOUBLE PRECISION,
@@ -134,7 +134,7 @@ CREATE INDEX idx_meteo_visita ON meteorologia(id_visita);
 -- Conteos migratorios en Lindus y Trona
 -- ------------------------------------------------------------
 CREATE TABLE lindus (
-    id_lindus       INTEGER PRIMARY KEY,
+    id_lindus       INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_visita       INTEGER NOT NULL REFERENCES visitas(id_visita),
     id_especie      INTEGER NOT NULL REFERENCES especies(id_especie),
     hora            TIME NOT NULL,
@@ -159,7 +159,7 @@ CREATE INDEX idx_lindus_comportamiento ON lindus(comportamiento);
 -- cajas_nido
 -- ------------------------------------------------------------
 CREATE TABLE cajas_nido (
-    id_cajanido             INTEGER PRIMARY KEY,
+    id_cajanido             INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_visita               INTEGER NOT NULL REFERENCES visitas(id_visita),
     id_lugar                INTEGER NOT NULL REFERENCES lugares(id_lugar),
     id_especie              INTEGER REFERENCES especies(id_especie),
@@ -206,7 +206,7 @@ CREATE INDEX idx_cajas_lugar ON cajas_nido(id_lugar);
 -- nidos_rapaces
 -- ------------------------------------------------------------
 CREATE TABLE nidos_rapaces (
-    id_nido_rapaz           INTEGER PRIMARY KEY,
+    id_nido_rapaz           INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_visita               INTEGER NOT NULL REFERENCES visitas(id_visita),
     id_lugar                INTEGER NOT NULL REFERENCES lugares(id_lugar),
     id_especie              INTEGER REFERENCES especies(id_especie),
@@ -222,7 +222,7 @@ CREATE INDEX idx_nidos_lugar ON nidos_rapaces(id_lugar);
 -- cebos_avispones
 -- ------------------------------------------------------------
 CREATE TABLE cebos_avispones (
-    id_cebo         INTEGER PRIMARY KEY,
+    id_cebo         INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_visita       INTEGER NOT NULL REFERENCES visitas(id_visita),
     id_lugar        INTEGER NOT NULL REFERENCES lugares(id_lugar),
     vv              INTEGER NOT NULL,
@@ -242,7 +242,7 @@ CREATE INDEX idx_cebos_lugar ON cebos_avispones(id_lugar);
 -- mamiferos_puentes
 -- ------------------------------------------------------------
 CREATE TABLE mamiferos_puentes (
-    id_mamifero     INTEGER PRIMARY KEY,
+    id_mamifero     INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_visita       INTEGER NOT NULL REFERENCES visitas(id_visita),
     id_lugar        INTEGER NOT NULL REFERENCES lugares(id_lugar),
     id_especie      INTEGER NOT NULL REFERENCES especies(id_especie),
@@ -269,7 +269,7 @@ CREATE INDEX idx_mam_especie ON mamiferos_puentes(id_especie);
 -- fotos (pendiente de definir en su fase)
 -- ------------------------------------------------------------
 CREATE TABLE fotos (
-    id_foto         INTEGER PRIMARY KEY,
+    id_foto         INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_visita       INTEGER REFERENCES visitas(id_visita),
     tabla_origen    TEXT,
     id_origen       INTEGER,
