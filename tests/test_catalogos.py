@@ -84,3 +84,22 @@ def test_resolver_especie_lanza_error_claro_si_no_existe():
     """Informa cómo corregir una especie ausente."""
     with pytest.raises(ValueError, match="Especie no encontrada: 'nutria'"):
         resolver_especie("nutria", ClienteFalso())
+
+
+def test_resolver_especie_tolera_minusculas_si_bd_tiene_mayuscula_inicial():
+    """Plaud transcribe en minúsculas; la BD guarda con primera letra en mayúscula."""
+    cliente = ClienteFalso()
+    cliente.tablas["especies"] = [
+        {"id_especie": 5, "nombre_comun": "Milano negro", "nombre_cientifico": "Milvus migrans"}
+    ]
+    assert resolver_especie("milano negro", cliente) == 5
+    assert resolver_especie("Milano negro", cliente) == 5
+
+
+def test_resolver_especie_tolera_minusculas_en_nombre_cientifico():
+    """Funciona también si el nombre científico viene en minúsculas."""
+    cliente = ClienteFalso()
+    cliente.tablas["especies"] = [
+        {"id_especie": 7, "nombre_comun": "Milano negro", "nombre_cientifico": "Milvus migrans"}
+    ]
+    assert resolver_especie("milvus migrans", cliente) == 7

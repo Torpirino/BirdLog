@@ -26,14 +26,24 @@ def resolver_observador(nombre: str, cliente) -> int:
 
 
 def resolver_especie(nombre: str, cliente) -> int:
-    """Devuelve el id_especie buscando por nombre común o científico."""
-    por_comun = _buscar(cliente, "especies", "id_especie", "nombre_comun", nombre)
-    if por_comun is not None:
-        return por_comun
-    por_cientifico = _buscar(cliente, "especies", "id_especie", "nombre_cientifico", nombre)
-    if por_cientifico is not None:
-        return por_cientifico
+    """Devuelve el id_especie buscando por nombre común o científico.
+
+    Prueba primero coincidencia exacta y luego con primera letra en mayúscula,
+    para tolerar que Plaud transcriba los nombres en minúsculas.
+    """
+    for variante in _variantes_especie(nombre):
+        por_comun = _buscar(cliente, "especies", "id_especie", "nombre_comun", variante)
+        if por_comun is not None:
+            return por_comun
+        por_cientifico = _buscar(cliente, "especies", "id_especie", "nombre_cientifico", variante)
+        if por_cientifico is not None:
+            return por_cientifico
     raise ValueError(_mensaje_especie(nombre))
+
+
+def _variantes_especie(nombre: str) -> list[str]:
+    """Devuelve variantes de capitalización: exacta y con primera letra mayúscula."""
+    return list(dict.fromkeys([nombre, nombre.capitalize()]))
 
 
 def _resolver_unico(cliente, tabla: str, columna_id: str, campo: str, valor: str, mensaje: str) -> int:

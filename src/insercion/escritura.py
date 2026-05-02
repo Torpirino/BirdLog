@@ -69,8 +69,17 @@ def _fila_visita(visita: dict, id_lugar: int, id_observador: int) -> dict:
         "fecha": visita["fecha"],
         "hora_inicio": visita["hora_inicio"],
         "hora_fin": visita.get("hora_fin"),
-        "observaciones": visita.get("observaciones_visita"),
+        "observaciones": _combinar_obs(
+            visita.get("observaciones_visita"),
+            visita.get("observaciones_puente"),
+        ),
     }
+
+
+def _combinar_obs(principal: str | None, adicional: str | None) -> str | None:
+    """Combina observaciones de visita y de punto (puente) sin perder ninguna."""
+    partes = [p for p in [principal, adicional] if p]
+    return " | ".join(partes) if partes else None
 
 
 def _insertar_observaciones_lindus(registro: dict, cliente) -> dict:

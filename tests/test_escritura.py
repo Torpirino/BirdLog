@@ -159,3 +159,18 @@ def test_insertar_caja_no_crea_visita_si_falta_especie():
         insertar_registro(registro, cliente)
     assert cliente.datos["visitas"] == visitas_antes
     assert "cajas_nido" not in cliente.datos
+
+
+def test_insertar_mamiferos_puente_no_descarta_observaciones_puente():
+    """observaciones_puente llega a visitas.observaciones combinada con observaciones_visita."""
+    cliente = ClienteFalso()
+    cliente.datos["lugares"].append({"id_lugar": 3, "nombre_lugar": "Puente Prueba 1"})
+    cliente.datos["especies"] += [
+        {"id_especie": 20, "nombre_comun": "nutria", "nombre_cientifico": "Nutria"},
+        {"id_especie": 21, "nombre_comun": "garduña", "nombre_cientifico": "Garduña"},
+    ]
+    registro = parsear_txt_plaud(str(EJEMPLOS / "visita_mamiferos_puente_ok.txt"))
+    insertar_registro(registro, cliente)
+    obs = cliente.datos["visitas"][-1].get("observaciones") or ""
+    assert "barro reciente en ambas orillas" in obs
+    assert "prospección tras lluvia" in obs
