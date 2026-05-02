@@ -10,8 +10,9 @@
 
 - **Fase activa**: Fase 6 — Dashboard Streamlit completada
 - **Última sesión**: 2026-05-02
-- **Próxima tarea**: Revisión manual del dashboard con el observador;
-  después, corregir incidencias detectadas y preparar uso real
+- **Próxima tarea**: Revisión manual del dashboard con el observador y
+  preparar uso real. La incidencia de IDs autogenerados queda resuelta en
+  Supabase dev y en `sql/002_esquema_v2.sql`.
 
 ---
 
@@ -33,8 +34,6 @@
 ### Pendiente general
 - [ ] Limpiar visitas de prueba duplicadas en Supabase dev
       (borrar `id_visita` 3, 4, 5, 6 y sus cebos asociados)
-- [ ] Verificar que `sql/002_esquema_v2.sql` incluye
-      `GENERATED ALWAYS AS IDENTITY` en todas las columnas `id_*`
 
 ### Fase 6: Dashboard
 - [x] Implementar `dashboard/app.py`
@@ -52,6 +51,31 @@
 ---
 
 ## Tareas completadas
+
+### Incidencia: IDs autogenerados en Supabase (resuelta 2026-05-02)
+- [x] Diagnóstico de las 11 PKs `id_*` mediante `information_schema` en
+      Supabase dev: 7 ya tenían `IDENTITY ALWAYS` (corregidas manualmente
+      en sesiones previas), 4 seguían como `INTEGER PRIMARY KEY` simple
+      (`especies`, `observadores`, `lugares`, `fotos`).
+- [x] Corrección manual en Supabase dev de las 4 PKs pendientes con
+      `ALTER TABLE ... ADD GENERATED ALWAYS AS IDENTITY` y `setval` al
+      MAX existente para no chocar con catálogos cargados.
+- [x] Verificación de que el dashboard nunca insertaba IDs manuales: la
+      lógica de `dashboard/lib/edicion.py` ya elimina la columna ID del
+      payload antes de enviar a Supabase.
+- [x] Prueba real de alta + edición + borrado de la especie
+      `TEST_DASHBOARD_NO_USAR` ejecutando las funciones reales de
+      `dashboard/lib/edicion.py` contra Supabase dev: `id_especie=158`
+      autogenerado, edición aplicada, borrado limpio. Backup CSV y traza
+      generados en cada paso.
+- [x] Actualización de `sql/002_esquema_v2.sql` para que las 11 PKs queden
+      como `INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY` y la próxima
+      aplicación a un entorno limpio salga correcta desde el principio.
+- [x] Commit creado: `70544ff fix(sql): autogenerar las 11 PKs id_* con
+      GENERATED ALWAYS AS IDENTITY`.
+- [x] Comprobaciones realizadas: `pytest` (54 tests), `py_compile` del
+      dashboard, imports de las 8 páginas, verificación con `grep` de las
+      11 PKs en el SQL editado, revisión de secretos en diff.
 
 ### Fase 6.6: Pulido final, documentación y pruebas de uso (completado)
 - [x] Dashboard Fase 6 completado para uso local.
@@ -179,10 +203,6 @@
 ## Bloqueos / dudas
 
 - Quinto ecosistema de cajas_nido pendiente de confirmar con el observador.
-- Las columnas `id_*` de todas las tablas no tenían `GENERATED ALWAYS AS
-  IDENTITY`. Se corrigió manualmente en Supabase dev con `ALTER TABLE`.
-  Pendiente verificar que `sql/002_esquema_v2.sql` refleja esto
-  correctamente para cuando se aplique en prod.
 
 ---
 
@@ -274,8 +294,7 @@ edición, altas y borrado seguro. La próxima tarea recomendada es una revisión
 manual con el observador; después, corregir incidencias detectadas y preparar
 uso real.
 
-Atención: quedan dos tareas generales antes de dar por cerrado el entorno
-dev: limpiar visitas de prueba duplicadas (`id_visita` 3, 4, 5, 6 y cebos
-asociados) y corregir/verificar la autogeneración real de IDs `id_*`.
-La prueba de alta desde dashboard falló porque `id_especie` no se
-autogeneró en Supabase.
+Atención: queda una tarea general antes de dar por cerrado el entorno dev:
+limpiar visitas de prueba duplicadas (`id_visita` 3, 4, 5, 6 y cebos
+asociados). La incidencia de IDs autogenerados queda resuelta tanto en
+Supabase dev como en `sql/002_esquema_v2.sql` (commit `70544ff`).

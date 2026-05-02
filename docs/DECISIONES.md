@@ -321,3 +321,32 @@ Antes de tocar datos conviene dejar una copia local reciente y una pista
 de qué acción se intentó, sin crear un sistema nuevo de auditoría.
 **Implicaciones**: `backups/` sigue fuera de git. Si el backup falla, la
 operación se detiene y el usuario recibe el error en el dashboard.
+
+---
+
+## #29 — IDs autogenerados con GENERATED ALWAYS AS IDENTITY (cierre de #24)
+**Fecha**: 2026-05-02
+**Decisión**: Las 11 PKs `id_*` quedan definidas como
+`INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY` tanto en Supabase dev
+como en `sql/002_esquema_v2.sql`. Sustituye y cierra la decisión #24.
+**Razón**: La corrección manual de #24 cubrió 7 de 11 tablas (las que
+tocaba el pipeline) pero dejó fuera las de catálogo (`especies`,
+`observadores`, `lugares`) y `fotos`. La primera prueba real desde el
+dashboard de edición falló al insertar en `especies` porque su PK seguía
+sin autogenerarse. Diagnóstico mediante `information_schema.columns` lo
+confirmó.
+**Implicaciones**:
+- En Supabase dev se aplicó `ALTER TABLE ... ADD GENERATED ALWAYS AS
+  IDENTITY` sobre las 4 PKs pendientes y `setval` al MAX actual para no
+  chocar con los datos de catálogo ya cargados.
+- `sql/002_esquema_v2.sql` queda coherente para entornos limpios
+  (commit `70544ff`).
+- `ALWAYS` impide insertar IDs explícitos: si en el futuro se necesita
+  un backfill con IDs concretos habrá que usar `OVERRIDING SYSTEM VALUE`
+  o cambiar la columna afectada a `BY DEFAULT` puntualmente.
+- El código del dashboard nunca envió IDs manuales: `limpiar_payload`
+  ya descartaba la PK vacía antes del `insert`. No requirió cambios.
+**Verificación**: alta, edición y borrado de `TEST_DASHBOARD_NO_USAR` en
+`especies` ejecutados contra Supabase dev usando las funciones reales de
+`dashboard/lib/edicion.py`. `id_especie=158` autogenerado, edición y
+borrado correctos, backup CSV y traza local generados en cada paso.
