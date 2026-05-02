@@ -11,7 +11,7 @@ from dashboard.lib.conexion import EstadoConexion
 
 
 ICONOS = {
-    "Inicio / Resumen": "🏠",
+    "Inicio": "🏠",
     "Mapa general": "🗺️",
     "Lindus": "🦅",
     "Cajas nido": "🏡",
@@ -32,9 +32,13 @@ def render_sidebar(paginas: Iterable[str]) -> str:
     with st.sidebar:
         st.markdown("## BirdLog")
         st.caption("Datos de fauna")
-        etiquetas = [f"{ICONOS.get(p, '•')}  {p}" for p in opciones]
-        seleccion = st.radio("Navegación", etiquetas, label_visibility="collapsed")
-    return opciones[etiquetas.index(seleccion)]
+        return st.radio(
+            "Navegación",
+            opciones,
+            format_func=lambda pagina: f"{ICONOS.get(pagina, '•')}  {pagina}",
+            label_visibility="collapsed",
+            key="pagina_activa",
+        )
 
 
 def encabezado_pagina(titulo: str, subtitulo: str, icono: str = "🌿") -> None:

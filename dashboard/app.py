@@ -16,7 +16,7 @@ from dashboard.lib.ui import aplicar_estilos, estado_conexion, render_sidebar
 
 
 PAGINAS = {
-    "Inicio / Resumen": "dashboard.paginas.01_inicio",
+    "Inicio": "dashboard.paginas.01_inicio",
     "Mapa general": "dashboard.paginas.02_mapa_general",
     "Lindus": "dashboard.paginas.03_lindus",
     "Cajas nido": "dashboard.paginas.04_cajas_nido",
