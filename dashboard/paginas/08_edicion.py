@@ -79,7 +79,7 @@ def _render_alta(tabla: str, tablas: dict[str, pd.DataFrame]) -> None:
     """Formulario de alta."""
     st.subheader("Añadir registro")
     with st.form(f"alta_{tabla}", clear_on_submit=False):
-        datos = _formulario(tabla, tablas, {})
+        datos = _formulario(tabla, tablas, {}, prefijo_key=f"alta_{tabla}")
         enviado = st.form_submit_button("Validar y guardar")
     if enviado:
         _guardar_alta(tabla, datos)
@@ -95,16 +95,17 @@ def _render_edicion(tabla: str, tablas: dict[str, pd.DataFrame]) -> None:
     if registro is None:
         return
     id_columna = ID_TABLA[tabla]
+    id_registro = int(registro[id_columna])
     st.subheader("Editar registro")
-    with st.form(f"editar_{tabla}_{registro[id_columna]}", clear_on_submit=False):
-        datos = _formulario(tabla, tablas, registro.to_dict())
-        confirma = st.checkbox("Confirmo que quiero guardar estos cambios.")
+    with st.form(f"editar_{tabla}_{id_registro}", clear_on_submit=False):
+        datos = _formulario(tabla, tablas, registro.to_dict(), prefijo_key=f"edit_{tabla}_{id_registro}")
+        confirma = st.checkbox("Confirmo que quiero guardar estos cambios.", key=f"confirma_edit_{tabla}_{id_registro}")
         enviado = st.form_submit_button("Guardar cambios")
     if enviado:
         if not confirma:
             st.warning("Marca la confirmación antes de guardar.")
             return
-        _guardar_edicion(tabla, int(registro[id_columna]), datos)
+        _guardar_edicion(tabla, id_registro, datos)
 
 
 def _render_borrado(tabla: str, tablas: dict[str, pd.DataFrame]) -> None:
@@ -135,13 +136,14 @@ def _render_borrado(tabla: str, tablas: dict[str, pd.DataFrame]) -> None:
         st.button("Borrar registro definitivamente", disabled=True)
 
 
-def _formulario(tabla: str, tablas: dict[str, pd.DataFrame], valores: dict[str, Any]) -> dict[str, Any]:
+def _formulario(tabla: str, tablas: dict[str, pd.DataFrame], valores: dict[str, Any], prefijo_key: str = "") -> dict[str, Any]:
     """Dibuja campos del formulario y devuelve payload."""
     datos = {}
     obligatorios = set(campos_obligatorios(tabla))
+    clave_base = prefijo_key or tabla
     for campo in campos_editables(tabla):
         etiqueta = f"{campo}{' *' if campo in obligatorios else ''}"
-        datos[campo] = _widget_campo(tabla, campo, etiqueta, valores.get(campo), tablas)
+        datos[campo] = _widget_campo(tabla, campo, etiqueta, valores.get(campo), tablas, clave_base)
     resultado = validar_registro(tabla, datos)
     if not resultado.ok:
         with st.expander("Validaciones pendientes", expanded=False):
@@ -150,9 +152,9 @@ def _formulario(tabla: str, tablas: dict[str, pd.DataFrame], valores: dict[str, 
     return datos
 
 
-def _widget_campo(tabla: str, campo: str, etiqueta: str, valor: Any, tablas: dict[str, pd.DataFrame]) -> Any:
+def _widget_campo(tabla: str, campo: str, etiqueta: str, valor: Any, tablas: dict[str, pd.DataFrame], clave_base: str = "") -> Any:
     """Dibuja widget adecuado por campo."""
-    key = f"{tabla}_{campo}"
+    key = f"{clave_base or tabla}_{campo}"
     opciones = opciones_valor_cerrado(tabla, campo)
     if opciones:
         return _select_cerrado(etiqueta, opciones, valor, key)
