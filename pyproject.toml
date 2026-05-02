@@ -1,0 +1,20 @@
+[project]
+name = "birdlog"
+version = "0.1.0"
+description = "Sistema interno para recoger, insertar y visualizar datos de fauna."
+requires-python = ">=3.11"
+dependencies = [
+    "altair",
+    "folium",
+    "google-api-python-client",
+    "pandas",
+    "pydantic",
+    "pyproj",
+    "python-dotenv",
+    "streamlit",
+    "streamlit-folium",
+    "supabase",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
