@@ -36,11 +36,7 @@ def _cargar_datos() -> dict[str, pd.DataFrame]:
 
 def render() -> None:
     """Renderiza el mapa general."""
-    encabezado_pagina(
-        "Mapa general",
-        "Lugares reales con capas activables por tipo, filtros y coordenadas visibles.",
-        "🗺️",
-    )
+    encabezado_pagina("Mapa general")
     try:
         tablas = _cargar_datos()
     except Exception as exc:

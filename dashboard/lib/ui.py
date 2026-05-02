@@ -41,8 +41,10 @@ def render_sidebar(paginas: Iterable[str]) -> str:
         )
 
 
-def encabezado_pagina(titulo: str, subtitulo: str, icono: str = "🌿") -> None:
-    """Muestra solo el título de la página."""
+def encabezado_pagina(titulo: str) -> None:
+    """Muestra el título real de cada página."""
+    if not titulo:
+        raise ValueError("Cada página debe definir un título explícito.")
     st.title(titulo)
 
 

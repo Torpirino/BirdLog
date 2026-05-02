@@ -36,11 +36,7 @@ def _cargar_datos() -> dict[str, pd.DataFrame]:
 
 def render() -> None:
     """Renderiza la página de edición."""
-    encabezado_pagina(
-        "Edición / Catálogos",
-        "Altas, correcciones y borrado seguro con confirmación escrita.",
-        "✏️",
-    )
+    encabezado_pagina("Edición / Catálogos")
     bloque_info("Esta página modifica Supabase. Revisa cada acción antes de guardar o borrar.")
     try:
         tablas = _cargar_datos()

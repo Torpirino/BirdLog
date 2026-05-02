@@ -23,11 +23,7 @@ def _cargar_datos() -> dict[str, pd.DataFrame]:
 
 def render() -> None:
     """Renderiza la página de cebos avispones."""
-    encabezado_pagina(
-        "Cebos avispones",
-        "Capturas por cebo, acumulados calculados, composición y evolución temporal.",
-        "🪤",
-    )
+    encabezado_pagina("Cebos avispones")
     try:
         tablas = _cargar_datos()
     except Exception as exc:
