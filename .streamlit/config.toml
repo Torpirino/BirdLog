@@ -1,13 +1,19 @@
 [theme]
-base = "light"
 primaryColor = "#2f6f3e"
+font = "sans serif"
+
+[theme.light]
 backgroundColor = "#f7f8f1"
 secondaryBackgroundColor = "#eef4e8"
 textColor = "#173b27"
-font = "sans serif"
+
+[theme.dark]
+backgroundColor = "#121713"
+secondaryBackgroundColor = "#1d261f"
+textColor = "#edf4ec"
 
 [client]
-toolbarMode = "minimal"
+toolbarMode = "viewer"
 
 [server]
 headless = true

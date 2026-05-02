@@ -9,7 +9,7 @@ from streamlit_folium import st_folium
 from dashboard.lib.consultas import cargar_tablas_dashboard, lugares_con_actividad
 from dashboard.lib.filtros import filtrar_valores, opciones_unicas
 from dashboard.lib.mapas import mapa_lugares_por_tipo
-from dashboard.lib.ui import encabezado_pagina, tabla_datos
+from dashboard.lib.ui import encabezado_pagina, panel_filtros, tabla_datos
 
 
 @st.cache_data(ttl=120)
@@ -41,7 +41,7 @@ def _render_filtros(tablas: dict[str, pd.DataFrame]) -> dict[str, object]:
     """Dibuja filtros principales del mapa."""
     lugares = tablas.get("lugares", pd.DataFrame())
     especies = tablas.get("especies", pd.DataFrame())
-    with st.container(border=True):
+    with panel_filtros():
         col_tipo, col_municipio, col_especie = st.columns(3)
         tipos = col_tipo.multiselect("Tipo de lugar", opciones_unicas(lugares, "tipo_lugar"))
         municipios = col_municipio.multiselect("Municipio", opciones_unicas(lugares, "municipio"))

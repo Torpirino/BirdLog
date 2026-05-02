@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from contextlib import AbstractContextManager
 
 import pandas as pd
 import streamlit as st
@@ -34,15 +35,18 @@ def render_sidebar(paginas: Iterable[str]) -> str:
         st.caption("Datos de fauna")
         etiquetas = [f"{ICONOS.get(p, '•')}  {p}" for p in opciones]
         seleccion = st.radio("Navegación", etiquetas, label_visibility="collapsed")
+        st.caption("Tema claro/oscuro: menú ⋮ > Settings.")
     return opciones[etiquetas.index(seleccion)]
 
 
 def encabezado_pagina(titulo: str, subtitulo: str, icono: str = "🌿") -> None:
-    """Muestra un encabezado nativo y ligero."""
-    st.caption(f"{icono} BirdLog")
+    """Muestra solo el título de la página."""
     st.title(titulo)
-    st.write(subtitulo)
-    st.divider()
+
+
+def panel_filtros() -> AbstractContextManager:
+    """Devuelve un popover compacto para filtros de página."""
+    return st.popover("Filtros", use_container_width=False)
 
 
 def separador_seccion(texto: str) -> None:

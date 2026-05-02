@@ -9,7 +9,7 @@ from dashboard.lib.filtros import filtrar_fecha, filtrar_lugar, filtrar_rango_nu
 from dashboard.lib.fotos import enlaces_drive, filtrar_fotos_asociadas
 from dashboard.lib.graficos import acumulado, grafico_barras, grafico_donut, grafico_lineas
 from dashboard.lib.mapas import mapa_lugares
-from dashboard.lib.ui import bloque_grafico, encabezado_pagina, mostrar_enlaces_fotos, rejilla_metricas, sin_datos, tabla_datos
+from dashboard.lib.ui import bloque_grafico, encabezado_pagina, mostrar_enlaces_fotos, panel_filtros, rejilla_metricas, sin_datos, tabla_datos
 
 
 CAPTURAS = ["vv", "crabro", "avispa_europea", "polilla", "mariposa", "otros"]
@@ -47,7 +47,7 @@ def render() -> None:
 
 def _render_filtros(datos: pd.DataFrame) -> pd.DataFrame:
     """Dibuja filtros de cebos."""
-    with st.container(border=True):
+    with panel_filtros():
         c1, c2, c3 = st.columns(3)
         desde, hasta = _rango_fechas(c1, datos)
         lugares = c2.multiselect("Lugar / cebo", opciones_unicas(datos, "nombre_lugar"))

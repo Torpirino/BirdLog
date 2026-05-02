@@ -8,7 +8,7 @@ from dashboard.lib.consultas import cargar_tablas_consulta, etiqueta_registro, o
 from dashboard.lib.filtros import filtrar_fecha, filtrar_lugar, filtrar_valores, opciones_unicas
 from dashboard.lib.fotos import enlaces_drive, filtrar_fotos_asociadas
 from dashboard.lib.mapas import mapa_lugares
-from dashboard.lib.ui import encabezado_pagina, mostrar_enlaces_fotos, rejilla_metricas, sin_datos, tabla_datos
+from dashboard.lib.ui import encabezado_pagina, mostrar_enlaces_fotos, panel_filtros, rejilla_metricas, sin_datos, tabla_datos
 
 
 @st.cache_data(ttl=120)
@@ -41,7 +41,7 @@ def render() -> None:
 
 def _render_filtros(datos: pd.DataFrame) -> pd.DataFrame:
     """Dibuja filtros de rapaces."""
-    with st.container(border=True):
+    with panel_filtros():
         c1, c2, c3 = st.columns(3)
         desde, hasta = _rango_fechas(c1, datos)
         especies = c2.multiselect("Especie", opciones_unicas(datos, "nombre_comun"))
