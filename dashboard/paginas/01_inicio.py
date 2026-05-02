@@ -13,7 +13,7 @@ from dashboard.lib.consultas import (
     visitas_legibles,
 )
 from dashboard.lib.graficos import grafico_barras, grafico_lineas, visitas_por_mes
-from dashboard.lib.ui import encabezado_pagina, rejilla_metricas, tabla_datos
+from dashboard.lib.ui import bloque_grafico, encabezado_pagina, rejilla_metricas, separador_seccion, tabla_datos
 
 
 @st.cache_data(ttl=120)
@@ -54,23 +54,16 @@ def _render_graficos(tablas: dict[str, pd.DataFrame]) -> None:
 
 def _render_ultimos_registros(tablas: dict[str, pd.DataFrame]) -> None:
     """Muestra tabla de últimos registros."""
-    st.subheader("Últimos registros")
+    separador_seccion("Últimos registros")
     tabla_datos(ultimos_registros(tablas), "Sin registros recientes.")
 
 
 def _chart_o_vacio(df: pd.DataFrame, x: str, y: str, titulo: str, tipo: str = "barras") -> None:
     """Muestra gráfico o mensaje sin datos."""
-    with st.container(border=True):
-        st.subheader(titulo)
-        if df.empty:
-            st.caption("Sin datos")
-            return
-        chart: alt.Chart
-        if tipo == "lineas":
-            chart = grafico_lineas(df, x, y, titulo="")
-        else:
-            chart = grafico_barras(df, x, y, titulo="")
-        st.altair_chart(chart, use_container_width=True)
+    chart = None
+    if not df.empty:
+        chart = grafico_lineas(df, x, y, titulo="") if tipo == "lineas" else grafico_barras(df, x, y, titulo="")
+    bloque_grafico(titulo, chart)
 
 
 def _capturas_vv_por_fecha(tablas: dict[str, pd.DataFrame]) -> pd.DataFrame:

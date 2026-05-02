@@ -9,7 +9,7 @@ from dashboard.lib.filtros import filtrar_fecha, filtrar_lugar, filtrar_rango_nu
 from dashboard.lib.fotos import enlaces_drive, filtrar_fotos_asociadas
 from dashboard.lib.graficos import acumulado, grafico_barras, grafico_donut, grafico_lineas
 from dashboard.lib.mapas import mapa_lugares
-from dashboard.lib.ui import encabezado_pagina, mostrar_enlaces_fotos, rejilla_metricas, tabla_datos
+from dashboard.lib.ui import bloque_grafico, encabezado_pagina, mostrar_enlaces_fotos, rejilla_metricas, sin_datos, tabla_datos
 
 
 CAPTURAS = ["vv", "crabro", "avispa_europea", "polilla", "mariposa", "otros"]
@@ -35,7 +35,7 @@ def render() -> None:
         return
     datos = observaciones_legibles("cebos_avispones", tablas)
     if datos.empty:
-        st.info("Sin datos de cebos avispones todavía.")
+        sin_datos("Sin datos de cebos avispones todavía.")
         return
     datos = _normalizar_capturas(datos)
     filtrados = _render_filtros(datos)
@@ -119,18 +119,15 @@ def _render_tabla_y_detalle(datos: pd.DataFrame, tablas: dict[str, pd.DataFrame]
 
 def _grafico(df: pd.DataFrame, x: str, y: str, titulo: str, tipo: str = "barras") -> None:
     """Muestra gráfico o aviso."""
-    with st.container(border=True):
-        st.subheader(titulo)
-        if df.empty:
-            st.caption("Sin datos")
-            return
+    chart = None
+    if not df.empty:
         if tipo == "lineas":
             chart = grafico_lineas(df, x, y)
         elif tipo == "donut":
             chart = grafico_donut(df, x, y)
         else:
             chart = grafico_barras(df, x, y)
-        st.altair_chart(chart, use_container_width=True)
+    bloque_grafico(titulo, chart)
 
 
 def _normalizar_capturas(datos: pd.DataFrame) -> pd.DataFrame:

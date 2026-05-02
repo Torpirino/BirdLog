@@ -15,7 +15,7 @@ from dashboard.lib.consultas import (
 from dashboard.lib.filtros import filtrar_fecha, filtrar_lugar, filtrar_rango_numerico, filtrar_valores, opciones_unicas
 from dashboard.lib.fotos import enlaces_drive, filtrar_fotos_asociadas
 from dashboard.lib.graficos import acumulado, grafico_barras, grafico_lineas
-from dashboard.lib.ui import encabezado_pagina, mostrar_enlaces_fotos, rejilla_metricas, tabla_datos
+from dashboard.lib.ui import bloque_grafico, encabezado_pagina, mostrar_enlaces_fotos, rejilla_metricas, sin_datos, tabla_datos
 
 
 @st.cache_data(ttl=120)
@@ -38,7 +38,7 @@ def render() -> None:
         return
     datos = observaciones_legibles("lindus", tablas)
     if datos.empty:
-        st.info("Sin observaciones Lindus todavía.")
+        sin_datos("Sin observaciones Lindus todavía.")
         return
     filtrados = _render_filtros(datos)
     _render_metricas(filtrados)
@@ -147,13 +147,10 @@ def _render_detalle(registro: pd.Series, tablas: dict[str, pd.DataFrame]) -> Non
 
 def _grafico(df: pd.DataFrame, x: str, y: str, titulo: str, tipo: str = "barras") -> None:
     """Muestra gráfico o aviso sin datos."""
-    with st.container(border=True):
-        st.subheader(titulo)
-        if df.empty:
-            st.caption("Sin datos")
-            return
+    chart = None
+    if not df.empty:
         chart = grafico_lineas(df, x, y) if tipo == "lineas" else grafico_barras(df, x, y)
-        st.altair_chart(chart, use_container_width=True)
+    bloque_grafico(titulo, chart)
 
 
 def _por_dia(datos: pd.DataFrame) -> pd.DataFrame:

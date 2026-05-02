@@ -70,4 +70,4 @@ def acumulado(df: pd.DataFrame, ordenar_por: str, columna: str, salida: str = "a
 
 def _base(df: pd.DataFrame, titulo: str) -> alt.Chart:
     """Base común para gráficos."""
-    return alt.Chart(df, title=titulo).properties(height=260)
+    return alt.Chart(df, title=titulo).properties(height=280)

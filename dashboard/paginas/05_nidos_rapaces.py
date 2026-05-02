@@ -8,7 +8,7 @@ from dashboard.lib.consultas import cargar_tablas_consulta, etiqueta_registro, o
 from dashboard.lib.filtros import filtrar_fecha, filtrar_lugar, filtrar_valores, opciones_unicas
 from dashboard.lib.fotos import enlaces_drive, filtrar_fotos_asociadas
 from dashboard.lib.mapas import mapa_lugares
-from dashboard.lib.ui import encabezado_pagina, mostrar_enlaces_fotos, rejilla_metricas, tabla_datos
+from dashboard.lib.ui import encabezado_pagina, mostrar_enlaces_fotos, rejilla_metricas, sin_datos, tabla_datos
 
 
 @st.cache_data(ttl=120)
@@ -31,7 +31,7 @@ def render() -> None:
         return
     datos = observaciones_legibles("nidos_rapaces", tablas)
     if datos.empty:
-        st.info("Sin datos de nidos rapaces todavía.")
+        sin_datos("Sin datos de nidos rapaces todavía.")
         return
     filtrados = _render_filtros(datos)
     _render_resumen(filtrados)
