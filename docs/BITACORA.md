@@ -10,8 +10,7 @@
 
 - **Fase activa**: Fase 6 — Dashboard Streamlit
 - **Última sesión**: 2026-05-02
-- **Próxima tarea**: Implementar dashboard Streamlit completo
-  (8 páginas + tema visual verde naturaleza)
+- **Próxima tarea**: Fase 6.5 — Edición, altas y borrado seguro
 
 ---
 
@@ -37,18 +36,37 @@
       `GENERATED ALWAYS AS IDENTITY` en todas las columnas `id_*`
 
 ### Fase 6: Dashboard
-- [ ] Implementar `dashboard/app.py`
-- [ ] Implementar 8 páginas en `dashboard/paginas/`
-- [ ] Implementar `dashboard/lib/` (`consultas`, `graficos`, `mapas`,
+- [x] Implementar `dashboard/app.py`
+- [x] Implementar 8 páginas en `dashboard/paginas/`
+- [x] Implementar `dashboard/lib/` (`consultas`, `graficos`, `mapas`,
       `edicion`, `filtros`)
-- [ ] Crear `.streamlit/config.toml` con tema verde naturaleza
-- [ ] Instalar librerías: `streamlit`, `streamlit-folium`, `folium`,
+- [x] Crear `.streamlit/config.toml` con tema verde naturaleza
+- [x] Instalar librerías: `streamlit`, `streamlit-folium`, `folium`,
       `pandas`, `altair`, `pyproj`
-- [ ] Verificar arranque sin errores
+- [x] Verificar arranque sin errores
+- [ ] Fase 6.5 — Implementar edición, altas y borrado seguro
 
 ---
 
 ## Tareas completadas
+
+### Fase 6.4: Páginas de consulta biológica (completado)
+- [x] Lindus implementado con filtros, métricas, gráficos, tabla, detalle,
+      meteorología asociada y fotos Drive cuando existan.
+- [x] Cajas nido implementado con métricas de ocupación, filtros, gráficos,
+      mapa, tabla, detalle y fotos asociadas.
+- [x] Nidos rapaces implementado con histórico, filtros, ficha de revisión,
+      texto cómodo, comunicación personal, mapa y fotos asociadas.
+- [x] Cebos avispones implementado con totales, composición, ranking,
+      evolución, acumulado calculado en dashboard, mapa, tabla y detalle.
+- [x] Mamíferos puentes implementado con filtros, resumen por presencia,
+      evidencias, diversidad por puente, mapa, tabla, detalle y fotos.
+- [x] Commit creado:
+      `eca458f feat(dashboard): añadir páginas de consulta por tipo de visita`.
+- [x] Comprobaciones realizadas: `py_compile`, imports de las 8 páginas,
+      `pytest` (54 tests), renders con datos vacíos y sintéticos,
+      `streamlit run dashboard/app.py`, HTTP local 200, revisión de secretos
+      en diff y verificación de que no se modificó SQL.
 
 ### Fase 5: Gestión de fotos (completado)
 - [x] Fase 5 completa: `src/fotos/sincronizar.py`, 54 tests pasando.
@@ -143,6 +161,26 @@
 - `src/fotos/sincronizar.py`: sincroniza fotos desde carpetas Drive
   `YYYY-MM-DD_Lugar`, busca la visita correspondiente y registra URLs en
   la tabla `fotos`.
+- `dashboard/paginas/03_lindus.py`: consulta Lindus con filtros, gráficos,
+  detalle, meteorología y fotos.
+- `dashboard/paginas/04_cajas_nido.py`: consulta de cajas nido con métricas,
+  gráficos, mapa, tabla, detalle y fotos.
+- `dashboard/paginas/05_nidos_rapaces.py`: histórico de nidos rapaces con
+  ficha de revisión, mapa y fotos.
+- `dashboard/paginas/06_cebos_avispones.py`: seguimiento de cebos con
+  acumulados calculados, composición, mapa y detalle.
+- `dashboard/paginas/07_mamiferos_puentes.py`: consulta de mamíferos en
+  puentes con filtros espaciales, evidencias, diversidad y fotos.
+- `dashboard/lib/consultas.py`: carga paginada de tablas Supabase,
+  DataFrames legibles y métricas/agregados comunes del dashboard.
+- `dashboard/lib/filtros.py`: filtros reutilizables por fecha, especie,
+  lugar, tipo y rangos.
+- `dashboard/lib/fotos.py`: filtrado de fotos asociadas por visita u origen
+  y preparación de enlaces Drive.
+- `dashboard/lib/mapas.py`: conversión UTM → lat/lon y mapas Folium por
+  lugar/tipo.
+- `dashboard/lib/graficos.py`: gráficos Altair reutilizables.
+- `dashboard/lib/ui.py`: componentes visuales reutilizables de Streamlit.
 - `tests/test_catalogos.py`: tests con mocks para resolución de catálogos.
 - `tests/test_escritura.py`: tests con mocks para inserción sin BD real.
 - `src/parser/plaud.py`: parser determinista de archivos `.txt` de Plaud.
@@ -182,9 +220,9 @@ pipeline de `.txt`. `src/fotos/sincronizar.py` escanea carpetas, deduce
 fecha y lugar, localiza la visita en Supabase y registra URLs nuevas en
 `fotos` evitando duplicados.
 
-Siguiente agente: no tocar prod. La fase activa pasa a Fase 6 —
-Dashboard Streamlit. La próxima tarea es implementar el dashboard
-completo con 8 páginas y tema visual verde naturaleza.
+Siguiente agente: no tocar prod. Fase 6.4 queda completada con las cinco
+páginas de consulta biológica implementadas. La próxima tarea es Fase 6.5
+— Edición, altas y borrado seguro.
 
 Atención: quedan dos tareas generales antes de dar por cerrado el entorno
 dev: limpiar visitas de prueba duplicadas (`id_visita` 3, 4, 5, 6 y cebos
