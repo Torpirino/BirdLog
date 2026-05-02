@@ -307,3 +307,17 @@ mantenible:
   encapsulado.
 **Razón**: El dashboard debe ser bonito desde el principio, pero fácil de
 mantener y ampliar durante toda la Fase 6.
+
+---
+
+## #28 — Edición del dashboard con backup local previo y traza
+**Fecha**: 2026-05-02
+**Decisión**: Las operaciones de alta, edición y borrado desde el
+dashboard intentan ejecutar primero el backup CSV local existente
+(`src/backup/exportar.py`) y escriben una traza mínima en
+`backups/edicion_traza.log`.
+**Razón**: La página de edición puede modificar datos reales en Supabase.
+Antes de tocar datos conviene dejar una copia local reciente y una pista
+de qué acción se intentó, sin crear un sistema nuevo de auditoría.
+**Implicaciones**: `backups/` sigue fuera de git. Si el backup falla, la
+operación se detiene y el usuario recibe el error en el dashboard.

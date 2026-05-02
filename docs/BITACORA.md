@@ -10,7 +10,8 @@
 
 - **Fase activa**: Fase 6 — Dashboard Streamlit
 - **Última sesión**: 2026-05-02
-- **Próxima tarea**: Fase 6.5 — Edición, altas y borrado seguro
+- **Próxima tarea**: Fase 6.6 — Pulido final, revisión visual,
+  documentación y pruebas de uso
 
 ---
 
@@ -44,11 +45,32 @@
 - [x] Instalar librerías: `streamlit`, `streamlit-folium`, `folium`,
       `pandas`, `altair`, `pyproj`
 - [x] Verificar arranque sin errores
-- [ ] Fase 6.5 — Implementar edición, altas y borrado seguro
+- [x] Fase 6.5 — Implementar edición, altas y borrado seguro
+- [ ] Fase 6.6 — Pulido final, revisión visual, documentación y pruebas
+      de uso
 
 ---
 
 ## Tareas completadas
+
+### Fase 6.5: Edición, altas y borrado seguro (completado)
+- [x] Página `dashboard/paginas/08_edicion.py` implementada.
+- [x] Tablas editables incluidas: `especies`, `observadores`, `lugares`,
+      `visitas`, `meteorologia`, `lindus`, `cajas_nido`,
+      `nidos_rapaces`, `cebos_avispones`, `mamiferos_puentes` y `fotos`.
+- [x] Alta de registros implementada con validación de campos
+      obligatorios, valores cerrados y selectores legibles para FKs.
+- [x] Edición de registros implementada con formulario precargado,
+      validación y confirmación antes de guardar.
+- [x] Borrado seguro implementado con resumen del registro, aviso visible,
+      confirmación escrita exacta `BORRAR`, comprobación de dependencias
+      cargadas, backup CSV local previo y traza mínima local.
+- [x] Commit creado:
+      `9bfdb6a feat(dashboard): añadir edición altas y borrado seguro`.
+- [x] Comprobaciones realizadas: `py_compile`, imports de las 8 páginas,
+      `pytest` (54 tests), render mínimo de Edición, `streamlit run
+      dashboard/app.py`, HTTP local 200, revisión de secretos en diff y
+      verificación de que no se modificó SQL.
 
 ### Fase 6.4: Páginas de consulta biológica (completado)
 - [x] Lindus implementado con filtros, métricas, gráficos, tabla, detalle,
@@ -171,6 +193,8 @@
   acumulados calculados, composición, mapa y detalle.
 - `dashboard/paginas/07_mamiferos_puentes.py`: consulta de mamíferos en
   puentes con filtros espaciales, evidencias, diversidad y fotos.
+- `dashboard/paginas/08_edicion.py`: edición de catálogos y tablas de
+  campo con altas, modificaciones y borrado seguro.
 - `dashboard/lib/consultas.py`: carga paginada de tablas Supabase,
   DataFrames legibles y métricas/agregados comunes del dashboard.
 - `dashboard/lib/filtros.py`: filtros reutilizables por fecha, especie,
@@ -181,6 +205,8 @@
   lugar/tipo.
 - `dashboard/lib/graficos.py`: gráficos Altair reutilizables.
 - `dashboard/lib/ui.py`: componentes visuales reutilizables de Streamlit.
+- `dashboard/lib/edicion.py`: metadatos de campos editables, validaciones,
+  backup previo, traza local y operaciones de alta, edición y borrado.
 - `tests/test_catalogos.py`: tests con mocks para resolución de catálogos.
 - `tests/test_escritura.py`: tests con mocks para inserción sin BD real.
 - `src/parser/plaud.py`: parser determinista de archivos `.txt` de Plaud.
@@ -220,9 +246,9 @@ pipeline de `.txt`. `src/fotos/sincronizar.py` escanea carpetas, deduce
 fecha y lugar, localiza la visita en Supabase y registra URLs nuevas en
 `fotos` evitando duplicados.
 
-Siguiente agente: no tocar prod. Fase 6.4 queda completada con las cinco
-páginas de consulta biológica implementadas. La próxima tarea es Fase 6.5
-— Edición, altas y borrado seguro.
+Siguiente agente: no tocar prod. Fase 6.5 queda completada con la página
+de edición, altas y borrado seguro implementada. La próxima tarea es
+Fase 6.6 — Pulido final, revisión visual, documentación y pruebas de uso.
 
 Atención: quedan dos tareas generales antes de dar por cerrado el entorno
 dev: limpiar visitas de prueba duplicadas (`id_visita` 3, 4, 5, 6 y cebos
