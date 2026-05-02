@@ -1,8 +1,15 @@
 """Entrada principal del dashboard Streamlit de BirdLog."""
 
 from importlib import import_module
+from pathlib import Path
+import sys
 
 import streamlit as st
+
+
+RAIZ_PROYECTO = Path(__file__).resolve().parents[1]
+if str(RAIZ_PROYECTO) not in sys.path:
+    sys.path.insert(0, str(RAIZ_PROYECTO))
 
 from dashboard.lib.conexion import probar_conexion
 from dashboard.lib.ui import aplicar_estilos, estado_conexion, render_sidebar
