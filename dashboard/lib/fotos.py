@@ -19,14 +19,12 @@ def filtrar_fotos_asociadas(
     """Filtra fotos por visita, tabla de origen e id de origen."""
     if fotos.empty:
         return fotos
-    filtradas = fotos
-    if id_visita is not None and "id_visita" in filtradas.columns:
-        filtradas = filtradas[filtradas["id_visita"] == id_visita]
-    if tabla_origen and "tabla_origen" in filtradas.columns:
-        filtradas = filtradas[filtradas["tabla_origen"] == tabla_origen]
-    if id_origen is not None and "id_origen" in filtradas.columns:
-        filtradas = filtradas[filtradas["id_origen"] == id_origen]
-    return filtradas
+    mascara = pd.Series(False, index=fotos.index)
+    if id_visita is not None and "id_visita" in fotos.columns:
+        mascara = mascara | (fotos["id_visita"] == id_visita)
+    if tabla_origen and id_origen is not None and {"tabla_origen", "id_origen"}.issubset(fotos.columns):
+        mascara = mascara | ((fotos["tabla_origen"] == tabla_origen) & (fotos["id_origen"] == id_origen))
+    return fotos[mascara]
 
 
 def obtener_fotos_asociadas(

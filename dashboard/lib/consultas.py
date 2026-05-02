@@ -94,6 +94,25 @@ def cargar_tablas_dashboard() -> dict[str, pd.DataFrame]:
     )
 
 
+def cargar_tablas_consulta() -> dict[str, pd.DataFrame]:
+    """Carga tablas necesarias para páginas de consulta biológica."""
+    return cargar_tablas(
+        [
+            "especies",
+            "observadores",
+            "lugares",
+            "visitas",
+            "meteorologia",
+            "lindus",
+            "cajas_nido",
+            "nidos_rapaces",
+            "cebos_avispones",
+            "mamiferos_puentes",
+            "fotos",
+        ]
+    )
+
+
 def ordenar_por_fecha(df: pd.DataFrame, columna: str = "fecha") -> pd.DataFrame:
     """Ordena de reciente a antiguo si existe la columna."""
     if df.empty or columna not in df.columns:
@@ -211,6 +230,24 @@ def observaciones_legibles(tabla: str, tablas: dict[str, pd.DataFrame]) -> pd.Da
     if "id_especie" in df.columns:
         df = unir_nombre_especie(df, tablas.get("especies", pd.DataFrame()))
     return ordenar_por_fecha(df)
+
+
+def meteorologia_de_visita(tablas: dict[str, pd.DataFrame], id_visita: int | None) -> pd.DataFrame:
+    """Devuelve meteorología asociada a una visita."""
+    meteo = tablas.get("meteorologia", pd.DataFrame())
+    if meteo.empty or id_visita is None or "id_visita" not in meteo.columns:
+        return pd.DataFrame()
+    return meteo[meteo["id_visita"] == id_visita]
+
+
+def etiqueta_registro(registro: pd.Series, id_columna: str, campos: list[str]) -> str:
+    """Crea una etiqueta legible para selectores de registros."""
+    partes = [f"#{registro.get(id_columna, '')}"]
+    for campo in campos:
+        valor = registro.get(campo)
+        if pd.notna(valor) and valor != "":
+            partes.append(str(valor))
+    return " · ".join(partes)
 
 
 def _registros_tabla(tablas: dict[str, pd.DataFrame], tabla: str, tipo: str) -> pd.DataFrame:

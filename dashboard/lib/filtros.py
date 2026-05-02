@@ -46,7 +46,7 @@ def filtrar_especie(df: pd.DataFrame, especies: Iterable[str] | None) -> pd.Data
 
 def filtrar_lugar(df: pd.DataFrame, lugares: Iterable[str] | None) -> pd.DataFrame:
     """Filtra por nombre o id de lugar."""
-    columna = _primera_columna(df, ["nombre_lugar", "id_lugar"])
+    columna = _primera_columna(df, ["nombre_lugar", "nombre_lugar_visita", "id_lugar"])
     return filtrar_valores(df, columna, lugares) if columna else df
 
 
