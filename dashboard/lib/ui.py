@@ -115,7 +115,7 @@ def tabla_datos(df: pd.DataFrame, mensaje_vacio: str = "No hay datos para mostra
     if df.empty:
         st.info(mensaje_vacio)
         return
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.dataframe(df, width="stretch", hide_index=True)
 
 
 def mostrar_enlaces_fotos(enlaces: list[dict[str, str]]) -> None:

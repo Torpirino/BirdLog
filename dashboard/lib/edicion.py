@@ -237,6 +237,24 @@ def dependencias_registro(tabla: str, id_registro: int, tablas: dict[str, Any]) 
     return dependencias
 
 
+def mensaje_error_edicion(exc: Exception) -> str:
+    """Traduce errores técnicos frecuentes a mensajes útiles."""
+    texto = str(exc)
+    if "violates not-null constraint" in texto and "id_" in texto:
+        return (
+            "Supabase rechazó la operación porque la columna ID no se autogeneró. "
+            "No se ha guardado nada. Revisa que el esquema real tenga los campos "
+            "`id_*` como autogenerados antes de usar altas desde el dashboard."
+        )
+    if "violates foreign key constraint" in texto:
+        return "Supabase rechazó la operación por una relación obligatoria. Revisa los campos relacionados."
+    if "violates check constraint" in texto:
+        return "Supabase rechazó la operación por un valor fuera del vocabulario permitido."
+    if "permission denied" in texto.lower() or "jwt" in texto.lower():
+        return "Supabase rechazó la operación por permisos. Revisa la clave configurada sin exponerla."
+    return texto
+
+
 def preparar_backup_y_traza(accion: str, tabla: str, id_registro: int | None, payload: dict[str, Any]) -> Path | None:
     """Hace backup local reutilizando el módulo existente y escribe una traza mínima."""
     carpeta_backup = None

@@ -13,6 +13,7 @@ from dashboard.lib.edicion import (
     campos_obligatorios,
     crear_registro,
     dependencias_registro,
+    mensaje_error_edicion,
     opciones_valor_cerrado,
     resumen_registro,
     tipo_campo,
@@ -68,7 +69,7 @@ def _render_selectores() -> tuple[str, str]:
             ORDEN_TABLAS,
             format_func=lambda nombre: f"Catálogo · {nombre}" if nombre in TABLAS_CATALOGOS else f"Datos · {nombre}",
         )
-        accion = col_accion.radio("Acción", ACCIONES, horizontal=True)
+        accion = col_accion.radio("Acción", ACCIONES, horizontal=True, key=f"accion_{tabla}")
     return tabla, accion
 
 
@@ -156,26 +157,27 @@ def _formulario(tabla: str, tablas: dict[str, pd.DataFrame], valores: dict[str, 
 
 def _widget_campo(tabla: str, campo: str, etiqueta: str, valor: Any, tablas: dict[str, pd.DataFrame]) -> Any:
     """Dibuja widget adecuado por campo."""
+    key = f"{tabla}_{campo}"
     opciones = opciones_valor_cerrado(tabla, campo)
     if opciones:
-        return _select_cerrado(etiqueta, opciones, valor, campo)
+        return _select_cerrado(etiqueta, opciones, valor, key)
     if campo in {"id_lugar", "id_especie", "id_observador", "id_visita"}:
-        return _select_fk(campo, etiqueta, valor, tablas)
+        return _select_fk(campo, etiqueta, valor, tablas, key)
     tipo = tipo_campo(campo)
     if tipo == "date":
-        return st.date_input(etiqueta, value=_valor_fecha(valor), key=f"{tabla}_{campo}").isoformat()
+        return st.date_input(etiqueta, value=_valor_fecha(valor), key=key).isoformat()
     if tipo == "time":
         valor_tiempo = _valor_hora(valor)
-        return st.time_input(etiqueta, value=valor_tiempo, key=f"{tabla}_{campo}").strftime("%H:%M:%S") if valor_tiempo else st.text_input(etiqueta, value="", key=f"{tabla}_{campo}")
+        return st.time_input(etiqueta, value=valor_tiempo, key=key).strftime("%H:%M:%S") if valor_tiempo else st.text_input(etiqueta, value="", key=key)
     if tipo == "bool":
-        return st.checkbox(etiqueta, value=bool(valor) if valor is not None else False, key=f"{tabla}_{campo}")
+        return st.checkbox(etiqueta, value=bool(valor) if valor is not None else False, key=key)
     if tipo == "int":
-        return _number_input(etiqueta, valor, True, f"{tabla}_{campo}")
+        return _number_input(etiqueta, valor, True, key)
     if tipo == "float":
-        return _number_input(etiqueta, valor, False, f"{tabla}_{campo}")
+        return _number_input(etiqueta, valor, False, key)
     if campo in {"observaciones", "texto_revision", "comunicacion_personal", "descripcion"}:
-        return st.text_area(etiqueta, value="" if valor is None else str(valor), key=f"{tabla}_{campo}")
-    return st.text_input(etiqueta, value="" if valor is None else str(valor), key=f"{tabla}_{campo}")
+        return st.text_area(etiqueta, value="" if valor is None else str(valor), key=key)
+    return st.text_input(etiqueta, value="" if valor is None else str(valor), key=key)
 
 
 def _select_cerrado(etiqueta: str, opciones: list[str], valor: Any, key: str) -> str | None:
@@ -185,7 +187,7 @@ def _select_cerrado(etiqueta: str, opciones: list[str], valor: Any, key: str) ->
     return st.selectbox(etiqueta, opciones_ui, index=opciones_ui.index(actual), key=key) or None
 
 
-def _select_fk(campo: str, etiqueta: str, valor: Any, tablas: dict[str, pd.DataFrame]) -> int | None:
+def _select_fk(campo: str, etiqueta: str, valor: Any, tablas: dict[str, pd.DataFrame], key: str) -> int | None:
     """Selector legible para claves foráneas."""
     tabla_fk = {"id_lugar": "lugares", "id_especie": "especies", "id_observador": "observadores", "id_visita": "visitas"}[campo]
     df = _df_fk(tabla_fk, tablas)
@@ -196,7 +198,7 @@ def _select_fk(campo: str, etiqueta: str, valor: Any, tablas: dict[str, pd.DataF
     opciones = [None] + ids
     actual = int(valor) if pd.notna(valor) and valor != "" else None
     index = opciones.index(actual) if actual in opciones else 0
-    return st.selectbox(etiqueta, opciones, index=index, format_func=lambda item: "" if item is None else _etiqueta_fk(tabla_fk, item, df), key=campo)
+    return st.selectbox(etiqueta, opciones, index=index, format_func=lambda item: "" if item is None else _etiqueta_fk(tabla_fk, item, df), key=key)
 
 
 def _df_fk(tabla_fk: str, tablas: dict[str, pd.DataFrame]) -> pd.DataFrame:
@@ -283,7 +285,7 @@ def _guardar_alta(tabla: str, datos: dict[str, Any]) -> None:
     try:
         crear_registro(tabla, datos)
     except Exception as exc:
-        st.error(f"No se pudo crear el registro: {exc}")
+        st.error(f"No se pudo crear el registro: {mensaje_error_edicion(exc)}")
         return
     st.success("Registro creado correctamente.")
     _cargar_datos.clear()
@@ -300,7 +302,7 @@ def _guardar_edicion(tabla: str, id_registro: int, datos: dict[str, Any]) -> Non
     try:
         actualizar_registro(tabla, id_registro, datos)
     except Exception as exc:
-        st.error(f"No se pudo actualizar el registro: {exc}")
+        st.error(f"No se pudo actualizar el registro: {mensaje_error_edicion(exc)}")
         return
     st.success("Registro actualizado correctamente.")
     _cargar_datos.clear()
@@ -312,7 +314,7 @@ def _ejecutar_borrado(tabla: str, id_registro: int) -> None:
     try:
         borrar_registro_seguro(tabla, id_registro, "BORRAR")
     except Exception as exc:
-        st.error(f"No se pudo borrar el registro. Puede tener dependencias: {exc}")
+        st.error(f"No se pudo borrar el registro. Puede tener dependencias: {mensaje_error_edicion(exc)}")
         return
     st.success("Registro borrado correctamente.")
     _cargar_datos.clear()
