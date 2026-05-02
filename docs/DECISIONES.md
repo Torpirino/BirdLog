@@ -287,3 +287,23 @@ visitas es un proceso separado del pipeline. El script
 **Razón**: El observador puede subir fotos antes o después de procesar
 el `.txt`, sin orden fijo. Un proceso separado evita dependencias de
 orden.
+
+---
+
+## #27 — Dashboard Streamlit modular y mantenible
+**Fecha**: 2026-05-02
+**Decisión**: El dashboard Streamlit se construirá de forma modular y
+mantenible:
+- No se generarán archivos HTML largos.
+- No se abusará de `st.markdown(..., unsafe_allow_html=True)`.
+- `dashboard/app.py` debe ser solo la entrada principal y navegación.
+- Cada página debe vivir en su archivo dentro de `dashboard/paginas/`.
+- La lógica común debe vivir en `dashboard/lib/`.
+- Los estilos comunes deben centralizarse en `.streamlit/config.toml` y,
+  si hace falta, en `dashboard/lib/ui.py`.
+- Se evitará CSS duplicado en cada página.
+- Se priorizarán componentes nativos de Streamlit.
+- Si hace falta HTML/CSS personalizado, debe ser pequeño, reutilizable y
+  encapsulado.
+**Razón**: El dashboard debe ser bonito desde el principio, pero fácil de
+mantener y ampliar durante toda la Fase 6.

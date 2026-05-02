@@ -46,37 +46,6 @@ def aplicar_estilos() -> None:
             box-shadow: 0 10px 30px rgba(33, 72, 45, 0.08);
             padding: 1rem 1.1rem;
         }
-        .birdlog-eyebrow {
-            color: #56745d;
-            font-size: 0.82rem;
-            font-weight: 700;
-            letter-spacing: 0;
-            text-transform: uppercase;
-        }
-        .birdlog-title {
-            color: #173b27;
-            font-size: 2rem;
-            font-weight: 800;
-            margin: 0.1rem 0 0.25rem;
-        }
-        .birdlog-subtitle {
-            color: #52685a;
-            font-size: 1rem;
-            margin: 0 0 1.2rem;
-        }
-        .birdlog-placeholder {
-            min-height: 16rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: #496250;
-            background:
-                linear-gradient(135deg, rgba(234, 242, 226, 0.95), rgba(255, 255, 250, 0.95));
-            border: 1px dashed #b8c8ad;
-            border-radius: 16px;
-            padding: 2rem;
-        }
         .stButton > button {
             border-radius: 10px;
             border-color: #b7c8ae;
@@ -101,16 +70,9 @@ def render_sidebar(paginas: Iterable[str]) -> str:
 
 def encabezado_pagina(titulo: str, subtitulo: str, icono: str = "🌿") -> None:
     """Muestra un encabezado visual homogéneo."""
-    st.markdown(
-        f"""
-        <div>
-            <div class="birdlog-eyebrow">{icono} BirdLog</div>
-            <h1 class="birdlog-title">{titulo}</h1>
-            <p class="birdlog-subtitle">{subtitulo}</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.caption(f"{icono} BirdLog")
+    st.title(titulo)
+    st.write(subtitulo)
 
 
 def tarjeta_metrica(titulo: str, valor: str, ayuda: str = "") -> None:
@@ -120,17 +82,9 @@ def tarjeta_metrica(titulo: str, valor: str, ayuda: str = "") -> None:
 
 def bloque_placeholder(titulo: str, texto: str) -> None:
     """Muestra un bloque elegante para páginas aún no implementadas."""
-    st.markdown(
-        f"""
-        <div class="birdlog-placeholder">
-            <div>
-                <h3>{titulo}</h3>
-                <p>{texto}</p>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    with st.container(border=True):
+        st.subheader(titulo)
+        st.caption(texto)
 
 
 def bloque_info(texto: str) -> None:
