@@ -1,5 +1,6 @@
 """Página de consulta Lindus."""
 
+import datetime
 from datetime import time
 
 import pandas as pd
@@ -92,9 +93,9 @@ def _render_graficos(datos: pd.DataFrame) -> None:
 
 
 def _render_tabla_y_detalle(datos: pd.DataFrame, tablas: dict[str, pd.DataFrame]) -> None:
-    """Muestra tabla y detalle de observación."""
+    """Muestra tabla a la izquierda y ficha de detalle a la derecha."""
     st.subheader("Observaciones")
-    columnas = [
+    columnas_tabla = [
         "id_lindus",
         "fecha",
         "hora",
@@ -104,40 +105,103 @@ def _render_tabla_y_detalle(datos: pd.DataFrame, tablas: dict[str, pd.DataFrame]
         "nombre_lugar_visita",
         "nombre_observador",
     ]
-    tabla_datos(datos[[c for c in columnas if c in datos.columns]], "Sin observaciones para los filtros.")
-    if datos.empty:
-        return
-    seleccion = st.selectbox(
-        "Detalle de observación",
-        datos.index,
-        format_func=lambda idx: etiqueta_registro(datos.loc[idx], "id_lindus", ["fecha", "hora", "nombre_comun", "numero"]),
-    )
-    _render_detalle(datos.loc[seleccion], tablas)
+    col_lista, col_detalle = st.columns([3, 2])
+    with col_lista:
+        tabla_datos(
+            datos[[c for c in columnas_tabla if c in datos.columns]],
+            "Sin observaciones para los filtros.",
+        )
+        if datos.empty:
+            return
+        seleccion = st.selectbox(
+            "Ver detalle",
+            datos.index,
+            format_func=lambda idx: etiqueta_registro(
+                datos.loc[idx], "id_lindus", ["fecha", "hora", "nombre_comun", "numero"]
+            ),
+            key="lindus_seleccion",
+        )
+    with col_detalle:
+        _render_detalle(datos.loc[seleccion], tablas)
 
 
 def _render_detalle(registro: pd.Series, tablas: dict[str, pd.DataFrame]) -> None:
-    """Panel de detalle Lindus."""
+    """Ficha de detalle de una observación Lindus, sin tipos Python crudos."""
+    id_visita = registro.get("id_visita")
     with st.container(border=True):
-        st.subheader("Detalle")
-        st.write(
-            {
-                "especie": registro.get("nombre_comun") or registro.get("nombre_cientifico"),
-                "fecha": registro.get("fecha"),
-                "hora": registro.get("hora"),
-                "numero": registro.get("numero"),
-                "comportamiento": registro.get("comportamiento"),
-                "edad": registro.get("edad"),
-                "sexo": registro.get("sexo"),
-                "plumaje": registro.get("plumaje"),
-                "observaciones": registro.get("observaciones"),
-            }
-        )
-        st.caption("Meteorología asociada")
-        tabla_datos(meteorologia_de_visita(tablas, registro.get("id_visita")), "Sin meteorología asociada.")
-        st.caption("Fotos asociadas")
+        st.subheader("Detalle de observación")
+        _campo("Especie", registro.get("nombre_comun") or registro.get("nombre_cientifico"))
+        _campo("Fecha", registro.get("fecha"))
+        _campo("Hora", registro.get("hora"))
+        _campo("Número", registro.get("numero"))
+        _campo("Comportamiento", registro.get("comportamiento"))
+        _campo("Lugar", registro.get("nombre_lugar_visita"))
+        _campo("Observador", registro.get("nombre_observador"))
+        _campo("Edad", registro.get("edad"))
+        _campo("Sexo", registro.get("sexo"))
+        _campo("Plumaje", registro.get("plumaje"))
+        _campo("Observaciones", registro.get("observaciones"))
+
+        meteo = meteorologia_de_visita(tablas, id_visita)
+        if not meteo.empty:
+            st.divider()
+            st.caption("Meteorología asociada")
+            _render_meteo(meteo)
+
         fotos = tablas.get("fotos", pd.DataFrame())
-        fotos = filtrar_fotos_asociadas(fotos, registro.get("id_visita"), "lindus", registro.get("id_lindus"))
-        mostrar_enlaces_fotos(enlaces_drive(fotos))
+        fotos = filtrar_fotos_asociadas(fotos, id_visita, "lindus", registro.get("id_lindus"))
+        enlaces = enlaces_drive(fotos)
+        if enlaces:
+            st.divider()
+            st.caption("Fotos asociadas")
+            mostrar_enlaces_fotos(enlaces)
+
+
+def _render_meteo(meteo: pd.DataFrame) -> None:
+    """Muestra meteorología asociada con columnas renombradas."""
+    nombres = {
+        "hora": "Hora",
+        "temperatura": "Temperatura",
+        "nubosidad": "Nubosidad",
+        "viento_direccion": "Dirección viento",
+        "viento_intensidad": "Intensidad viento",
+        "precipitacion": "Precipitación",
+        "visibilidad": "Visibilidad",
+    }
+    cols = [c for c in nombres if c in meteo.columns]
+    tabla_datos(meteo[cols].rename(columns=nombres), "Sin meteorología asociada.")
+
+
+def _campo(etiqueta: str, valor) -> None:
+    """Muestra un campo de la ficha con etiqueta negrita y valor legible."""
+    st.markdown(f"**{etiqueta}:** {_formatear_valor(valor)}")
+
+
+def _formatear_valor(valor) -> str:
+    """Convierte cualquier valor a texto limpio, sin tipos Python internos."""
+    if valor is None:
+        return "—"
+    try:
+        if pd.isna(valor):
+            return "—"
+    except (TypeError, ValueError):
+        pass
+    if isinstance(valor, time):
+        return valor.strftime("%H:%M")
+    if isinstance(valor, (pd.Timestamp, datetime.datetime)):
+        return valor.strftime("%d/%m/%Y")
+    if isinstance(valor, datetime.date):
+        return valor.strftime("%d/%m/%Y")
+    texto = str(valor).strip()
+    if not texto or texto.lower() in {"none", "nan", "nat", "<na>"}:
+        return "—"
+    if len(texto) >= 10 and texto[4:5] == "-" and texto[7:8] == "-":
+        try:
+            dt = datetime.date.fromisoformat(texto[:10])
+            return dt.strftime("%d/%m/%Y")
+        except ValueError:
+            pass
+    return texto
 
 
 def _grafico(df: pd.DataFrame, x: str, y: str, titulo: str, tipo: str = "barras") -> None:
