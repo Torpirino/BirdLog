@@ -8,7 +8,6 @@ import streamlit as st
 
 from dashboard.lib.consultas import (
     cargar_tablas_consulta,
-    etiqueta_registro,
     meteorologia_de_visita,
     observaciones_legibles,
     sumar_por,
@@ -93,36 +92,86 @@ def _render_graficos(datos: pd.DataFrame) -> None:
 
 
 def _render_tabla_y_detalle(datos: pd.DataFrame, tablas: dict[str, pd.DataFrame]) -> None:
-    """Muestra tabla a la izquierda y ficha de detalle a la derecha."""
+    """Muestra tabla seleccionable a la izquierda y ficha de detalle a la derecha."""
     st.subheader("Observaciones")
-    columnas_tabla = [
-        "id_lindus",
-        "fecha",
-        "hora",
-        "nombre_comun",
-        "numero",
-        "comportamiento",
-        "nombre_lugar_visita",
-        "nombre_observador",
-    ]
+    if datos.empty:
+        sin_datos("Sin observaciones para los filtros.")
+        return
     col_lista, col_detalle = st.columns([3, 2])
     with col_lista:
-        tabla_datos(
-            datos[[c for c in columnas_tabla if c in datos.columns]],
-            "Sin observaciones para los filtros.",
+        df_display = _preparar_tabla(datos)
+        estado = st.dataframe(
+            df_display,
+            on_select="rerun",
+            selection_mode="single-row",
+            use_container_width=True,
+            height=420,
+            hide_index=True,
+            key="lindus_tabla",
         )
-        if datos.empty:
-            return
-        seleccion = st.selectbox(
-            "Ver detalle",
-            datos.index,
-            format_func=lambda idx: etiqueta_registro(
-                datos.loc[idx], "id_lindus", ["fecha", "hora", "nombre_comun", "numero"]
-            ),
-            key="lindus_seleccion",
-        )
+        filas = estado.selection.rows
     with col_detalle:
-        _render_detalle(datos.loc[seleccion], tablas)
+        if not filas:
+            st.info("Selecciona una observación en la tabla para ver el detalle.")
+        else:
+            _render_detalle(datos.iloc[filas[0]], tablas)
+
+
+def _preparar_tabla(datos: pd.DataFrame) -> pd.DataFrame:
+    """Prepara el DataFrame para mostrarlo como tabla legible."""
+    mapa = {
+        "fecha": "Fecha",
+        "hora": "Hora",
+        "nombre_comun": "Especie",
+        "numero": "Nº",
+        "comportamiento": "Comportamiento",
+        "nombre_lugar_visita": "Lugar",
+        "nombre_observador": "Observador",
+    }
+    cols = [c for c in mapa if c in datos.columns]
+    df = datos[cols].copy().rename(columns=mapa)
+    if "Fecha" in df.columns:
+        df["Fecha"] = (
+            pd.to_datetime(df["Fecha"], errors="coerce")
+            .dt.strftime("%d/%m/%Y")
+            .fillna("")
+        )
+    if "Hora" in df.columns:
+        df["Hora"] = df["Hora"].apply(_formatear_hora_tabla)
+    for col in ("Especie", "Comportamiento", "Lugar", "Observador"):
+        if col in df.columns:
+            df[col] = df[col].apply(_limpiar_celda)
+    return df.reset_index(drop=True)
+
+
+def _formatear_hora_tabla(valor) -> str:
+    """Formatea hora a HH:MM sin segundos ni tipos Python."""
+    if valor is None:
+        return ""
+    try:
+        if pd.isna(valor):
+            return ""
+    except (TypeError, ValueError):
+        pass
+    if isinstance(valor, time):
+        return valor.strftime("%H:%M")
+    texto = str(valor).strip()
+    if len(texto) >= 5 and texto[2:3] == ":":
+        return texto[:5]
+    return texto
+
+
+def _limpiar_celda(valor) -> str:
+    """Convierte un valor de celda a texto limpio para la tabla."""
+    if valor is None:
+        return ""
+    try:
+        if pd.isna(valor):
+            return ""
+    except (TypeError, ValueError):
+        pass
+    texto = str(valor).replace("[SINTETICO_TEST]", "").strip()
+    return "" if texto.lower() in {"none", "nan", "nat", "<na>"} else texto
 
 
 def _render_detalle(registro: pd.Series, tablas: dict[str, pd.DataFrame]) -> None:
