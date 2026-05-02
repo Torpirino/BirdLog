@@ -1,0 +1,23 @@
+TIPO_REGISTRO: OBSERVACIONES_LINDUS
+TIPO_VISITA: LINDUS
+FECHA: 2026-05-01
+
+---OBSERVACION_LINDUS---
+ESPECIE: milano negro
+HORA: 08:35
+NUMERO: 5
+COMPORTAMIENTO: MIGRADOR
+EDAD: adulto
+SEXO: indeterminado
+PLUMAJE: nupcial
+OBSERVACIONES: grupo alto hacia el sur.
+
+---OBSERVACION_LINDUS---
+ESPECIE: milano real
+HORA: 09:05
+NUMERO: 2
+COMPORTAMIENTO: LOCAL
+EDAD: adulto
+SEXO: indeterminado
+PLUMAJE: normal
+OBSERVACIONES: campeando sobre el valle.

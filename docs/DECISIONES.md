@@ -222,3 +222,68 @@ observador: Lindus, cajas nido, cebos de avispón, nidos de rapaz y
 mamíferos en puentes.
 **Implicaciones**: el valor sigue existiendo en `visitas.tipo_visita`,
 pero no se implementa parser específico hasta una fase futura.
+
+---
+
+## #22 — Parser Plaud en tres capas sin dependencias externas
+**Fecha**: 2026-05-01
+**Decisión**: El mini-pipeline de Fase 3 se separa en parseo
+(`src/parser/plaud.py`), validación (`src/parser/validacion.py`) y
+normalización (`src/parser/normalizacion.py`), usando solo librería
+estándar.
+**Razón**: Mantiene el parser determinista y fácil de probar. El parseo
+tolera campos desconocidos, la validación informa errores concretos y la
+normalización aplica solo variantes menores sin tocar texto libre.
+**Implicaciones**: La resolución de FKs y la inserción quedan fuera de
+esta capa y se implementarán en fases posteriores.
+
+---
+
+## #23 — Fase 4: resolver FKs antes de insertar
+**Fecha**: 2026-05-01
+**Decisión**: La inserción resuelve todas las referencias de catálogo
+necesarias antes de crear filas en `visitas` o tablas específicas.
+**Razón**: Si falta un lugar, observador o especie, no debe quedar una
+visita parcial en Supabase. El archivo debe pasar a errores y el usuario
+debe recibir pasos claros para corregir el catálogo y el vocabulario
+Plaud.
+**Implicaciones**: En esta fase `ENTORNO=prod` queda bloqueado desde
+configuración; solo se permite dev.
+
+---
+
+## #24 — IDs autogenerados en Supabase dev
+**Fecha**: 2026-05-01
+**Decisión**: Las columnas `id_*` de las tablas deben autogenerarse con
+`GENERATED ALWAYS AS IDENTITY`.
+**Razón**: La primera prueba real de inserción en Supabase dev mostró que
+los IDs definidos solo como `INTEGER PRIMARY KEY` no se estaban generando
+automáticamente, bloqueando las inserciones.
+**Implicaciones**: Se corrigió manualmente en Supabase dev con
+`ALTER TABLE`. Queda pendiente verificar y actualizar
+`sql/002_esquema_v2.sql` para que el esquema aplicable en prod incluya
+esta definición correctamente.
+
+---
+
+## #25 — Backup CSV solo local, sin Drive
+**Fecha**: 2026-05-02
+**Decisión**: El backup CSV se guarda solo en `backups/` local. No se
+sube a Drive.
+**Razón**: Los service accounts de Google no tienen cuota de
+almacenamiento en Drive compartido. Error 403 en prueba real.
+**Implicaciones**: Si en el futuro se quiere backup en Drive, habrá que
+implementar autenticación OAuth 2.0.
+
+---
+
+## #26 — Fotos: carpetas YYYY-MM-DD_Lugar en Drive
+**Fecha**: 2026-05-02
+**Decisión**: Las fotos se organizan en Drive en carpetas con formato
+`YYYY-MM-DD_Lugar/` dentro de `Fotos/` en `BirdLog/`. La vinculación a
+visitas es un proceso separado del pipeline. El script
+`sincronizar_fotos()` escanea Drive y registra las URLs en la tabla
+`fotos` de Supabase.
+**Razón**: El observador puede subir fotos antes o después de procesar
+el `.txt`, sin orden fijo. Un proceso separado evita dependencias de
+orden.
