@@ -8,10 +8,10 @@
 
 ## Estado actual
 
-- **Fase activa**: Fase 6 — Dashboard Streamlit
+- **Fase activa**: Fase 6 — Dashboard Streamlit completada
 - **Última sesión**: 2026-05-02
-- **Próxima tarea**: Fase 6.6 — Pulido final, revisión visual,
-  documentación y pruebas de uso
+- **Próxima tarea**: Revisión manual del dashboard con el observador;
+  después, corregir incidencias detectadas y preparar uso real
 
 ---
 
@@ -46,12 +46,31 @@
       `pandas`, `altair`, `pyproj`
 - [x] Verificar arranque sin errores
 - [x] Fase 6.5 — Implementar edición, altas y borrado seguro
-- [ ] Fase 6.6 — Pulido final, revisión visual, documentación y pruebas
+- [x] Fase 6.6 — Pulido final, revisión visual, documentación y pruebas
       de uso
 
 ---
 
 ## Tareas completadas
+
+### Fase 6.6: Pulido final, documentación y pruebas de uso (completado)
+- [x] Dashboard Fase 6 completado para uso local.
+- [x] Documentación de uso creada en `docs/USO_DASHBOARD.md`.
+- [x] Pulido menor aplicado en Edición / Catálogos: claves de widgets más
+      específicas, tablas con anchura actualizada y mensajes de error más
+      claros para operaciones rechazadas por Supabase.
+- [x] Prueba controlada de alta/edición/borrado intentada con
+      `TEST_DASHBOARD_NO_USAR`.
+- [x] Resultado de la prueba controlada: la inserción fue rechazada por
+      Supabase porque `id_especie` no se autogeneró. No se forzó ningún ID
+      manual, no se completó alta/edición/borrado real y quedó creado backup
+      CSV local + traza mínima previa al intento.
+- [x] Commit creado:
+      `bb8e3b4 chore(dashboard): pulir dashboard y documentar uso`.
+- [x] Comprobaciones realizadas: `py_compile`, imports de las 8 páginas,
+      `pytest` (54 tests), `streamlit run dashboard/app.py`, HTTP local 200,
+      revisión de secretos en diff/traza, verificación de que no se modificó
+      SQL ni `.env`, y comprobación local de que el borrado exige `BORRAR`.
 
 ### Fase 6.5: Edición, altas y borrado seguro (completado)
 - [x] Página `dashboard/paginas/08_edicion.py` implementada.
@@ -233,6 +252,9 @@
   estructurado esperado para los `.txt`.
 - `docs/SEGURIDAD.md`: reglas de seguridad y manejo de credenciales.
 - `docs/DECISIONES.md`: historial de decisiones técnicas tomadas.
+- `docs/USO_DASHBOARD.md`: guía de uso local del dashboard para el
+  observador, incluyendo arranque, páginas, filtros, fotos, edición,
+  borrado seguro y errores de Supabase.
 - `.env.example`: plantilla de variables de entorno (sin valores reales).
 - `diagrama_relaciones_v2.html`: diagrama visual de relaciones entre tablas.
 
@@ -246,11 +268,14 @@ pipeline de `.txt`. `src/fotos/sincronizar.py` escanea carpetas, deduce
 fecha y lugar, localiza la visita en Supabase y registra URLs nuevas en
 `fotos` evitando duplicados.
 
-Siguiente agente: no tocar prod. Fase 6.5 queda completada con la página
-de edición, altas y borrado seguro implementada. La próxima tarea es
-Fase 6.6 — Pulido final, revisión visual, documentación y pruebas de uso.
+Siguiente agente: no tocar prod. Fase 6 queda completada con dashboard
+Streamlit local, 8 páginas navegables, consultas, mapas, gráficos, fotos,
+edición, altas y borrado seguro. La próxima tarea recomendada es una revisión
+manual con el observador; después, corregir incidencias detectadas y preparar
+uso real.
 
 Atención: quedan dos tareas generales antes de dar por cerrado el entorno
 dev: limpiar visitas de prueba duplicadas (`id_visita` 3, 4, 5, 6 y cebos
-asociados) y verificar que `sql/002_esquema_v2.sql` incluye
-`GENERATED ALWAYS AS IDENTITY` en todas las columnas `id_*`.
+asociados) y corregir/verificar la autogeneración real de IDs `id_*`.
+La prueba de alta desde dashboard falló porque `id_especie` no se
+autogeneró en Supabase.
