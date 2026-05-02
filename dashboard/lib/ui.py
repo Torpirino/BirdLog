@@ -12,6 +12,7 @@ from dashboard.lib.conexion import EstadoConexion
 
 ICONOS = {
     "Inicio": "🏠",
+    "Visitas": "📋",
     "Mapa general": "🗺️",
     "Lindus": "🦅",
     "Cajas nido": "🏡",

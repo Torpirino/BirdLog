@@ -17,6 +17,7 @@ from dashboard.lib.ui import aplicar_estilos, encabezado_pagina, estado_conexion
 
 PAGINAS = {
     "Inicio": "dashboard.paginas.01_inicio",
+    "Visitas": "dashboard.paginas.02_visitas",
     "Mapa general": "dashboard.paginas.02_mapa_general",
     "Lindus": "dashboard.paginas.03_lindus",
     "Cajas nido": "dashboard.paginas.04_cajas_nido",

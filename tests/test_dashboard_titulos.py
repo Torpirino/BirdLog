@@ -8,6 +8,7 @@ from pathlib import Path
 
 TITULOS_ESPERADOS = [
     "Inicio",
+    "Visitas",
     "Mapa general",
     "Lindus",
     "Cajas nido",

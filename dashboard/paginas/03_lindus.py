@@ -43,6 +43,14 @@ def render() -> None:
 
 def _render_filtros(datos: pd.DataFrame) -> pd.DataFrame:
     """Dibuja filtros Lindus."""
+    id_visita = _id_sesion("filtro_id_visita_lindus")
+    if id_visita is not None:
+        st.info(f"Filtro activo: visita #{id_visita}")
+        if st.button("Limpiar filtro de visita", key="limpiar_filtro_lindus"):
+            st.session_state.pop("filtro_id_visita_lindus", None)
+            st.rerun()
+        datos = datos[datos["id_visita"].astype("Int64") == id_visita]
+
     with panel_filtros():
         c1, c2, c3 = st.columns(3)
         desde, hasta = _rango_fechas(c1, datos)
@@ -176,7 +184,7 @@ def _limpiar_celda(valor) -> str:
 
 def _render_detalle(registro: pd.Series, tablas: dict[str, pd.DataFrame]) -> None:
     """Ficha de detalle de una observación Lindus, sin tipos Python crudos."""
-    id_visita = registro.get("id_visita")
+    id_visita = _id_valor(registro.get("id_visita"))
     with st.container(border=True):
         st.subheader("Detalle de observación")
         _campo("Especie", registro.get("nombre_comun") or registro.get("nombre_cientifico"))
@@ -191,10 +199,16 @@ def _render_detalle(registro: pd.Series, tablas: dict[str, pd.DataFrame]) -> Non
         _campo("Plumaje", registro.get("plumaje"))
         _campo("Observaciones", registro.get("observaciones"))
 
+        st.divider()
+        st.caption("Visita")
+        _render_visita_madre(registro, id_visita)
+
         meteo = meteorologia_de_visita(tablas, id_visita)
         if not meteo.empty:
             st.divider()
-            st.caption("Meteorología asociada")
+            st.caption("Meteorología de la visita")
+            if len(meteo) > 1:
+                st.caption("Registros horarios de la misma visita.")
             _render_meteo(meteo)
 
         fotos = tablas.get("fotos", pd.DataFrame())
@@ -207,7 +221,7 @@ def _render_detalle(registro: pd.Series, tablas: dict[str, pd.DataFrame]) -> Non
 
 
 def _render_meteo(meteo: pd.DataFrame) -> None:
-    """Muestra meteorología asociada con columnas renombradas."""
+    """Muestra meteorología de la visita con columnas renombradas."""
     nombres = {
         "hora": "Hora",
         "temperatura": "Temperatura",
@@ -218,7 +232,20 @@ def _render_meteo(meteo: pd.DataFrame) -> None:
         "visibilidad": "Visibilidad",
     }
     cols = [c for c in nombres if c in meteo.columns]
-    tabla_datos(meteo[cols].rename(columns=nombres), "Sin meteorología asociada.")
+    tabla_datos(meteo[cols].rename(columns=nombres), "Sin meteorología registrada para esta visita.")
+
+
+def _render_visita_madre(registro: pd.Series, id_visita: int | None) -> None:
+    """Muestra datos de la visita que contiene la observación."""
+    _campo("ID visita", id_visita)
+    _campo("Fecha", registro.get("fecha"))
+    _campo("Lugar", registro.get("nombre_lugar_visita"))
+    _campo("Observador", registro.get("nombre_observador"))
+    _campo("Tipo de visita", _tipo_visita_humano(registro.get("tipo_visita")))
+    if st.button("Ver visita", use_container_width=True, disabled=id_visita is None):
+        st.session_state["filtro_id_visita_visitas"] = id_visita
+        st.session_state["pagina_activa"] = "Visitas"
+        st.rerun()
 
 
 def _campo(etiqueta: str, valor) -> None:
@@ -253,6 +280,37 @@ def _formatear_valor(valor) -> str:
     return texto
 
 
+def _tipo_visita_humano(valor) -> str:
+    """Convierte tipo técnico de visita en etiqueta humana."""
+    tipos = {
+        "LINDUS": "Lindus",
+        "CAJA_NIDO": "Cajas nido",
+        "CEBO_AVISPON": "Cebos avispones",
+        "NIDO_RAPAZ": "Nidos rapaces",
+        "MAMIFEROS_PUENTES": "Mamíferos puentes",
+        "IMPACTO_AMBIENTAL": "Impacto ambiental",
+    }
+    return tipos.get(str(valor), _formatear_valor(valor))
+
+
+def _id_sesion(clave: str) -> int | None:
+    """Lee un id de visita desde session_state."""
+    return _id_valor(st.session_state.get(clave))
+
+
+def _id_valor(valor) -> int | None:
+    """Convierte un valor a entero de id si es posible."""
+    try:
+        if valor is None or pd.isna(valor):
+            return None
+    except (TypeError, ValueError):
+        pass
+    try:
+        return int(valor)
+    except (TypeError, ValueError):
+        return None
+
+
 def _grafico(df: pd.DataFrame, x: str, y: str, titulo: str, tipo: str = "barras") -> None:
     """Muestra gráfico o aviso sin datos."""
     chart = None
@@ -270,6 +328,8 @@ def _por_dia(datos: pd.DataFrame) -> pd.DataFrame:
 
 def _rango_fechas(columna, datos: pd.DataFrame):
     """Selector de fechas."""
+    if datos.empty or "fecha" not in datos:
+        return None, None
     fechas = pd.to_datetime(datos["fecha"], errors="coerce").dropna().dt.date
     if fechas.empty:
         return None, None
@@ -279,6 +339,8 @@ def _rango_fechas(columna, datos: pd.DataFrame):
 
 def _rango_horas(columna, datos: pd.DataFrame) -> tuple[time | None, time | None]:
     """Selector de hora."""
+    if datos.empty or "hora" not in datos:
+        return None, None
     horas = pd.to_datetime(datos["hora"], errors="coerce").dropna().dt.time
     if horas.empty:
         return None, None
@@ -291,7 +353,11 @@ def _rango_horas(columna, datos: pd.DataFrame) -> tuple[time | None, time | None
 
 def _rango_numero(datos: pd.DataFrame) -> tuple[int, int]:
     """Selector de rango de número robusto."""
+    if datos.empty or "numero" not in datos:
+        return 0, 0
     numeros = pd.to_numeric(datos["numero"], errors="coerce").dropna()
+    if numeros.empty:
+        return 0, 0
     minimo, maximo = int(numeros.min()), int(numeros.max())
     if minimo == maximo:
         st.caption(f"Número de individuos: {minimo}")
