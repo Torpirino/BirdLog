@@ -30,8 +30,8 @@ def render_sidebar(paginas: Iterable[str]) -> str:
     """Dibuja el menú lateral y devuelve la página activa."""
     opciones = list(paginas)
     with st.sidebar:
-        st.markdown("## 🌿 BirdLog")
-        st.caption("Conservación y monitoreo local")
+        st.markdown("## BirdLog")
+        st.caption("Datos de fauna")
         etiquetas = [f"{ICONOS.get(p, '•')}  {p}" for p in opciones]
         seleccion = st.radio("Navegación", etiquetas, label_visibility="collapsed")
     return opciones[etiquetas.index(seleccion)]

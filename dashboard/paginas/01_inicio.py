@@ -19,7 +19,7 @@ from dashboard.lib.graficos import (
     grafico_lineas,
     visitas_por_mes,
 )
-from dashboard.lib.ui import bloque_grafico, encabezado_pagina, separador_seccion, tabla_datos
+from dashboard.lib.ui import bloque_grafico, separador_seccion, tabla_datos
 
 
 METRICAS_PRINCIPALES = [
@@ -63,11 +63,7 @@ def _cargar_datos() -> dict[str, pd.DataFrame]:
 
 def render() -> None:
     """Renderiza la página de resumen inicial."""
-    encabezado_pagina(
-        "Dashboard fauna",
-        "Vista rápida del sistema: visitas, especies, lugares y actividad reciente.",
-        "🏠",
-    )
+    st.title("Inicio")
     try:
         tablas = _cargar_datos()
     except Exception as exc:
