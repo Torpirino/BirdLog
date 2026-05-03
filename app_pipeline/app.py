@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import socket
 import sys
 import time
 
@@ -15,6 +16,21 @@ if str(RAIZ_PROYECTO) not in sys.path:
 from app_pipeline.lib.enlaces import COMANDO_DASHBOARD, URL_CLAUDE_AI, URL_DASHBOARD
 from app_pipeline.lib.orquestador import comprobar_entorno, procesar_lote
 from app_pipeline.lib.ui import render_cabecera, render_resultados
+
+
+def _dashboard_activo() -> bool:
+    """Comprueba si el dashboard responde en el puerto esperado (caché 10 s)."""
+    ahora = time.time()
+    cache = st.session_state.get("_dashboard_cache")
+    if cache and ahora - cache["ts"] < 10:
+        return cache["activo"]
+    try:
+        with socket.create_connection(("127.0.0.1", 8999), timeout=0.5):
+            activo = True
+    except OSError:
+        activo = False
+    st.session_state["_dashboard_cache"] = {"ts": ahora, "activo": activo}
+    return activo
 
 
 def _estado_entorno_cacheado() -> object:
@@ -52,11 +68,17 @@ def main() -> None:
             use_container_width=True,
         )
     with col2:
-        st.link_button("📊 Abrir dashboard", url=URL_DASHBOARD, use_container_width=True)
+        dashboard_ok = _dashboard_activo()
+        st.link_button(
+            "📊 Abrir dashboard",
+            url=URL_DASHBOARD,
+            disabled=not dashboard_ok,
+            use_container_width=True,
+        )
+        if not dashboard_ok:
+            st.caption(f"No arrancado · `{COMANDO_DASHBOARD}`")
     with col3:
         st.link_button("💬 Abrir Claude.ai", url=URL_CLAUDE_AI, use_container_width=True)
-
-    st.caption(f"Dashboard: `{COMANDO_DASHBOARD}`")
     st.caption(
         "Claude.ai — Usa el proyecto BirdLog en Claude para consultar documentación, "
         "decisiones y dudas del sistema. Claude no accede a Supabase directamente."

@@ -32,7 +32,7 @@ def main() -> None:
     """Configura la aplicación y renderiza la página seleccionada."""
     st.set_page_config(
         page_title="BirdLog",
-        page_icon="🌿",
+        page_icon="🦅",
         layout="wide",
         initial_sidebar_state="expanded",
     )

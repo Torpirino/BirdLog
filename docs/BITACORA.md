@@ -11,11 +11,10 @@
 - **Fase activa**: Fase 8 — App local de pipeline
 - **Última sesión**: 2026-05-03
 - **Próxima tarea**: Prueba controlada con archivos Plaud reales o
-  sintéticos subidos a `01_entrada` de Drive. La app pipeline está
-  implementada y funcional, con icono de escritorio operativo.
-  80 tests pasan.
-  Arranque desde icono: **BirdLog Pipeline** en el Escritorio.
-  Arranque manual: `bash scripts/abrir_app_pipeline.sh`.
+  sintéticos subidos a `01_entrada` de Drive.
+  80 tests pasan. Branding unificado (🦅 en pipeline y dashboard).
+  Botón "Abrir dashboard" detecta si el dashboard está corriendo.
+  Mensajes de error de Drive/config simplificados para usuario no técnico.
 
 ---
 
@@ -69,6 +68,19 @@
 ---
 
 ## Tareas completadas
+
+### Sesión 2026-05-03: Mejoras de branding y UX en app pipeline (completado)
+- [x] **Branding unificado**: `page_icon` del dashboard cambiado de 🌿 a 🦅
+      (`dashboard/app.py`); emoji 🦅 añadido al título del sidebar
+      (`dashboard/lib/ui.py`). App pipeline ya usaba 🦅.
+- [x] **Botón "Abrir dashboard"**: ahora comprueba con socket si el dashboard
+      está corriendo en puerto 8999. Si sí → botón activo. Si no → botón
+      deshabilitado + caption con el comando de arranque.
+- [x] **Mensajes de Drive/config simplificados**: se distinguen tres casos
+      (config faltante, Drive inaccesible, Supabase inaccesible). Mensaje
+      principal corto y legible; detalle técnico en expander desplegable.
+- [x] Comprobaciones: `py_compile` OK, imports OK, HTTP 200 en 8503 y 8999,
+      `pytest` 80/80, SQL/.env sin cambios, `git diff --check` limpio.
 
 ### Sesión 2026-05-03: Lanzador de escritorio para app pipeline (completado)
 - [x] **Script de arranque**: `scripts/abrir_app_pipeline.sh` — activa

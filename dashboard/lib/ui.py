@@ -37,7 +37,7 @@ def render_sidebar(paginas: Iterable[str]) -> str:
         st.session_state["pagina_activa"] = opciones[0]
 
     with st.sidebar:
-        st.markdown("## BirdLog")
+        st.markdown("## 🦅 BirdLog")
         st.caption("Datos de fauna")
         for pagina in opciones:
             activa = pagina == st.session_state["pagina_activa"]
