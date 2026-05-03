@@ -12,10 +12,11 @@
 - **Última sesión**: 2026-05-03
 - **Próxima tarea**: Prueba controlada con archivos Plaud reales o
   sintéticos subidos a `01_entrada` de Drive.
-  93 tests pasan. Branding unificado (🦅 en pipeline y dashboard).
+  101 tests pasan. Branding unificado (🦅 en pipeline y dashboard).
   Botón "Abrir dashboard" arranca el dashboard automáticamente si no
   está corriendo. App pipeline reorganizada en dos columnas operativas.
   Corregida visualización de archivos con error en app pipeline.
+  Pipeline tolera fechas `DD/MM/YYYY` y lugares con distinta capitalización.
   Mensajes de error de Drive/config simplificados para usuario no técnico.
 
 ---
@@ -70,6 +71,17 @@
 ---
 
 ## Tareas completadas
+
+### Sesión 2026-05-03: Robustez para fechas y lugares Plaud reales (completado)
+- [x] **Fechas tolerantes**: `normalizar_registro()` acepta `YYYY-MM-DD` y
+      `DD/MM/YYYY`; internamente deja `YYYY-MM-DD`.
+- [x] **Error claro de fecha**: formatos fuera de esos dos se rechazan con
+      mensaje que indica los formatos permitidos.
+- [x] **Lugares tolerantes a mayúsculas/minúsculas**: `resolver_lugar()`
+      prueba primero coincidencia exacta y luego case-insensitive, sin
+      resolver si hay varias coincidencias posibles.
+- [x] **Documentación y decisión**: `docs/formato_plaud.md` y decisión #36
+      actualizadas.
 
 ### Sesión 2026-05-03: Errores de procesamiento sin crash de interfaz (completado)
 - [x] **Crash corregido**: `render_resumen_global()` importaba `ESTADO_OK`

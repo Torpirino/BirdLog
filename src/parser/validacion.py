@@ -110,7 +110,10 @@ def _iter_bloques(registro: dict):
 def _validar_fecha_horas(contexto: str, bloque: dict, errores: list[str]) -> None:
     """Valida formato ISO de fecha y HH:MM de horas."""
     if "fecha" in bloque and not _fecha_valida(bloque["fecha"]):
-        errores.append(f"FECHA inválida en {contexto}: {bloque['fecha']}")
+        errores.append(
+            f"Fecha no válida en {contexto}: {bloque['fecha']}. "
+            "Usa formato YYYY-MM-DD o DD/MM/YYYY."
+        )
     for campo in FORMATOS_HORA:
         if campo in bloque and not _hora_valida(bloque[campo]):
             errores.append(f"{campo.upper()} inválida en {contexto}: {bloque[campo]}")

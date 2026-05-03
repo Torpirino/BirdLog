@@ -20,6 +20,12 @@ Motivo: es documentación funcional del proyecto y será la referencia para el p
 - El parser Python no usará IA: leerá claves, valores y bloques.
 - Los campos `id_*` no los dicta el observador. Los genera o resuelve el sistema.
 - Los nombres de lugares, especies y observadores deben resolverse contra catálogos.
+- El formato preferido de `FECHA` es `YYYY-MM-DD`. El sistema también
+  tolera `DD/MM/YYYY` porque Plaud puede generarlo, pero lo normaliza
+  internamente a `YYYY-MM-DD`.
+- Los nombres de lugares deben venir del catálogo. El sistema tolera
+  diferencias simples de mayúsculas/minúsculas, pero no nombres ambiguos
+  ni lugares que no existan en el catálogo.
 - Si un valor de catálogo no existe, el script no insertará y enviará el `.txt` a `pendientes/`.
 - Plaud puede completar fecha y hora desde la fecha/hora de la grabación si el observador no las dicta.
 - El pipeline debe tener una segunda red de seguridad: si Plaud no devuelve `FECHA` o `HORA_*`, las completará desde el archivo cuando sea posible.
@@ -482,6 +488,8 @@ REGLAS GENERALES:
 - FECHA es obligatoria en la salida siempre que sea posible.
 - HORA_INICIO es obligatoria en la salida siempre que sea posible.
 - HORA_FIN es obligatoria en la salida siempre que sea posible.
+- El formato preferido de FECHA es YYYY-MM-DD. Si Plaud genera DD/MM/YYYY,
+  el pipeline lo acepta y lo normaliza a YYYY-MM-DD.
 - Si el observador dice explícitamente la fecha, usa esa fecha.
 - Si el observador NO dice explícitamente la fecha, usa la fecha de creación, grabación o transcripción del archivo si está disponible para ti.
 - Si el observador dice "hoy", interpreta "hoy" como la fecha de la grabación si esa fecha está disponible para ti.
@@ -1061,7 +1069,9 @@ REGLAS GENERALES:
 - Si el observador dice "ahora", interpreta "ahora" como la hora de la grabación si esa hora está disponible para ti.
 - Nunca inventes FECHA, HORA_INICIO ni HORA_FIN. Solo usa fecha/hora de la grabación si el sistema te las proporciona.
 - OBSERVADOR debe normalizarse usando el vocabulario cerrado.
-- LUGAR_PUENTE debe ser el nombre del puente tal como lo dice el observador, salvo que exista una normalización explícita en el vocabulario.
+- LUGAR_PUENTE debe ser el nombre del puente del catálogo. Se toleran
+  diferencias de mayúsculas/minúsculas, pero el vocabulario debe intentar
+  usar la forma exacta del catálogo.
 - OBSERVACIONES_VISITA recoge notas generales de la visita.
 - OBSERVACIONES_PUENTE recoge notas generales del puente o del punto prospectado.
 

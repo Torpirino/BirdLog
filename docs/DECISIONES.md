@@ -472,3 +472,17 @@ son más estables y más claros para un usuario no técnico.
 - `scripts/abrir_dashboard.sh` abre el dashboard en `8999`.
 - Ambos scripts intentan abrir el navegador con `xdg-open` y evitan
   arrancar copias repetidas si el servicio ya está activo.
+
+---
+
+## #36 — Fechas Plaud tolerantes y lugares case-insensitive
+**Fecha**: 2026-05-03
+**Decisión**: El pipeline acepta `FECHA` en `YYYY-MM-DD` y `DD/MM/YYYY`.
+Internamente normaliza siempre a `YYYY-MM-DD`. La resolución de lugares
+mantiene coincidencia exacta como prioridad y añade una segunda búsqueda
+insensible a mayúsculas/minúsculas, fallando si hay ambigüedad.
+**Razón**: El primer `.txt` real de Plaud generó `03/05/2026` y un lugar en
+minúsculas (`puente de aranzadi`). El sistema debe tolerar esas variaciones
+sin relajar valores cerrados ni inventar catálogos.
+**Implicaciones**: formatos de fecha fuera de esos dos siguen rechazándose
+con mensaje claro. Los nombres de lugares deben seguir viniendo del catálogo.

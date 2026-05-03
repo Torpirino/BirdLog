@@ -3,14 +3,13 @@
 
 def resolver_lugar(nombre: str, cliente) -> int:
     """Devuelve el id_lugar asociado a un nombre de lugar."""
-    return _resolver_unico(
-        cliente,
-        tabla="lugares",
-        columna_id="id_lugar",
-        campo="nombre_lugar",
-        valor=nombre,
-        mensaje=_mensaje_lugar(nombre),
-    )
+    encontrado = _buscar(cliente, "lugares", "id_lugar", "nombre_lugar", nombre)
+    if encontrado is not None:
+        return encontrado
+    encontrado = _buscar_lugar_insensible_mayusculas(nombre, cliente)
+    if encontrado is not None:
+        return encontrado
+    raise ValueError(_mensaje_lugar(nombre))
 
 
 def resolver_observador(nombre: str, cliente) -> int:
@@ -63,11 +62,38 @@ def _buscar(cliente, tabla: str, columna_id: str, campo: str, valor: str) -> int
     return filas[0][columna_id]
 
 
+def _buscar_lugar_insensible_mayusculas(nombre: str, cliente) -> int | None:
+    """Busca lugares por igualdad case-insensitive y detecta ambigüedad."""
+    respuesta = cliente.table("lugares").select("id_lugar,nombre_lugar").execute()
+    filas = getattr(respuesta, "data", None) or []
+    buscado = _normalizar_casefold(nombre)
+    coincidencias = [fila for fila in filas if _normalizar_casefold(fila["nombre_lugar"]) == buscado]
+    if not coincidencias:
+        return None
+    if len(coincidencias) > 1:
+        raise ValueError(_mensaje_lugar_ambiguo(nombre, coincidencias))
+    return coincidencias[0]["id_lugar"]
+
+
+def _normalizar_casefold(valor: str) -> str:
+    """Normaliza espacios y mayúsculas para comparar nombres de catálogo."""
+    return " ".join(valor.split()).casefold()
+
+
 def _mensaje_lugar(nombre: str) -> str:
     """Construye el mensaje para lugares no encontrados."""
     return (
         f"Lugar no encontrado: '{nombre}'.\n"
         "Da de alta en Supabase (tabla lugares) y añade el nombre al vocabulario del Plaud."
+    )
+
+
+def _mensaje_lugar_ambiguo(nombre: str, coincidencias: list[dict]) -> str:
+    """Construye el mensaje para lugares ambiguos por mayúsculas/minúsculas."""
+    opciones = ", ".join(f"'{fila['nombre_lugar']}'" for fila in coincidencias)
+    return (
+        f"Lugar ambiguo: '{nombre}' coincide con varios lugares ({opciones}).\n"
+        "Usa exactamente el nombre del catálogo en el vocabulario del Plaud."
     )
 
 

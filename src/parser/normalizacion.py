@@ -1,6 +1,8 @@
 """Normaliza variantes frecuentes de registros Plaud."""
 
 from copy import deepcopy
+from datetime import datetime
+import re
 
 NUMEROS = {
     "cero": 0,
@@ -50,6 +52,25 @@ def _normalizar_bloque(bloque: dict) -> None:
             bloque[campo] = _normalizar_booleano(valor)
         elif campo == "comportamiento":
             bloque[campo] = _normalizar_comportamiento(valor)
+        elif campo == "fecha":
+            bloque[campo] = normalizar_fecha(valor)
+
+
+def normalizar_fecha(valor: str) -> str:
+    """Convierte fechas aceptadas al formato interno YYYY-MM-DD."""
+    limpio = valor.strip()
+    formatos = (
+        (r"\d{4}-\d{2}-\d{2}", "%Y-%m-%d"),
+        (r"\d{2}/\d{2}/\d{4}", "%d/%m/%Y"),
+    )
+    for patron, formato in formatos:
+        if not re.fullmatch(patron, limpio):
+            continue
+        try:
+            return datetime.strptime(limpio, formato).date().isoformat()
+        except ValueError:
+            continue
+    return valor
 
 
 def _iter_bloques(registro: dict):

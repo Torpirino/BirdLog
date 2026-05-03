@@ -7,7 +7,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from src.parser.normalizacion import normalizar_registro
+from src.parser.normalizacion import normalizar_fecha, normalizar_registro
 from src.parser.plaud import detectar_tipo, parsear_txt_plaud
 from src.parser.validacion import validar_registro
 
@@ -136,3 +136,39 @@ def test_normalizar_registro_ocupada_si():
     """Normaliza sí como True en ocupada."""
     registro = {"visita": {}, "meteorologia": [], "datos": [{"ocupada": "sí"}]}
     assert normalizar_registro(registro)["datos"][0]["ocupada"] is True
+
+
+def test_normalizar_fecha_acepta_iso():
+    """Mantiene fechas que ya vienen en formato interno."""
+    assert normalizar_fecha("2026-05-03") == "2026-05-03"
+
+
+def test_normalizar_fecha_acepta_dia_mes_anio_con_barras():
+    """Convierte DD/MM/YYYY a formato interno YYYY-MM-DD."""
+    assert normalizar_fecha("03/05/2026") == "2026-05-03"
+
+
+def test_normalizar_fecha_deja_invalida_para_validacion_clara():
+    """No intenta interpretar formatos fuera de los permitidos."""
+    assert normalizar_fecha("05-03-2026") == "05-03-2026"
+
+
+def test_normalizar_fecha_no_acepta_formato_sin_ceros():
+    """Exige exactamente YYYY-MM-DD o DD/MM/YYYY."""
+    assert normalizar_fecha("3/5/2026") == "3/5/2026"
+
+
+def test_normalizar_registro_convierte_fecha_a_iso():
+    """La fecha de visita queda normalizada antes de validar."""
+    registro = {"visita": {"fecha": "03/05/2026"}, "meteorologia": [], "datos": []}
+    assert normalizar_registro(registro)["visita"]["fecha"] == "2026-05-03"
+
+
+def test_validar_registro_mensaje_fecha_invalida_es_claro():
+    """Informa los dos formatos de fecha admitidos."""
+    registro = parsear_txt_plaud(str(EJEMPLOS / "visita_mamiferos_puente_ok.txt"))
+    registro["visita"]["fecha"] = "05-03-2026"
+    errores = validar_registro(normalizar_registro(registro))
+    assert errores == [
+        "Fecha no válida en visita: 05-03-2026. Usa formato YYYY-MM-DD o DD/MM/YYYY."
+    ]

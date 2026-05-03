@@ -40,7 +40,8 @@ class TablaFalsa:
         filas = self.filas
         for campo, valor in self.filtros:
             filas = [fila for fila in filas if fila.get(campo) == valor]
-        return Respuesta([{self.columnas: fila[self.columnas]} for fila in filas])
+        columnas = [columna.strip() for columna in self.columnas.split(",")]
+        return Respuesta([{columna: fila[columna] for columna in columnas} for fila in filas])
 
 
 class ClienteFalso:
@@ -60,6 +61,24 @@ class ClienteFalso:
 def test_resolver_lugar_devuelve_id():
     """Resuelve un lugar existente por nombre_lugar."""
     assert resolver_lugar("Lindus", ClienteFalso()) == 10
+
+
+def test_resolver_lugar_tolera_mayusculas_y_minusculas():
+    """Plaud puede transcribir lugares en minúsculas."""
+    cliente = ClienteFalso()
+    cliente.tablas["lugares"] = [{"id_lugar": 11, "nombre_lugar": "Puente de Aranzadi"}]
+    assert resolver_lugar("puente de aranzadi", cliente) == 11
+
+
+def test_resolver_lugar_no_resuelve_si_case_insensitive_es_ambiguo():
+    """No elige lugar si varias filas solo difieren en mayúsculas."""
+    cliente = ClienteFalso()
+    cliente.tablas["lugares"] = [
+        {"id_lugar": 11, "nombre_lugar": "Puente de Aranzadi"},
+        {"id_lugar": 12, "nombre_lugar": "puente de aranzadi"},
+    ]
+    with pytest.raises(ValueError, match="Lugar ambiguo"):
+        resolver_lugar("PUENTE DE ARANZADI", cliente)
 
 
 def test_resolver_observador_devuelve_id():
