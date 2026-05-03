@@ -8,12 +8,13 @@
 
 ## Estado actual
 
-- **Fase activa**: Fase 6 — Dashboard Streamlit completada y pulida
+- **Fase activa**: Fase 8 — App local de pipeline
 - **Última sesión**: 2026-05-03
-- **Próxima tarea**: Revisión del dashboard con el observador con datos
-  reales. 9 páginas navegables, 58 tests pasan. Patrón maestro-detalle
-  aplicado en las 5 páginas de consulta biológica. Datos sintéticos se
-  mantienen en Supabase dev para pruebas.
+- **Próxima tarea**: Diseñar e implementar app local para gestionar el
+  pipeline Plaud → Supabase (sustituye al enfoque con `demo.py`).
+  61 tests pasan. Dos bugs reales corregidos y cubiertos con tests:
+  case-sensitivity en especies (`src/insercion/catalogos.py`) y pérdida
+  de `observaciones_puente` (`src/insercion/escritura.py`).
 
 ---
 
@@ -31,6 +32,12 @@
 
 ### Fase 3: Parser
 - [ ] Recoger 5-6 .txt de ejemplo de tipos distintos de visita
+
+### Fase 8: App local de pipeline
+- [ ] Diseñar e implementar app local para gestionar el pipeline
+      Plaud → Supabase (reemplaza el enfoque con `demo.py`)
+- [ ] Limpiar visitas de demo de dev (visitas del 2026-05-03 con
+      observaciones "demo del pipeline") si se llegaron a insertar
 
 ### Pendiente general
 - [ ] Limpiar visitas de prueba duplicadas en Supabase dev
@@ -52,6 +59,56 @@
 ---
 
 ## Tareas completadas
+
+### Sesión 2026-05-03: Limpieza de artefactos de demo (completado)
+- [x] **Archivos eliminados**: `demo.py` (315 líneas, script ad hoc con
+      dry-run y confirmación `INSERTAR`) y `demo/` (7 archivos `.txt`:
+      `01_inicio_lindus.txt` … `07_mamiferos_puente.txt`).
+- [x] **Correcciones reales conservadas**:
+      - `src/insercion/catalogos.py`: `resolver_especie` insensible a
+        mayúsculas (prueba exacto y luego `.capitalize()`).
+      - `src/insercion/escritura.py`: `observaciones_puente` se combina
+        con `observaciones_visita` usando ` | ` antes de insertar en
+        `visitas.observaciones` (ya no se descarta silenciosamente).
+- [x] **Tests conservados** (61 pasan):
+      - `test_resolver_especie_tolera_minusculas_si_bd_tiene_mayuscula_inicial`
+      - `test_resolver_especie_tolera_minusculas_en_nombre_cientifico`
+      - `test_insertar_mamiferos_puente_no_descarta_observaciones_puente`
+- [x] Comprobaciones: `pytest` (61 OK), `git diff --check` limpio, sin
+      cambios en SQL ni `.env`, sin secretos en diff.
+- [x] Decisión técnica añadida: #30 — pipeline sin `demo.py`.
+- [x] Commit: `chore(pipeline): eliminar archivos de demo`.
+
+### Sesión 2026-05-03: Diagnóstico y preparación de la demo del pipeline (completado)
+- [x] **Diagnóstico completo del pipeline**: revisión de `src/`, `tests/`,
+      `docs/formato_plaud.md` y ejemplos Plaud. Pipeline de extremo a extremo
+      implementado y funcional.
+- [x] **Fase A — Verificación de catálogos en Supabase dev**: todos los
+      observadores (`Gabi`, `Ander`) y lugares necesarios existen.
+      `BAR01`, `Nido Rapaz Prueba 1` y `Puente Prueba 1` no existen; se
+      sustituyeron en los archivos de demo por `CAJA_NIDO_TEST_01 [SINTETICO_TEST]`,
+      `AREATZEA1` y `Puente de Aranzadi`.
+- [x] **Fase B — Bug `observaciones_puente`**: el campo se parseaba
+      correctamente pero `_fila_visita` en `escritura.py` lo descartaba
+      silenciosamente. Corregido: se combina con `observaciones_visita`
+      usando ` | ` como separador.
+- [x] **Fase B — Bug case-sensitivity de especies**: la BD guarda nombres
+      con primera letra en mayúscula (`"Milano negro"`) pero Plaud transcribe
+      en minúsculas (`"milano negro"`). `resolver_especie` fallaba
+      silenciosamente para todos los tipos con especies (Lindus, cajas nido,
+      nidos rapaces, mamíferos puentes). Corregido: se prueba exacto y luego
+      `.capitalize()`.
+- [x] **Fase C — Script `demo.py`**: script en raíz con `--dry-run`, verificación
+      de catálogos en modo lectura, resumen previo y confirmación explícita
+      `INSERTAR` antes de tocar la BD.
+- [x] **Fase C — Archivos `demo/`**: 7 archivos `.txt` con lugares reales
+      de Supabase dev, fecha 2026-05-03 y observaciones "demo del pipeline".
+      Todos los dry-runs pasan.
+- [x] **Tests**: +3 nuevos tests (capitalización de especies ×2 y preservación
+      de `observaciones_puente`). Total: 61 tests pasando.
+- [x] Comprobaciones finales: `pytest` (61 OK), `git diff --check` limpio,
+      sin cambios en SQL ni `.env`, sin secretos en diff.
+- [x] Commit: `56e64f4 feat(pipeline): preparar demo del pipeline para el observador`.
 
 ### Sesión 2026-05-03: Revisión visual/funcional del dashboard (completado)
 - [x] **Revisión completa de las 9 páginas**: Inicio, Visitas, Mapa general,
@@ -367,34 +424,33 @@
   borrado seguro y errores de Supabase.
 - `.env.example`: plantilla de variables de entorno (sin valores reales).
 - `diagrama_relaciones_v2.html`: diagrama visual de relaciones entre tablas.
-
 ---
 
 ## Handoff
 
-Fase 6 queda completada y revisada. Todos los problemas detectados en la
-revisión visual del dashboard han sido corregidos y commiteados.
+Artefactos de demo eliminados. Pipeline listo para la siguiente fase.
+Commit de limpieza: `chore(pipeline): eliminar archivos de demo`.
+
+**Estado del pipeline (2026-05-03)**:
+- `demo.py` y `demo/` eliminados del repositorio.
+- Bug corregido y cubierto con test: `resolver_especie` insensible a
+  mayúsculas (`src/insercion/catalogos.py` — prueba exacto y `.capitalize()`).
+- Bug corregido y cubierto con test: `observaciones_puente` ya no se descarta
+  (`src/insercion/escritura.py` — se combina con `observaciones_visita`).
+- 61 tests pasando.
 
 **Estado del dashboard (2026-05-03)**:
-- 9 páginas navegables con botones (sin radio); título centralizado en
-  `app.py`.
-- Patrón maestro-detalle aplicado en las 5 páginas de consulta biológica:
-  Lindus, Cajas nido, Nidos rapaces, Cebos avispones, Mamíferos puentes.
-  Todas tienen tabla seleccionable por clic de fila, ficha de detalle
-  con etiquetas humanas, bloque Visita y botón "Ver visita".
-- Ninguna página muestra JSON crudo, NULL/None/NaN visibles ni
-  `[SINTETICO_TEST]` al usuario.
-- Formulario de edición (Edición / Catálogos) precarga correctamente los
-  valores del registro seleccionado para todas las tablas.
-- 58 tests pasando.
-- El dashboard arranca sin errores desde `streamlit run dashboard/app.py`.
-- Datos sintéticos se mantienen en Supabase dev para pruebas.
+- 9 páginas navegables; patrón maestro-detalle en las 5 páginas de consulta.
+- Datos sintéticos en Supabase dev sin tocar.
 
-**Próxima tarea recomendada**: revisión del dashboard con el observador
-usando datos reales. Tomar nota de incidencias y corregirlas antes del
-uso regular.
+**Próxima tarea**: diseñar e implementar app local de pipeline Plaud → Supabase
+(decisión #30 — sin scripts ad hoc de demo).
 
 **Pendientes técnicos**:
+- Limpiar visitas de demo en Supabase dev (2026-05-03 con observaciones
+  "demo del pipeline") si se llegaron a insertar.
 - Limpiar visitas de prueba duplicadas en Supabase dev (`id_visita` 3, 4, 5, 6
   y cebos asociados).
 - Aplicar esquema v2 en prod cuando se decida activar el entorno de producción.
+- `DRIVE_FOTOS_ID` no está en `.env` — añadir cuando se reactive el módulo
+  de fotos (no bloquea nada en la fase actual).

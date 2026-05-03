@@ -350,3 +350,24 @@ confirmó.
 `especies` ejecutados contra Supabase dev usando las funciones reales de
 `dashboard/lib/edicion.py`. `id_especie=158` autogenerado, edición y
 borrado correctos, backup CSV y traza local generados en cada paso.
+
+---
+
+## #30 — Pipeline Plaud: sin `demo.py`; gestión mediante app local dedicada
+**Fecha**: 2026-05-03
+**Decisión**: El script `demo.py` y la carpeta `demo/` han sido eliminados
+del repositorio. La prueba y operación del pipeline Plaud → Supabase se
+gestionará mediante una app local específica (próxima fase), no mediante
+scripts ad hoc de demo.
+**Razón**: `demo.py` era un artefacto temporal de preparación para la
+demostración con el observador. Una app local dedicada al pipeline aporta
+más control, mejor UX y evita "basura" en el repo.
+**Implicaciones**:
+- Los bugs corregidos durante la preparación de la demo se conservan en
+  el código de producción: `src/insercion/catalogos.py` (insensibilidad a
+  mayúsculas en especies) y `src/insercion/escritura.py`
+  (`observaciones_puente` ya no se descarta silenciosamente).
+- Los 3 tests que cubren esos bugs (`test_resolver_especie_tolera_minusculas_*`
+  y `test_insertar_mamiferos_puente_no_descarta_observaciones_puente`) se
+  mantienen en `tests/`.
+- La próxima tarea es diseñar e implementar la app local de pipeline.
