@@ -8,7 +8,9 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.insercion.escritura import insertar_registro
+from src.parser.normalizacion import normalizar_registro
 from src.parser.plaud import parsear_txt_plaud
+from src.parser.validacion import validar_registro
 
 EJEMPLOS = Path(__file__).parent / "ejemplos_plaud"
 
@@ -69,7 +71,8 @@ class TablaFalsa:
             filas = [fila for fila in filas if fila.get(campo) == valor]
         if self.columnas == "*":
             return filas
-        return [{self.columnas: fila[self.columnas]} for fila in filas]
+        columnas = [columna.strip() for columna in self.columnas.split(",")]
+        return [{columna: fila[columna] for columna in columnas} for fila in filas]
 
     def _insertar(self):
         filas = self.payload if isinstance(self.payload, list) else [self.payload]
@@ -174,3 +177,43 @@ def test_insertar_mamiferos_puente_no_descarta_observaciones_puente():
     obs = cliente.datos["visitas"][-1].get("observaciones") or ""
     assert "barro reciente en ambas orillas" in obs
     assert "prospección tras lluvia" in obs
+
+
+def test_insertar_mamiferos_puente_usa_fecha_normalizada_e_id_lugar():
+    """El payload final no conserva la fecha ni el lugar imperfectos de Plaud."""
+    cliente = ClienteFalso()
+    cliente.datos["lugares"].append({"id_lugar": 9, "nombre_lugar": "Puente de Aranzadi"})
+    cliente.datos["especies"] += [
+        {"id_especie": 20, "nombre_comun": "Nutria", "nombre_cientifico": "Lutra lutra"},
+        {"id_especie": 21, "nombre_comun": "Garduña", "nombre_cientifico": "Martes foina"},
+    ]
+    registro = {
+        "tipo_registro": "VISITA_MAMIFEROS_PUENTE",
+        "visita": {
+            "tipo_visita": "MAMIFEROS_PUENTES",
+            "fecha": "03/05/2026",
+            "hora_inicio": "10:00",
+            "hora_fin": "10:00",
+            "lugar_puente": "puente de aranzadi",
+            "observador": "Gabi",
+        },
+        "meteorologia": [],
+        "datos": [
+            {"especie": "nutria", "presencia": "PRESENTE", "tipo_evidencia": "EXCREMENTO"},
+            {"especie": "garduña", "presencia": "POSIBLE", "tipo_evidencia": "HUELLA"},
+        ],
+    }
+
+    normalizado = normalizar_registro(registro)
+    assert normalizado["visita"]["fecha"] == "2026-05-03"
+    assert validar_registro(normalizado) == []
+
+    insertar_registro(normalizado, cliente)
+
+    visita_insertada = cliente.datos["visitas"][-1]
+    mamiferos_insertados = cliente.datos["mamiferos_puentes"]
+    assert visita_insertada["fecha"] == "2026-05-03"
+    assert visita_insertada["id_lugar"] == 9
+    assert "lugar_puente" not in visita_insertada
+    assert all(fila["id_lugar"] == 9 for fila in mamiferos_insertados)
+    assert "puente de aranzadi" not in repr(visita_insertada)

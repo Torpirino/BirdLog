@@ -12,7 +12,7 @@
 - **Última sesión**: 2026-05-03
 - **Próxima tarea**: Prueba controlada con archivos Plaud reales o
   sintéticos subidos a `01_entrada` de Drive.
-  101 tests pasan. Branding unificado (🦅 en pipeline y dashboard).
+  102 tests pasan. Branding unificado (🦅 en pipeline y dashboard).
   Botón "Abrir dashboard" arranca el dashboard automáticamente si no
   está corriendo. App pipeline reorganizada en dos columnas operativas.
   Corregida visualización de archivos con error en app pipeline.
@@ -80,6 +80,9 @@
 - [x] **Lugares tolerantes a mayúsculas/minúsculas**: `resolver_lugar()`
       prueba primero coincidencia exacta y luego case-insensitive, sin
       resolver si hay varias coincidencias posibles.
+- [x] **Payload final limpio**: test de inserción con cliente falso confirma
+      que una visita de mamíferos con `03/05/2026` y `puente de aranzadi`
+      acaba con fecha `2026-05-03` e `id_lugar` resuelto antes de escribir.
 - [x] **Documentación y decisión**: `docs/formato_plaud.md` y decisión #36
       actualizadas.
 
