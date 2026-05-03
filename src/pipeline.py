@@ -4,7 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from src.backup.exportar import hacer_backup
-from src.config import cargar_config
+from src.config import cargar_config_pipeline
 from src.conexion import get_cliente
 from src.drive.cliente import get_drive
 from src.drive.operaciones import descargar_archivo, listar_txt, mover_archivo
@@ -16,7 +16,7 @@ from src.parser.validacion import validar_registro
 
 def procesar_drive() -> list[dict]:
     """Procesa todos los TXT de la carpeta de entrada."""
-    config = cargar_config()
+    config = cargar_config_pipeline()
     cliente = get_cliente()
     drive = get_drive()
     resultados = []
@@ -30,7 +30,7 @@ def _procesar_archivo_drive(archivo: dict, config, cliente, drive) -> dict:
     with TemporaryDirectory() as temporal:
         ruta = descargar_archivo(archivo["id"], Path(temporal) / archivo["name"], drive)
         try:
-            resumen = procesar_txt_local(ruta, cliente, drive, config.DRIVE_BACKUPS_ID)
+            resumen = procesar_txt_local(ruta, cliente, drive)
         except ValueError as exc:
             mover_archivo(archivo, config.DRIVE_ERRORES_ID, drive)
             return _resultado_error(archivo, str(exc))

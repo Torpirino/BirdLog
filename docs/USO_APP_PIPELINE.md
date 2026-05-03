@@ -206,6 +206,20 @@ La app muestra en la cabecera el entorno activo (`dev`).
 
 ## Problemas frecuentes
 
+### «Falta configuración»
+
+Para procesar grabaciones Plaud, la app necesita:
+
+- `ENTORNO`
+- la URL y clave de Supabase del entorno activo
+- `GOOGLE_CREDENTIALS_PATH`
+- `DRIVE_ENTRADA_ID`
+- `DRIVE_PROCESADOS_ID`
+- `DRIVE_ERRORES_ID`
+
+La carpeta de fotos (`DRIVE_FOTOS_ID`) pertenece a la sincronización
+de fotos y no bloquea el procesado de grabaciones Plaud.
+
 ### «No se pudo acceder a Google Drive»
 
 1. Comprueba que el archivo de credenciales existe y está en la ruta

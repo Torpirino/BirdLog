@@ -14,8 +14,8 @@ from app_pipeline.lib.estados import (
 def comprobar_entorno() -> EstadoEntorno:
     """Valida configuración, Drive y Supabase antes de procesar."""
     try:
-        from src.config import cargar_config
-        config = cargar_config()
+        from src.config import cargar_config_pipeline
+        config = cargar_config_pipeline()
     except RuntimeError as exc:
         return EstadoEntorno(
             ok=False,

@@ -1,11 +1,11 @@
 """Crea el cliente de Google Drive."""
 
-from src.config import cargar_config
+from src.config import cargar_config_drive
 
 
 def get_drive():
     """Devuelve un cliente autenticado de Google Drive."""
-    config = cargar_config()
+    config = cargar_config_drive()
     try:
         from google.oauth2.service_account import Credentials
         from googleapiclient.discovery import build

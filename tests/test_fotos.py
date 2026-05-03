@@ -123,7 +123,7 @@ def test_parsear_nombre_carpeta_lugar_con_guiones():
 
 def test_sincronizar_fotos_carpeta_vacia(monkeypatch):
     """Con carpeta raíz sin subcarpetas devuelve lista vacía."""
-    monkeypatch.setattr(sincronizar, "cargar_config", lambda: ConfigFalsa())
+    monkeypatch.setattr(sincronizar, "cargar_config_fotos", lambda: ConfigFalsa())
     monkeypatch.setattr(sincronizar, "get_cliente", lambda: ClienteFalso())
     monkeypatch.setattr(sincronizar, "get_drive", lambda: DriveFalso({"root": []}))
     assert sincronizar_fotos() == []
@@ -134,7 +134,7 @@ def test_sincronizar_fotos_no_duplica_foto_existente(monkeypatch):
     url = "https://drive.google.com/file/d/img1/view"
     drive = DriveFalso({"root": [_carpeta("2026-05-01_Lindus", "c1")], "c1": [_imagen("img1", "foto.jpg")]})
     cliente = ClienteFalso(fotos=[{"url_drive": url}])
-    monkeypatch.setattr(sincronizar, "cargar_config", lambda: ConfigFalsa())
+    monkeypatch.setattr(sincronizar, "cargar_config_fotos", lambda: ConfigFalsa())
     monkeypatch.setattr(sincronizar, "get_cliente", lambda: cliente)
     monkeypatch.setattr(sincronizar, "get_drive", lambda: drive)
     assert sincronizar_fotos()[0]["omitidas"] == 1
@@ -144,7 +144,7 @@ def test_sincronizar_fotos_no_duplica_foto_existente(monkeypatch):
 def test_sincronizar_fotos_ignora_carpeta_invalida(monkeypatch):
     """Registra aviso para carpetas con nombre inválido."""
     drive = DriveFalso({"root": [_carpeta("Lindus", "c1")]})
-    monkeypatch.setattr(sincronizar, "cargar_config", lambda: ConfigFalsa())
+    monkeypatch.setattr(sincronizar, "cargar_config_fotos", lambda: ConfigFalsa())
     monkeypatch.setattr(sincronizar, "get_cliente", lambda: ClienteFalso())
     monkeypatch.setattr(sincronizar, "get_drive", lambda: drive)
     resultado = sincronizar_fotos()

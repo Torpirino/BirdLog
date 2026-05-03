@@ -54,8 +54,8 @@ como base para diseñar la capa de UI sin tocar lógica.
   - `DRIVE_ERRORES_ID` → `03_errores` — destino de los `.txt` con
     error de validación o inserción.
   - `DRIVE_BACKUPS_ID` → `Backups` — históricamente para backups
-    (decisión #25: backups ya **no** se suben a Drive; la variable
-    sigue requerida por compatibilidad de `Config`).
+    (decisión #25: backups ya **no** se suben a Drive; no bloquea
+    el pipeline Plaud).
   - `DRIVE_FOTOS_ID` → `Fotos` — usado por `src/fotos/sincronizar.py`,
     independiente del pipeline Plaud.
 - **`src/drive/operaciones.py`**: `listar_txt`, `descargar_archivo`,
@@ -88,16 +88,15 @@ como base para diseñar la capa de UI sin tocar lógica.
 
 ### 2.5 Configuración
 
-- **`src/config.py`**: carga `.env`, valida presencia de las 11
-  variables y bloquea `ENTORNO=prod` (decisión #23).
+- **`src/config.py`**: carga `.env`, valida por perfiles de uso y
+  bloquea `ENTORNO=prod` (decisión #23).
 - Variables `.env` necesarias para el pipeline:
   - `ENTORNO` (debe ser `dev`)
-  - `SUPABASE_DEV_URL`, `SUPABASE_DEV_KEY`
-  - `SUPABASE_PROD_URL`, `SUPABASE_PROD_KEY` (presentes pero
-    bloqueadas por código)
+  - URL y clave de Supabase del entorno activo
   - `GOOGLE_CREDENTIALS_PATH`
-  - `DRIVE_ENTRADA_ID`, `DRIVE_PROCESADOS_ID`, `DRIVE_ERRORES_ID`,
-    `DRIVE_BACKUPS_ID`, `DRIVE_FOTOS_ID`
+  - `DRIVE_ENTRADA_ID`, `DRIVE_PROCESADOS_ID`, `DRIVE_ERRORES_ID`
+- Variables de fotos:
+  - `DRIVE_FOTOS_ID` se valida solo al sincronizar fotos.
 
 ### 2.6 Reporte de errores actual
 
@@ -334,17 +333,20 @@ descarga OK?
 | `DRIVE_ENTRADA_ID`      | `01_entrada`   | Lectura: lista los `.txt` a procesar.          |
 | `DRIVE_PROCESADOS_ID`   | `02_procesados`| Escritura: destino de éxitos.                  |
 | `DRIVE_ERRORES_ID`      | `03_errores`   | Escritura: destino de errores e incompletos.   |
-| `DRIVE_BACKUPS_ID`      | `Backups`      | No se usa (decisión #25). Variable conservada. |
+| `DRIVE_BACKUPS_ID`      | `Backups`      | No se usa (decisión #25). No bloquea Plaud.    |
 | `DRIVE_FOTOS_ID`        | `Fotos`        | No se usa en el pipeline Plaud.                |
 
 ---
 
 ## 7. Variables `.env` necesarias
 
-La app **no introduce variables nuevas**. Reusa exactamente las del
-pipeline existente (sección 2.5). Si falta alguna, `cargar_config()`
-ya lanza un `RuntimeError` con la lista que falta; la app debe
-mostrarlo como bloque rojo.
+La app **no introduce variables nuevas**. Reusa las variables del
+perfil Plaud (sección 2.5). Si falta alguna variable de ese perfil,
+`cargar_config_pipeline()` lanza un `RuntimeError` con la lista que
+falta; la app debe mostrarlo como bloque rojo.
+
+`DRIVE_FOTOS_ID` pertenece al perfil de fotos y se valida desde
+`cargar_config_fotos()`, no desde la app pipeline.
 
 ---
 

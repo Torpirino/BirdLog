@@ -2,7 +2,7 @@
 
 from datetime import date, datetime
 
-from src.config import cargar_config
+from src.config import cargar_config_fotos
 from src.conexion import get_cliente
 from src.drive.cliente import get_drive
 
@@ -11,7 +11,7 @@ EXTENSIONES_IMAGEN = {".jpg", ".jpeg", ".png", ".heic"}
 
 def sincronizar_fotos() -> list[dict]:
     """Escanea carpetas de fotos en Drive y registra URLs nuevas."""
-    config = cargar_config()
+    config = cargar_config_fotos()
     cliente = get_cliente()
     drive = get_drive()
     resultados = []

@@ -435,3 +435,24 @@ observador y evita duplicación. Cualquier mejora en el flujo Plaud
 - Si en el futuro se necesita ejecución programada (p.ej. cron), se
   añadirá un wrapper que también pase por `src.pipeline`, sin
   duplicar lógica.
+
+---
+
+## #34 — Configuración validada por perfiles de uso
+**Fecha**: 2026-05-03
+**Decisión**: `src/config.py` valida la configuración por perfiles:
+dashboard, Drive, pipeline Plaud y fotos. La app pipeline Plaud no
+requiere `DRIVE_FOTOS_ID`; esa variable se valida solo al sincronizar
+fotos.
+**Razón**: Fotos es un flujo separado del procesado Plaud (decisión #26).
+Una variable de fotos no debe bloquear la inserción de grabaciones `.txt`
+ni el movimiento de archivos entre `01_entrada`, `02_procesados` y
+`03_errores`.
+**Implicaciones**:
+- Pipeline Plaud requiere `ENTORNO`, Supabase del entorno activo,
+  `GOOGLE_CREDENTIALS_PATH`, `DRIVE_ENTRADA_ID`,
+  `DRIVE_PROCESADOS_ID` y `DRIVE_ERRORES_ID`.
+- Fotos requiere además `DRIVE_FOTOS_ID`.
+- Dashboard requiere `ENTORNO` y Supabase del entorno activo.
+- `cargar_config()` se conserva como compatibilidad histórica para la
+  configuración completa.

@@ -216,10 +216,10 @@ def test_procesar_lote_lote_vacio(monkeypatch):
 def test_comprobar_entorno_falta_env_devuelve_rojo(monkeypatch):
     import src.config as _config
 
-    def cargar_config_falla():
+    def cargar_config_pipeline_falla():
         raise RuntimeError("Faltan variables obligatorias en .env: ENTORNO")
 
-    monkeypatch.setattr(_config, "cargar_config", cargar_config_falla)
+    monkeypatch.setattr(_config, "cargar_config_pipeline", cargar_config_pipeline_falla)
 
     from app_pipeline.lib.orquestador import comprobar_entorno
     estado = comprobar_entorno()
@@ -237,7 +237,7 @@ def test_comprobar_entorno_drive_inaccesible_devuelve_no_ok(monkeypatch):
         (v, str) for v in [
             "SUPABASE_DEV_URL", "SUPABASE_DEV_KEY", "SUPABASE_PROD_URL", "SUPABASE_PROD_KEY",
             "GOOGLE_CREDENTIALS_PATH", "DRIVE_ENTRADA_ID", "DRIVE_PROCESADOS_ID",
-            "DRIVE_ERRORES_ID", "DRIVE_BACKUPS_ID", "DRIVE_FOTOS_ID",
+            "DRIVE_ERRORES_ID",
         ]
     ])
     config_ok = ConfigFalso(
@@ -250,10 +250,8 @@ def test_comprobar_entorno_drive_inaccesible_devuelve_no_ok(monkeypatch):
         DRIVE_ENTRADA_ID="id1",
         DRIVE_PROCESADOS_ID="id2",
         DRIVE_ERRORES_ID="id3",
-        DRIVE_BACKUPS_ID="id4",
-        DRIVE_FOTOS_ID="id5",
     )
-    monkeypatch.setattr(_config, "cargar_config", lambda: config_ok)
+    monkeypatch.setattr(_config, "cargar_config_pipeline", lambda: config_ok)
 
     def get_drive_falla():
         raise Exception("Credenciales inválidas")
@@ -265,3 +263,54 @@ def test_comprobar_entorno_drive_inaccesible_devuelve_no_ok(monkeypatch):
     assert estado.ok is False
     assert estado.drive_ok is False
     assert "Drive" in estado.mensaje
+
+
+def test_comprobar_entorno_no_exige_drive_fotos_id(monkeypatch):
+    import src.config as _config
+    import src.drive.cliente as _drive_cliente
+    import src.conexion as _conexion
+
+    from dataclasses import make_dataclass
+
+    ConfigFalso = make_dataclass("Config", [
+        ("ENTORNO", str),
+        ("SUPABASE_DEV_URL", str),
+        ("SUPABASE_DEV_KEY", str),
+        ("GOOGLE_CREDENTIALS_PATH", str),
+        ("DRIVE_ENTRADA_ID", str),
+        ("DRIVE_PROCESADOS_ID", str),
+        ("DRIVE_ERRORES_ID", str),
+    ])
+    config_ok = ConfigFalso(
+        ENTORNO="dev",
+        SUPABASE_DEV_URL="https://x.supabase.co",
+        SUPABASE_DEV_KEY="key",
+        GOOGLE_CREDENTIALS_PATH="/ruta/creds.json",
+        DRIVE_ENTRADA_ID="id1",
+        DRIVE_PROCESADOS_ID="id2",
+        DRIVE_ERRORES_ID="id3",
+    )
+    monkeypatch.setattr(_config, "cargar_config_pipeline", lambda: config_ok)
+    monkeypatch.setattr(_drive_cliente, "get_drive", lambda: object())
+
+    class ConsultaFalsa:
+        def select(self, _columnas):
+            return self
+
+        def limit(self, _cantidad):
+            return self
+
+        def execute(self):
+            return object()
+
+    class ClienteFalso:
+        def table(self, _tabla):
+            return ConsultaFalsa()
+
+    monkeypatch.setattr(_conexion, "get_cliente", lambda: ClienteFalso())
+
+    from app_pipeline.lib.orquestador import comprobar_entorno
+    estado = comprobar_entorno()
+    assert estado.ok is True
+    assert estado.drive_ok is True
+    assert estado.supabase_ok is True

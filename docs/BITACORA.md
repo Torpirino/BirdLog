@@ -69,6 +69,19 @@
 
 ## Tareas completadas
 
+### Sesión 2026-05-03: Configuración por perfiles para app pipeline (completado)
+- [x] **Diagnóstico aplicado**: `DRIVE_FOTOS_ID` ya no bloquea la app
+      pipeline Plaud. La causa era la validación global de `cargar_config()`.
+- [x] **Perfiles de configuración**: añadidos perfiles dashboard, Drive,
+      pipeline Plaud y fotos en `src/config.py`. `cargar_config()` queda
+      como compatibilidad histórica.
+- [x] **Pipeline Plaud**: `app_pipeline/lib/orquestador.py`,
+      `src/pipeline.py` y `src/drive/cliente.py` usan perfiles mínimos.
+- [x] **Fotos**: `src/fotos/sincronizar.py` valida `DRIVE_FOTOS_ID` solo
+      en el flujo de sincronización de fotos.
+- [x] **Documentación**: `docs/USO_APP_PIPELINE.md`,
+      `docs/PLAN_APP_PIPELINE.md` y decisión #34 actualizados.
+
 ### Sesión 2026-05-03: Mejoras de branding y UX en app pipeline (completado)
 - [x] **Branding unificado**: `page_icon` del dashboard cambiado de 🌿 a 🦅
       (`dashboard/app.py`); emoji 🦅 añadido al título del sidebar
