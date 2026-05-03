@@ -142,6 +142,80 @@ def _tarjeta_resultado(r: ResultadoArchivo) -> None:
             st.success(r.mensaje)
 
 
+def render_registro_pipeline(resultados: list[ResultadoArchivo] | None) -> None:
+    """Muestra un registro amplio y legible del último procesado."""
+    st.subheader("Registro de procesamiento")
+
+    if resultados is None:
+        st.text_area(
+            "Mensajes del pipeline",
+            value="Aún no has procesado ninguna grabación en esta sesión.",
+            height=260,
+            disabled=True,
+            label_visibility="collapsed",
+        )
+        return
+
+    mensajes = _mensajes_registro(resultados)
+    st.text_area(
+        "Mensajes del pipeline",
+        value="\n".join(mensajes),
+        height=320,
+        disabled=True,
+        label_visibility="collapsed",
+    )
+
+    if resultados:
+        st.markdown("**Resumen por archivo**")
+        _tabla_resumen(resultados)
+        st.markdown("**Detalle por archivo**")
+        for resultado in resultados:
+            _tarjeta_resultado(resultado)
+
+
+def _mensajes_registro(resultados: list[ResultadoArchivo]) -> list[str]:
+    """Construye mensajes de usuario a partir del resultado final."""
+    mensajes = ["Buscando archivos .txt en Drive..."]
+    if not resultados:
+        return [
+            *mensajes,
+            "Archivos encontrados: 0",
+            "No había grabaciones nuevas en la carpeta 01_entrada.",
+            "Resumen final: nada que procesar.",
+        ]
+
+    mensajes.append(f"Archivos encontrados: {len(resultados)}")
+    for resultado in resultados:
+        mensajes.extend(_mensajes_archivo(resultado))
+
+    n_ok = sum(1 for resultado in resultados if resultado.estado == ESTADO_OK)
+    n_error = len(resultados) - n_ok
+    mensajes.append(f"Resumen final: {n_ok} correcto(s), {n_error} con error o incompleto(s).")
+    return mensajes
+
+
+def _mensajes_archivo(resultado: ResultadoArchivo) -> list[str]:
+    """Construye mensajes claros para un archivo."""
+    estado = ETIQUETA.get(resultado.estado, resultado.estado)
+    insertado = "insertado en Supabase" if resultado.insertado_supabase else "no insertado en Supabase"
+    backup = "backup creado" if resultado.backup_creado else "sin backup"
+    movido = f"movido a {resultado.txt_movido_a}" if resultado.txt_movido_a != "-" else "sin movimiento de carpeta"
+    mensajes = [
+        "",
+        f"Archivo: {resultado.nombre}",
+        f"- Estado: {estado}",
+        f"- Etapa final: {resultado.etapa}",
+        f"- Supabase: {insertado}",
+        f"- Backup: {backup}",
+        f"- Drive: {movido}",
+    ]
+    if resultado.estado == ESTADO_OK:
+        mensajes.append(f"- Mensaje: {resultado.mensaje}")
+    else:
+        mensajes.append("- Mensaje: revisa el detalle desplegable de este archivo.")
+    return mensajes
+
+
 def _badge(texto_ok: str, texto_no: str, condicion: bool) -> None:
     """Muestra un badge verde u oscuro según la condición."""
     st.markdown(texto_ok if condicion else texto_no)

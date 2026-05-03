@@ -1,9 +1,9 @@
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=BirdLog Pipeline
-Comment=Procesa grabaciones Plaud e insértalas en Supabase
-Exec=gnome-terminal -- /home/javietavero/Documentos/BirdLog/scripts/abrir_app_pipeline.sh
+Name=BirdLog Dashboard
+Comment=Consulta y edita los datos de fauna en BirdLog
+Exec=gnome-terminal -- /home/javietavero/Documentos/BirdLog/scripts/abrir_dashboard.sh
 Path=/home/javietavero/Documentos/BirdLog
 Icon=utilities-terminal
 Terminal=false

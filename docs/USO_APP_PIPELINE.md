@@ -59,8 +59,11 @@ Si necesitas copiar el icono de nuevo al Escritorio:
 
 ```bash
 cp ~/Documentos/BirdLog/scripts/BirdLog_Pipeline.desktop ~/Escritorio/
+cp ~/Documentos/BirdLog/scripts/BirdLog_Dashboard.desktop ~/Escritorio/
 chmod +x ~/Escritorio/BirdLog_Pipeline.desktop
+chmod +x ~/Escritorio/BirdLog_Dashboard.desktop
 gio set ~/Escritorio/BirdLog_Pipeline.desktop metadata::trusted true
+gio set ~/Escritorio/BirdLog_Dashboard.desktop metadata::trusted true
 ```
 
 ### Qué hacer si Ubuntu pide confiar en el lanzador
@@ -76,6 +79,7 @@ Opciones:
 2. O ejecuta este comando en una terminal:
    ```bash
    gio set ~/Escritorio/BirdLog_Pipeline.desktop metadata::trusted true
+   gio set ~/Escritorio/BirdLog_Dashboard.desktop metadata::trusted true
    ```
 
 Tras confirmar la confianza, el doble clic funcionará directamente.
@@ -90,6 +94,9 @@ bash ~/Documentos/BirdLog/scripts/abrir_app_pipeline.sh
 
 El script muestra mensajes claros si falta el entorno virtual
 o Streamlit no está instalado.
+
+El navegador se abre automáticamente. Si haces doble clic otra vez
+mientras la app ya está abierta, el script no arranca otra copia.
 
 ### Cómo cerrar la app
 
@@ -120,15 +127,20 @@ Muestra si todo está listo para procesar:
   los archivos nuevos que haya en la carpeta `01_entrada` de Drive.
   Solo aparece activo cuando la cabecera es verde.
 - **📊 Abrir dashboard** — abre el dashboard en una pestaña nueva
-  (`http://127.0.0.1:8999`). Asegúrate de tenerlo arrancado primero.
+  (`http://127.0.0.1:8999`) si ya está arrancado. Si no lo está, abre
+  el icono **BirdLog Dashboard** del Escritorio y vuelve a la app.
 - **💬 Abrir Claude.ai** — abre Claude.ai en una pestaña nueva.
   Útil para consultar documentación del sistema o resolver dudas.
   **Claude no accede a Supabase directamente** desde aquí.
 
-### 3. Resultados del procesado
+### 3. Registro de procesamiento
 
-Aparecen tras pulsar el botón de procesamiento. Muestran el estado
-de cada archivo procesado.
+Es una zona grande de mensajes. Antes de procesar muestra que aún no
+hay resultados en la sesión. Después del procesado muestra búsqueda en
+Drive, archivos encontrados, estado por archivo, inserción, backup,
+movimiento de carpeta y resumen final.
+
+Debajo aparecen la tabla resumen y los detalles desplegables por archivo.
 
 ---
 
@@ -182,7 +194,12 @@ Pasos:
 
 ## Cómo abrir el dashboard
 
-El dashboard es una app separada que debes arrancar aparte:
+El dashboard es una app separada. La forma recomendada es hacer doble
+clic en el icono **BirdLog Dashboard** del Escritorio. Se abrirá una
+terminal y el navegador se abrirá automáticamente en
+`http://localhost:8999`.
+
+Si prefieres terminal:
 
 ```
 streamlit run dashboard/app.py --server.port 8999

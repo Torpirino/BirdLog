@@ -13,9 +13,9 @@ RAIZ_PROYECTO = Path(__file__).resolve().parents[1]
 if str(RAIZ_PROYECTO) not in sys.path:
     sys.path.insert(0, str(RAIZ_PROYECTO))
 
-from app_pipeline.lib.enlaces import COMANDO_DASHBOARD, URL_CLAUDE_AI, URL_DASHBOARD
+from app_pipeline.lib.enlaces import COMANDO_DASHBOARD, LANZADOR_DASHBOARD, URL_CLAUDE_AI, URL_DASHBOARD
 from app_pipeline.lib.orquestador import comprobar_entorno, procesar_lote
-from app_pipeline.lib.ui import render_cabecera, render_resultados
+from app_pipeline.lib.ui import render_cabecera, render_registro_pipeline
 
 
 def _dashboard_activo() -> bool:
@@ -69,14 +69,11 @@ def main() -> None:
         )
     with col2:
         dashboard_ok = _dashboard_activo()
-        st.link_button(
-            "📊 Abrir dashboard",
-            url=URL_DASHBOARD,
-            disabled=not dashboard_ok,
-            use_container_width=True,
-        )
-        if not dashboard_ok:
-            st.caption(f"No arrancado · `{COMANDO_DASHBOARD}`")
+        if dashboard_ok:
+            st.link_button("📊 Abrir dashboard", url=URL_DASHBOARD, use_container_width=True)
+        else:
+            st.button("📊 Dashboard no arrancado", disabled=True, use_container_width=True)
+            st.caption(f"Abre el icono **{LANZADOR_DASHBOARD}** y vuelve a pulsar aquí.")
     with col3:
         st.link_button("💬 Abrir Claude.ai", url=URL_CLAUDE_AI, use_container_width=True)
     st.caption(
@@ -95,10 +92,12 @@ def main() -> None:
     if procesar:
         st.session_state["_entorno_cache"] = None
         with st.status("Procesando grabaciones de Plaud…", expanded=True) as status:
+            st.write("Buscando archivos .txt en Drive...")
             resultados = procesar_lote()
             st.session_state["resultados"] = resultados
             n_ok = sum(1 for r in resultados if r.estado == "OK")
             n_err = len(resultados) - n_ok
+            st.write(f"Archivos encontrados: {len(resultados)}")
             if not resultados:
                 status.update(
                     label="No había grabaciones nuevas en Drive.",
@@ -116,9 +115,19 @@ def main() -> None:
                 )
 
     if st.session_state["resultados"] is None:
-        st.info("Aún no has procesado ninguna grabación en esta sesión.", icon="💤")
+        render_registro_pipeline(None)
     else:
-        render_resultados(st.session_state["resultados"])
+        render_registro_pipeline(st.session_state["resultados"])
+
+    if not _dashboard_activo():
+        with st.expander("Cómo abrir el dashboard"):
+            st.markdown(
+                f"1. Haz doble clic en el icono **{LANZADOR_DASHBOARD}** del Escritorio.\n"
+                "2. Espera a que se abra el navegador.\n"
+                "3. Vuelve a esta app si quieres abrirlo desde el botón superior.\n\n"
+                "También puedes arrancarlo desde terminal:"
+            )
+            st.code(COMANDO_DASHBOARD, language="bash")
 
 
 main()

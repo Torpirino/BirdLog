@@ -1,28 +1,22 @@
 #!/bin/bash
-# Arranca la app pipeline de BirdLog en el puerto 8502.
-# Uso: bash scripts/abrir_app_pipeline.sh
+# Arranca el dashboard de BirdLog en el puerto 8999.
+# Uso: bash scripts/abrir_dashboard.sh
 
 PROYECTO="$HOME/Documentos/BirdLog"
-PUERTO="8502"
+PUERTO="8999"
 URL="http://localhost:$PUERTO"
-LOCK_DIR="/tmp/birdlog_pipeline_$PUERTO.lock"
+LOCK_DIR="/tmp/birdlog_dashboard_$PUERTO.lock"
 
-# Título de la ventana de terminal
-echo -ne "\033]0;BirdLog — Pipeline Plaud\007"
+echo -ne "\033]0;BirdLog — Dashboard\007"
 echo ""
-echo "========================================="
-echo "  BirdLog — Pipeline Plaud  (puerto 8502)"
-echo "========================================="
+echo "=================================="
+echo "  BirdLog — Dashboard  (puerto 8999)"
+echo "=================================="
 echo ""
 
 if [ ! -d "$PROYECTO/.venv" ]; then
     echo "ERROR: No se encontró el entorno virtual en:"
     echo "  $PROYECTO/.venv"
-    echo ""
-    echo "Créalo con:"
-    echo "  cd $PROYECTO"
-    echo "  python3 -m venv .venv"
-    echo "  .venv/bin/pip install streamlit"
     echo ""
     read -rp "Pulsa Enter para cerrar..."
     exit 1
@@ -39,10 +33,6 @@ source .venv/bin/activate
 
 if ! command -v streamlit &> /dev/null; then
     echo "ERROR: Streamlit no está disponible en el entorno virtual."
-    echo ""
-    echo "Instálalo con:"
-    echo "  cd $PROYECTO"
-    echo "  .venv/bin/pip install streamlit"
     echo ""
     read -rp "Pulsa Enter para cerrar..."
     exit 1
@@ -74,12 +64,12 @@ abrir_navegador() {
         sleep 0.5
     done
 
-    echo "La app tarda en arrancar. Abre manualmente: $URL"
+    echo "El dashboard tarda en arrancar. Abre manualmente: $URL"
 }
 
 if [ -d "$LOCK_DIR" ]; then
     if puerto_activo "$PUERTO"; then
-        echo "BirdLog Pipeline ya está arrancado."
+        echo "BirdLog Dashboard ya está arrancado."
         echo "Abre el navegador en: $URL"
         echo ""
         read -rp "Pulsa Enter para cerrar esta ventana..."
@@ -89,7 +79,7 @@ if [ -d "$LOCK_DIR" ]; then
 fi
 
 if ! mkdir "$LOCK_DIR" 2>/dev/null; then
-    echo "BirdLog Pipeline ya se está arrancando."
+    echo "BirdLog Dashboard ya se está arrancando."
     echo "Espera unos segundos y abre: $URL"
     echo ""
     read -rp "Pulsa Enter para cerrar esta ventana..."
@@ -100,8 +90,8 @@ trap 'rmdir "$LOCK_DIR" 2>/dev/null || true' EXIT
 
 echo "Arrancando en $URL"
 echo "El navegador se abrirá automáticamente."
-echo "Cierra esta ventana para detener la app."
+echo "Cierra esta ventana para detener el dashboard."
 echo ""
 
 abrir_navegador &
-streamlit run app_pipeline/app.py --server.port "$PUERTO" --server.headless true
+streamlit run dashboard/app.py --server.port "$PUERTO" --server.headless true

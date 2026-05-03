@@ -69,6 +69,21 @@
 
 ## Tareas completadas
 
+### Sesión 2026-05-03: UX de app pipeline y lanzadores (completado)
+- [x] **Dashboard desde app pipeline**: si el dashboard está activo, el
+      botón lo abre; si no, la app indica usar el icono **BirdLog Dashboard**
+      y muestra el comando manual en un desplegable.
+- [x] **Registro de procesamiento**: añadida sección amplia con mensajes
+      del pipeline, estado por archivo, inserción, backup, movimiento de
+      carpeta, tabla resumen y detalles desplegables.
+- [x] **Navegador automático**: `scripts/abrir_app_pipeline.sh` abre
+      `http://localhost:8502` con `xdg-open` tras arrancar Streamlit y evita
+      copias repetidas mediante lock temporal.
+- [x] **Lanzador de dashboard**: añadidos `scripts/abrir_dashboard.sh` y
+      `scripts/BirdLog_Dashboard.desktop` para abrir el dashboard en `8999`.
+- [x] **Documentación**: `docs/USO_APP_PIPELINE.md` y decisión #35
+      actualizadas.
+
 ### Sesión 2026-05-03: Configuración por perfiles para app pipeline (completado)
 - [x] **Diagnóstico aplicado**: `DRIVE_FOTOS_ID` ya no bloquea la app
       pipeline Plaud. La causa era la validación global de `cargar_config()`.

@@ -456,3 +456,19 @@ ni el movimiento de archivos entre `01_entrada`, `02_procesados` y
 - Dashboard requiere `ENTORNO` y Supabase del entorno activo.
 - `cargar_config()` se conserva como compatibilidad histórica para la
   configuración completa.
+
+---
+
+## #35 — Lanzadores separados para pipeline y dashboard
+**Fecha**: 2026-05-03
+**Decisión**: BirdLog mantiene dos lanzadores de escritorio separados:
+**BirdLog Pipeline** para procesar grabaciones Plaud y **BirdLog Dashboard**
+para consultar/editar datos.
+**Razón**: Arrancar el dashboard como proceso hijo desde Streamlit añade
+fragilidad al ciclo de vida de ambos procesos. Dos lanzadores explícitos
+son más estables y más claros para un usuario no técnico.
+**Implicaciones**:
+- `scripts/abrir_app_pipeline.sh` abre la app pipeline en `8502`.
+- `scripts/abrir_dashboard.sh` abre el dashboard en `8999`.
+- Ambos scripts intentan abrir el navegador con `xdg-open` y evitan
+  arrancar copias repetidas si el servicio ya está activo.
