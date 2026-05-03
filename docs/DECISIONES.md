@@ -371,3 +371,67 @@ más control, mejor UX y evita "basura" en el repo.
   y `test_insertar_mamiferos_puente_no_descarta_observaciones_puente`) se
   mantienen en `tests/`.
 - La próxima tarea es diseñar e implementar la app local de pipeline.
+
+---
+
+## #31 — App de pipeline separada del dashboard
+**Fecha**: 2026-05-03
+**Decisión**: La app local de pipeline vive en una carpeta nueva
+`app_pipeline/`, independiente de `dashboard/`. `dashboard/app.py`
+sigue dedicado únicamente a consulta y edición de datos.
+**Razón**: El dashboard es para *consultar* (decisiones #6 y #27). La
+operación del pipeline (procesar Plaud, mover archivos en Drive, ver
+errores) tiene un flujo y un perfil de error distinto. Mezclarlas
+acopla responsabilidades: un fallo en el pipeline podría tirar el
+dashboard, y la página de procesado tendría que coexistir con
+filtros, mapas y tablas que no aplican a la operación.
+**Implicaciones**:
+- Nueva carpeta `app_pipeline/` con `app.py` + `lib/`
+  (`orquestador`, `estados`, `ui`, `enlaces`).
+- La app **no duplica lógica del pipeline**: solo envuelve
+  `src.pipeline.procesar_drive()` y traduce sus resultados a estados
+  visuales (verde/amarillo/rojo/gris).
+- Detalle completo en `docs/PLAN_APP_PIPELINE.md`.
+
+---
+
+## #32 — Streamlit como herramienta para la app de pipeline
+**Fecha**: 2026-05-03
+**Decisión**: La app de pipeline se construye con **Streamlit**, mismo
+stack que el dashboard.
+**Razón**: Stack ya validado (decisión #5), instalado en el proyecto
+y conocido por el observador. Componentes nativos suficientes
+(`st.button`, `st.dataframe`, `st.status`, `st.empty`, `st.expander`).
+Coste de implementación bajo. Permite reusar `.streamlit/config.toml`
+y patrones de `dashboard/lib/ui.py`.
+**Alternativas descartadas**:
+- Tkinter / app de escritorio: stack nuevo sin justificación; rompe
+  el flujo del observador, que ya trabaja en navegador.
+- Página dentro del dashboard: acopla operación con consulta
+  (ver decisión #31).
+- CLI: el observador no es técnico (principio #2).
+**Implicaciones**:
+- Arranque: `streamlit run app_pipeline/app.py --server.port 8502`
+  (puerto distinto al dashboard, 8501, para poder tener ambos
+  abiertos a la vez).
+- Sin dependencias nuevas. Reusa `streamlit`, `python-dotenv`,
+  `supabase-py` y `google-api-python-client` ya presentes.
+
+---
+
+## #33 — App de pipeline como único punto de control para procesar Plaud
+**Fecha**: 2026-05-03
+**Decisión**: A partir de Fase 8, la app local de pipeline es el
+**único punto de control** para procesar archivos Plaud desde Drive.
+No habrá scripts ad hoc adicionales (cierra el ciclo abierto por la
+decisión #30 al eliminar `demo.py`).
+**Razón**: Tener un único entrypoint simplifica el modelo mental del
+observador y evita duplicación. Cualquier mejora en el flujo Plaud
+→ Supabase se incorpora a la app, no a un script paralelo.
+**Implicaciones**:
+- `src/pipeline.py` sigue siendo la lógica reutilizable y se mantiene
+  testable de forma independiente.
+- La app pipeline llama a `procesar_drive()` y traduce los resultados.
+- Si en el futuro se necesita ejecución programada (p.ej. cron), se
+  añadirá un wrapper que también pase por `src.pipeline`, sin
+  duplicar lógica.

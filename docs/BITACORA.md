@@ -10,8 +10,10 @@
 
 - **Fase activa**: Fase 8 — App local de pipeline
 - **Última sesión**: 2026-05-03
-- **Próxima tarea**: Diseñar e implementar app local para gestionar el
-  pipeline Plaud → Supabase (sustituye al enfoque con `demo.py`).
+- **Próxima tarea**: Implementar app local del pipeline (Fase 1 del
+  plan: esqueleto de `app_pipeline/` con cabecera, comprobación de
+  entorno y botones secundarios — ver `docs/PLAN_APP_PIPELINE.md`).
+  El diseño de la app está cerrado y documentado.
   61 tests pasan. Dos bugs reales corregidos y cubiertos con tests:
   case-sensitivity en especies (`src/insercion/catalogos.py`) y pérdida
   de `observaciones_puente` (`src/insercion/escritura.py`).
@@ -34,8 +36,15 @@
 - [ ] Recoger 5-6 .txt de ejemplo de tipos distintos de visita
 
 ### Fase 8: App local de pipeline
-- [ ] Diseñar e implementar app local para gestionar el pipeline
-      Plaud → Supabase (reemplaza el enfoque con `demo.py`)
+- [x] Diseño de la app local de pipeline completado (2026-05-03).
+      Documento: `docs/PLAN_APP_PIPELINE.md`. Decisiones #31, #32 y #33.
+- [ ] Implementar Fase A del plan: esqueleto `app_pipeline/` con
+      cabecera, `comprobar_entorno()` y botones "Abrir dashboard" y
+      "Abrir Claude.ai" operativos.
+- [ ] Implementar Fase B del plan: procesado de lote y tarjetas de
+      resultado por archivo (verde/amarillo/rojo).
+- [ ] Implementar Fase C del plan: pulido, `docs/USO_APP_PIPELINE.md`
+      y sección de arranque en `README.md`.
 - [ ] Limpiar visitas de demo de dev (visitas del 2026-05-03 con
       observaciones "demo del pipeline") si se llegaron a insertar
 
@@ -59,6 +68,30 @@
 ---
 
 ## Tareas completadas
+
+### Sesión 2026-05-03: Diseño de app local de pipeline (completado)
+- [x] **Diagnóstico del pipeline actual**: revisión de `src/pipeline.py`,
+      `src/drive/`, `src/parser/`, `src/insercion/`, `src/backup/` y
+      `src/config.py`. Inventario de funciones públicas, carpetas Drive
+      (`01_entrada`, `02_procesados`, `03_errores`, `Backups`, `Fotos`)
+      y variables `.env` necesarias.
+- [x] **Diseño de la app**: arquitectura propuesta en
+      `app_pipeline/` (separada del dashboard); pantalla única con
+      cabecera, tres botones grandes ("Procesar grabaciones de Plaud",
+      "Abrir dashboard", "Abrir Claude.ai") y bloque de resultados con
+      tabla y tarjetas verde/amarillo/rojo/gris.
+- [x] **Decisión de herramienta**: Streamlit en app separada, mismo
+      stack que el dashboard. Justificación y alternativas descartadas
+      en `docs/PLAN_APP_PIPELINE.md` §8.
+- [x] **Plan por fases**: Fase A (esqueleto + `comprobar_entorno`),
+      Fase B (procesado de lote y tarjetas), Fase C (pulido y
+      documentación de uso), Fase D opcional (granularidad de etapas).
+- [x] **Documentación creada**: `docs/PLAN_APP_PIPELINE.md`.
+- [x] **Decisiones añadidas**: #31 (app pipeline separada del dashboard),
+      #32 (Streamlit como herramienta), #33 (la app pipeline es el
+      único punto de control para procesar Plaud desde Drive).
+- [x] Comprobaciones: `git diff --check` limpio, sin cambios en SQL ni
+      `.env`, sin secretos en diff.
 
 ### Sesión 2026-05-03: Limpieza de artefactos de demo (completado)
 - [x] **Archivos eliminados**: `demo.py` (315 líneas, script ad hoc con
@@ -422,6 +455,9 @@
 - `docs/USO_DASHBOARD.md`: guía de uso local del dashboard para el
   observador, incluyendo arranque, páginas, filtros, fotos, edición,
   borrado seguro y errores de Supabase.
+- `docs/PLAN_APP_PIPELINE.md`: diseño completo de la app local del
+  pipeline Plaud → Supabase (arquitectura, pantalla, estados de
+  resultado, decisiones de herramienta, riesgos y plan por fases).
 - `.env.example`: plantilla de variables de entorno (sin valores reales).
 - `diagrama_relaciones_v2.html`: diagrama visual de relaciones entre tablas.
 ---
@@ -443,8 +479,9 @@ Commit de limpieza: `chore(pipeline): eliminar archivos de demo`.
 - 9 páginas navegables; patrón maestro-detalle en las 5 páginas de consulta.
 - Datos sintéticos en Supabase dev sin tocar.
 
-**Próxima tarea**: diseñar e implementar app local de pipeline Plaud → Supabase
-(decisión #30 — sin scripts ad hoc de demo).
+**Próxima tarea**: implementar Fase A del plan de app local de pipeline
+(esqueleto `app_pipeline/` + `comprobar_entorno()` + botones secundarios).
+Diseño cerrado en `docs/PLAN_APP_PIPELINE.md` (decisiones #31, #32, #33).
 
 **Pendientes técnicos**:
 - Limpiar visitas de demo en Supabase dev (2026-05-03 con observaciones
