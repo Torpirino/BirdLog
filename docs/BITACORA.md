@@ -70,6 +70,11 @@
 
 ## Tareas completadas
 
+### Sesión 2026-05-03: Alineación vertical del panel principal (completado)
+- [x] **Panel derecho**: añadido un espaciador superior mínimo para que
+      resumen, registro y resultados respiren mejor y queden alineados con
+      el contenido del panel izquierdo.
+
 ### Sesión 2026-05-03: Distribución operativa de app pipeline (completado)
 - [x] **Layout en dos columnas**: panel izquierdo compacto para identidad,
       estado del sistema y acciones; panel derecho ancho para resumen,

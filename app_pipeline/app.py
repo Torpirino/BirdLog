@@ -149,6 +149,7 @@ def main() -> None:
         render_ayuda_acciones()
 
     with panel_derecho:
+        st.markdown('<div style="height: 3rem;"></div>', unsafe_allow_html=True)
         if estado_entorno.ok and estado_entorno.entorno == "prod":
             st.warning(
                 "⚠️ **ENTORNO PROD activo.** Cualquier archivo procesado "
