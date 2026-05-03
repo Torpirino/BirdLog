@@ -46,6 +46,9 @@ lib64/
 !dashboard/lib/
 !dashboard/lib/**
 dashboard/lib/__pycache__/
+!app_pipeline/lib/
+!app_pipeline/lib/**
+app_pipeline/lib/__pycache__/
 parts/
 sdist/
 var/
