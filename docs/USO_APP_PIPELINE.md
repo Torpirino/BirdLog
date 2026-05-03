@@ -110,37 +110,51 @@ simplemente ciérrala o déjala.
 
 ## Pantalla principal
 
-La pantalla tiene tres partes:
+La pantalla tiene dos columnas:
 
-### 1. Cabecera de estado
+### 1. Panel izquierdo
 
-Muestra si todo está listo para procesar:
+Es el panel de control compacto. Incluye:
 
-- **Verde** (tres bloques verdes): entorno OK, Drive accesible, Supabase
-  conectado. Puedes procesar.
-- **Rojo**: hay un problema. Lee el mensaje y sigue los pasos que
-  aparecen debajo.
+- Identidad de la app: **BirdLog — Pipeline Plaud**.
+- Estado del sistema:
+  - **Entorno**
+  - **Drive**
+  - **Supabase**
+- Botones:
+  - **▶ Procesar grabaciones de Plaud**
+  - **📊 Abrir dashboard**
+  - **💬 Abrir Claude.ai**
+- Ayuda breve sobre dashboard y Claude.ai.
 
-### 2. Botones
+El botón de procesar solo aparece activo cuando el estado del sistema
+permite trabajar. Si hay un problema de configuración, Drive o Supabase,
+lee el mensaje del panel izquierdo.
 
-- **▶ Procesar grabaciones de Plaud** — lanza el procesado de todos
-  los archivos nuevos que haya en la carpeta `01_entrada` de Drive.
-  Solo aparece activo cuando la cabecera es verde.
+### 2. Panel derecho
+
+Es la zona principal de trabajo. Incluye:
+
+- Resumen global del último procesamiento.
+- **Registro de procesamiento**, con un bloque grande de mensajes y
+  scroll interno.
+- Resumen por archivo y detalles desplegables.
+
+El registro muestra búsqueda en Drive, archivos encontrados, estado por
+archivo, inserción, backup, movimiento de carpeta y resumen final. Si hay
+varios archivos o errores largos, puedes leerlos dentro del bloque de log
+sin depender tanto del scroll de la página.
+
+### Botones principales
+
+- **▶ Procesar grabaciones de Plaud** — lanza el procesado de todos los
+  archivos nuevos que haya en la carpeta `01_entrada` de Drive.
 - **📊 Abrir dashboard** — abre el dashboard en una pestaña nueva
   (`http://127.0.0.1:8999`). Si no estaba arrancado, la app lo arranca
   automáticamente y después lo abre.
 - **💬 Abrir Claude.ai** — abre Claude.ai en una pestaña nueva.
   Útil para consultar documentación del sistema o resolver dudas.
   **Claude no accede a Supabase directamente** desde aquí.
-
-### 3. Registro de procesamiento
-
-Es una zona grande de mensajes. Antes de procesar muestra que aún no
-hay resultados en la sesión. Después del procesado muestra búsqueda en
-Drive, archivos encontrados, estado por archivo, inserción, backup,
-movimiento de carpeta y resumen final.
-
-Debajo aparecen la tabla resumen y los detalles desplegables por archivo.
 
 ---
 

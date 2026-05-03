@@ -35,6 +35,112 @@ def render_cabecera(estado: EstadoEntorno) -> None:
         _ayuda_entorno(estado)
 
 
+def render_estilos_pipeline() -> None:
+    """Ajusta espacios y legibilidad para la pantalla operativa."""
+    st.markdown(
+        """
+        <style>
+            .block-container {
+                max-width: 1500px;
+                padding-top: 1.25rem;
+                padding-bottom: 2rem;
+            }
+            .stTextArea textarea {
+                background: #101815;
+                border: 1px solid rgba(112, 175, 132, 0.35);
+                font-family: "Ubuntu Mono", "SFMono-Regular", Consolas, monospace;
+                font-size: 0.92rem;
+                line-height: 1.45;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_panel_lateral(estado: EstadoEntorno) -> None:
+    """Muestra identidad, estado y ayudas breves en el panel izquierdo."""
+    st.markdown("## 🦅 BirdLog")
+    st.markdown("### Pipeline Plaud")
+    st.caption("Procesa las grabaciones de Plaud e insértalas en Supabase.")
+
+    st.markdown("**Estado del sistema**")
+    _estado_compacto(estado)
+
+    if not estado.ok:
+        _mensaje_error_entorno(estado)
+        _ayuda_entorno(estado)
+
+    st.markdown("**Acciones**")
+
+
+def _estado_compacto(estado: EstadoEntorno) -> None:
+    """Muestra el estado en formato vertical y compacto."""
+    if estado.entorno == "prod":
+        st.warning("Entorno: **prod**", icon="⚠️")
+    elif estado.entorno == "?":
+        st.error("Entorno: sin configurar", icon="⚙️")
+    else:
+        st.success(f"Entorno: **{estado.entorno}**", icon="🌱")
+
+    if estado.drive_ok:
+        st.success("Drive accesible", icon="📂")
+    else:
+        st.error("Drive no accesible", icon="📂")
+
+    if estado.supabase_ok:
+        st.success("Supabase conectado", icon="🗄️")
+    else:
+        st.error("Supabase sin conexión", icon="🗄️")
+
+
+def render_ayuda_acciones() -> None:
+    """Muestra ayuda breve bajo los botones del panel izquierdo."""
+    st.caption("Dashboard: se abre automáticamente si no está arrancado.")
+    st.caption("Claude.ai: usa el proyecto BirdLog para consultar dudas.")
+
+
+def render_resumen_global(resultados: list[ResultadoArchivo] | None) -> None:
+    """Muestra el resumen global del último procesamiento."""
+    if resultados is None:
+        st.info("Aún no has procesado ninguna grabación en esta sesión.", icon="ℹ️")
+        return
+
+    if not resultados:
+        st.info("No había grabaciones nuevas en Drive.", icon="📭")
+        return
+
+    n_ok = sum(1 for resultado in resultados if resultado.estado == ESTADO_OK)
+    n_error = sum(1 for resultado in resultados if resultado.estado == ESTADO_ERROR)
+    n_incompleto = sum(1 for resultado in resultados if resultado.estado == ESTADO_INCOMPLETO)
+
+    if n_error:
+        st.error(_texto_resumen(n_ok, n_error, n_incompleto), icon="🔴")
+    elif n_incompleto:
+        st.warning(_texto_resumen(n_ok, n_error, n_incompleto), icon="🟡")
+    else:
+        st.success(_texto_resumen(n_ok, n_error, n_incompleto), icon="🟢")
+
+
+def _texto_resumen(n_ok: int, n_error: int, n_incompleto: int) -> str:
+    """Construye una frase corta de resumen global."""
+    partes = []
+    if n_ok:
+        etiqueta = (
+            "grabación procesada correctamente"
+            if n_ok == 1
+            else "grabaciones procesadas correctamente"
+        )
+        partes.append(f"{n_ok} {etiqueta}")
+    if n_error:
+        etiqueta = "error" if n_error == 1 else "errores"
+        partes.append(f"{n_error} {etiqueta}")
+    if n_incompleto:
+        etiqueta = "incompleto" if n_incompleto == 1 else "incompletos"
+        partes.append(f"{n_incompleto} {etiqueta}")
+    return ". ".join(partes) + "."
+
+
 def _mensaje_error_entorno(estado: EstadoEntorno) -> None:
     """Muestra un mensaje de error principal breve y legible."""
     if estado.entorno == "?":
@@ -98,11 +204,12 @@ def _tabla_resumen(resultados: list[ResultadoArchivo]) -> None:
     """Muestra tabla compacta con el estado de cada archivo."""
     filas = [
         {
-            "": ICONO.get(r.estado, "?"),
-            "Archivo": r.nombre,
-            "Estado": ETIQUETA.get(r.estado, r.estado),
-            "Etapa": r.etapa,
-            "Movido a": r.txt_movido_a,
+            "archivo": r.nombre,
+            "estado": f"{ICONO.get(r.estado, '?')} {ETIQUETA.get(r.estado, r.estado)}",
+            "id_visita": "-",
+            "backup": "sí" if r.backup_creado else "no",
+            "movimiento_drive": r.txt_movido_a,
+            "mensaje": r.mensaje,
         }
         for r in resultados
     ]
@@ -150,7 +257,7 @@ def render_registro_pipeline(resultados: list[ResultadoArchivo] | None) -> None:
         st.text_area(
             "Mensajes del pipeline",
             value="Aún no has procesado ninguna grabación en esta sesión.",
-            height=260,
+            height=500,
             disabled=True,
             label_visibility="collapsed",
         )
@@ -160,7 +267,7 @@ def render_registro_pipeline(resultados: list[ResultadoArchivo] | None) -> None:
     st.text_area(
         "Mensajes del pipeline",
         value="\n".join(mensajes),
-        height=320,
+        height=500,
         disabled=True,
         label_visibility="collapsed",
     )

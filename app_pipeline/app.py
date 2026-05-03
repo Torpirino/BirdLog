@@ -24,7 +24,13 @@ from app_pipeline.lib.enlaces import (
     URL_DASHBOARD,
 )
 from app_pipeline.lib.orquestador import comprobar_entorno, procesar_lote
-from app_pipeline.lib.ui import render_cabecera, render_registro_pipeline
+from app_pipeline.lib.ui import (
+    render_ayuda_acciones,
+    render_estilos_pipeline,
+    render_panel_lateral,
+    render_registro_pipeline,
+    render_resumen_global,
+)
 
 SCRIPT_DASHBOARD = RAIZ_PROYECTO / "scripts" / "abrir_dashboard.sh"
 
@@ -120,78 +126,70 @@ def main() -> None:
     st.set_page_config(
         page_title="BirdLog — Pipeline Plaud",
         page_icon="🦅",
-        layout="centered",
+        layout="wide",
     )
+    render_estilos_pipeline()
 
     if "resultados" not in st.session_state:
         st.session_state["resultados"] = None
 
     estado_entorno = _estado_entorno_cacheado()
-    render_cabecera(estado_entorno)
+    panel_izquierdo, panel_derecho = st.columns([0.28, 0.72], gap="large")
 
-    st.divider()
-
-    col1, col2, col3 = st.columns(3)
-    with col1:
+    with panel_izquierdo:
+        render_panel_lateral(estado_entorno)
         procesar = st.button(
             "▶ Procesar grabaciones de Plaud",
             disabled=not estado_entorno.ok,
             type="primary",
             use_container_width=True,
         )
-    with col2:
         abrir_dashboard = st.button("📊 Abrir dashboard", use_container_width=True)
-    with col3:
         st.link_button("💬 Abrir Claude.ai", url=URL_CLAUDE_AI, use_container_width=True)
-    st.caption(
-        "Claude.ai — Usa el proyecto BirdLog en Claude para consultar documentación, "
-        "decisiones y dudas del sistema. Claude no accede a Supabase directamente."
-    )
+        render_ayuda_acciones()
 
-    if estado_entorno.ok and estado_entorno.entorno == "prod":
-        st.warning(
-            "⚠️ **ENTORNO PROD activo.** Cualquier archivo procesado modificará los datos reales.",
-            icon="⚠️",
-        )
+    with panel_derecho:
+        if estado_entorno.ok and estado_entorno.entorno == "prod":
+            st.warning(
+                "⚠️ **ENTORNO PROD activo.** Cualquier archivo procesado "
+                "modificará los datos reales.",
+                icon="⚠️",
+            )
 
-    st.divider()
-
-    if abrir_dashboard:
-        with st.spinner("Arrancando dashboard..."):
-            abierto, mensaje = abrir_dashboard_desde_pipeline()
-        if abierto:
-            st.success(mensaje)
-        else:
-            st.error(mensaje)
-
-    if procesar:
-        st.session_state["_entorno_cache"] = None
-        with st.status("Procesando grabaciones de Plaud…", expanded=True) as status:
-            st.write("Buscando archivos .txt en Drive...")
-            resultados = procesar_lote()
-            st.session_state["resultados"] = resultados
-            n_ok = sum(1 for r in resultados if r.estado == "OK")
-            n_err = len(resultados) - n_ok
-            st.write(f"Archivos encontrados: {len(resultados)}")
-            if not resultados:
-                status.update(
-                    label="No había grabaciones nuevas en Drive.",
-                    state="complete",
-                )
-            elif n_err == 0:
-                status.update(
-                    label=f"✅ {n_ok} grabación(es) procesada(s) correctamente.",
-                    state="complete",
-                )
+        if abrir_dashboard:
+            with st.spinner("Arrancando dashboard..."):
+                abierto, mensaje = abrir_dashboard_desde_pipeline()
+            if abierto:
+                st.success(mensaje)
             else:
-                status.update(
-                    label=f"⚠️ {n_ok} OK · {n_err} con error o incompleto.",
-                    state="error",
-                )
+                st.error(mensaje)
 
-    if st.session_state["resultados"] is None:
-        render_registro_pipeline(None)
-    else:
+        if procesar:
+            st.session_state["_entorno_cache"] = None
+            with st.status("Procesando grabaciones de Plaud…", expanded=True) as status:
+                st.write("Buscando archivos .txt en Drive...")
+                resultados = procesar_lote()
+                st.session_state["resultados"] = resultados
+                n_ok = sum(1 for r in resultados if r.estado == "OK")
+                n_err = len(resultados) - n_ok
+                st.write(f"Archivos encontrados: {len(resultados)}")
+                if not resultados:
+                    status.update(
+                        label="No había grabaciones nuevas en Drive.",
+                        state="complete",
+                    )
+                elif n_err == 0:
+                    status.update(
+                        label=f"✅ {n_ok} grabación(es) procesada(s) correctamente.",
+                        state="complete",
+                    )
+                else:
+                    status.update(
+                        label=f"⚠️ {n_ok} OK · {n_err} con error o incompleto.",
+                        state="error",
+                    )
+
+        render_resumen_global(st.session_state["resultados"])
         render_registro_pipeline(st.session_state["resultados"])
 
 

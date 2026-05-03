@@ -14,7 +14,7 @@
   sintéticos subidos a `01_entrada` de Drive.
   88 tests pasan. Branding unificado (🦅 en pipeline y dashboard).
   Botón "Abrir dashboard" arranca el dashboard automáticamente si no
-  está corriendo.
+  está corriendo. App pipeline reorganizada en dos columnas operativas.
   Mensajes de error de Drive/config simplificados para usuario no técnico.
 
 ---
@@ -69,6 +69,18 @@
 ---
 
 ## Tareas completadas
+
+### Sesión 2026-05-03: Distribución operativa de app pipeline (completado)
+- [x] **Layout en dos columnas**: panel izquierdo compacto para identidad,
+      estado del sistema y acciones; panel derecho ancho para resumen,
+      registro y resultados.
+- [x] **Registro de procesamiento**: bloque de log ampliado a altura fija
+      grande, con scroll interno y estilo de consola legible.
+- [x] **Resumen por archivo**: tabla ajustada a columnas operativas
+      (`archivo`, `estado`, `id_visita`, `backup`, `movimiento_drive`,
+      `mensaje`) y detalles largos en desplegables.
+- [x] **Documentación**: `docs/USO_APP_PIPELINE.md` actualizada con la nueva
+      distribución visual.
 
 ### Sesión 2026-05-03: Autoarranque del dashboard desde app pipeline (completado)
 - [x] **Botón "Abrir dashboard"**: queda siempre activo en la app pipeline.
