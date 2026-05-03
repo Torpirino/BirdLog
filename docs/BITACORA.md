@@ -10,13 +10,13 @@
 
 - **Fase activa**: Fase 8 — App local de pipeline
 - **Última sesión**: 2026-05-03
-- **Próxima tarea**: Implementar app local del pipeline (Fase 1 del
-  plan: esqueleto de `app_pipeline/` con cabecera, comprobación de
-  entorno y botones secundarios — ver `docs/PLAN_APP_PIPELINE.md`).
-  El diseño de la app está cerrado y documentado.
-  61 tests pasan. Dos bugs reales corregidos y cubiertos con tests:
-  case-sensitivity en especies (`src/insercion/catalogos.py`) y pérdida
-  de `observaciones_puente` (`src/insercion/escritura.py`).
+- **Próxima tarea**: Prueba controlada con archivos Plaud reales o
+  sintéticos subidos a `01_entrada` de Drive. La app pipeline está
+  implementada y funcional. 80 tests pasan.
+  Archivos: `app_pipeline/app.py`, `app_pipeline/lib/`
+  (`estados.py`, `enlaces.py`, `orquestador.py`, `ui.py`).
+  Guía de uso del observador: `docs/USO_APP_PIPELINE.md`.
+  Arranque: `streamlit run app_pipeline/app.py --server.port 8502`.
 
 ---
 
@@ -38,13 +38,15 @@
 ### Fase 8: App local de pipeline
 - [x] Diseño de la app local de pipeline completado (2026-05-03).
       Documento: `docs/PLAN_APP_PIPELINE.md`. Decisiones #31, #32 y #33.
-- [ ] Implementar Fase A del plan: esqueleto `app_pipeline/` con
-      cabecera, `comprobar_entorno()` y botones "Abrir dashboard" y
-      "Abrir Claude.ai" operativos.
-- [ ] Implementar Fase B del plan: procesado de lote y tarjetas de
-      resultado por archivo (verde/amarillo/rojo).
-- [ ] Implementar Fase C del plan: pulido, `docs/USO_APP_PIPELINE.md`
-      y sección de arranque en `README.md`.
+- [x] Implementar Fase A del plan: esqueleto `app_pipeline/` con
+      cabecera, `comprobar_entorno()` y botones secundarios (2026-05-03).
+- [x] Implementar Fase B del plan: procesado de lote y tarjetas
+      verde/amarillo/rojo (2026-05-03).
+- [x] Implementar Fase C del plan: pulido, `docs/USO_APP_PIPELINE.md`
+      (2026-05-03). README pendiente de sección de arranque.
+- [ ] Añadir sección de arranque de `app_pipeline` en `README.md`.
+- [ ] Prueba controlada con archivos Plaud reales o sintéticos subidos
+      a `01_entrada` de Drive.
 - [ ] Limpiar visitas de demo de dev (visitas del 2026-05-03 con
       observaciones "demo del pipeline") si se llegaron a insertar
 
@@ -68,6 +70,27 @@
 ---
 
 ## Tareas completadas
+
+### Sesión 2026-05-03: Implementación de app pipeline (completado)
+- [x] **App pipeline implementada**: `app_pipeline/app.py` (Streamlit,
+      puerto 8502), `app_pipeline/lib/estados.py` (dataclasses
+      `ResultadoArchivo` y `EstadoEntorno`), `app_pipeline/lib/enlaces.py`,
+      `app_pipeline/lib/orquestador.py` (funciones `comprobar_entorno` y
+      `procesar_lote` wrapeando `src.pipeline.procesar_drive`),
+      `app_pipeline/lib/ui.py` (componentes visuales: cabecera, tarjetas
+      verde/amarillo/rojo, tabla resumen).
+- [x] **Funcionalidades**: botón "Procesar grabaciones de Plaud" con
+      spinner `st.status`, caché de 30 s del estado de entorno, tarjetas
+      expandibles por archivo con estado de color, indicaciones de
+      resolución de catálogos faltantes, advertencia si ENTORNO=prod.
+- [x] **Tests**: `tests/test_app_pipeline_orquestador.py` con 19 tests
+      (clasificación de errores, traducción de resultados, procesar_lote
+      con monkeypatch, comprobar_entorno con monkeypatch).
+- [x] **Documentación**: `docs/USO_APP_PIPELINE.md` (guía para el
+      observador: arranque, colores, errores frecuentes, cómo reprocesar).
+- [x] Comprobaciones: `py_compile` OK (7 archivos nuevos), `pytest` 80/80,
+      HTTP 200 en `localhost:8502`, `git diff --check` limpio,
+      sin cambios en SQL ni `.env`, sin secretos en diff.
 
 ### Sesión 2026-05-03: Diseño de app local de pipeline (completado)
 - [x] **Diagnóstico del pipeline actual**: revisión de `src/pipeline.py`,
@@ -458,14 +481,44 @@
 - `docs/PLAN_APP_PIPELINE.md`: diseño completo de la app local del
   pipeline Plaud → Supabase (arquitectura, pantalla, estados de
   resultado, decisiones de herramienta, riesgos y plan por fases).
+- `docs/USO_APP_PIPELINE.md`: guía de uso de la app pipeline para el
+  observador (arranque, colores, errores frecuentes, reproceso de
+  archivos fallidos).
+- `app_pipeline/app.py`: app Streamlit del pipeline (puerto 8502).
+  Cabecera de estado, botón "Procesar", tarjetas de resultado y
+  botones "Abrir dashboard" y "Abrir Claude.ai".
+- `app_pipeline/lib/estados.py`: dataclasses `ResultadoArchivo` y
+  `EstadoEntorno`; constantes de estado (OK/ERROR/INCOMPLETO/PENDIENTE).
+- `app_pipeline/lib/enlaces.py`: URLs de dashboard y Claude.ai.
+- `app_pipeline/lib/orquestador.py`: `comprobar_entorno()` y
+  `procesar_lote()` wrapeando `src.pipeline.procesar_drive`.
+- `app_pipeline/lib/ui.py`: componentes visuales Streamlit (cabecera,
+  tabla resumen, tarjetas expandibles).
+- `tests/test_app_pipeline_orquestador.py`: 19 tests del orquestador
+  (clasificación de errores, traducción de resultados, monkeypatch).
 - `.env.example`: plantilla de variables de entorno (sin valores reales).
 - `diagrama_relaciones_v2.html`: diagrama visual de relaciones entre tablas.
 ---
 
 ## Handoff
 
-Artefactos de demo eliminados. Pipeline listo para la siguiente fase.
-Commit de limpieza: `chore(pipeline): eliminar archivos de demo`.
+App pipeline implementada y funcional. 80 tests pasan.
+Commit: `feat(pipeline): añadir app local de procesamiento Plaud`.
+
+**Estado de la app pipeline (2026-05-03)**:
+- `app_pipeline/app.py` arranca en `localhost:8502` sin errores.
+- `comprobar_entorno()` valida `.env`, Drive y Supabase antes de procesar.
+- `procesar_lote()` envuelve `src.pipeline.procesar_drive()` y clasifica
+  cada resultado en OK/INCOMPLETO/ERROR con tarjeta visual.
+- Botones: "Procesar grabaciones de Plaud", "Abrir dashboard" (8999),
+  "Abrir Claude.ai".
+- 19 tests nuevos en `tests/test_app_pipeline_orquestador.py`.
+- Guía de uso en `docs/USO_APP_PIPELINE.md`.
+- Pendiente: prueba real con un `.txt` subido a `01_entrada` de Drive.
+- Pendiente: sección de arranque en `README.md`.
+
+**Estado del pipeline (2026-05-03)**:
+- `demo.py` y `demo/` eliminados del repositorio.
 
 **Estado del pipeline (2026-05-03)**:
 - `demo.py` y `demo/` eliminados del repositorio.
