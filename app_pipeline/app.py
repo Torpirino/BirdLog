@@ -2,9 +2,15 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+import sys
 import time
 
 import streamlit as st
+
+RAIZ_PROYECTO = Path(__file__).resolve().parents[1]
+if str(RAIZ_PROYECTO) not in sys.path:
+    sys.path.insert(0, str(RAIZ_PROYECTO))
 
 from app_pipeline.lib.enlaces import COMANDO_DASHBOARD, URL_CLAUDE_AI, URL_DASHBOARD
 from app_pipeline.lib.orquestador import comprobar_entorno, procesar_lote
