@@ -12,9 +12,10 @@
 - **Última sesión**: 2026-05-03
 - **Próxima tarea**: Prueba controlada con archivos Plaud reales o
   sintéticos subidos a `01_entrada` de Drive.
-  88 tests pasan. Branding unificado (🦅 en pipeline y dashboard).
+  93 tests pasan. Branding unificado (🦅 en pipeline y dashboard).
   Botón "Abrir dashboard" arranca el dashboard automáticamente si no
   está corriendo. App pipeline reorganizada en dos columnas operativas.
+  Corregida visualización de archivos con error en app pipeline.
   Mensajes de error de Drive/config simplificados para usuario no técnico.
 
 ---
@@ -69,6 +70,18 @@
 ---
 
 ## Tareas completadas
+
+### Sesión 2026-05-03: Errores de procesamiento sin crash de interfaz (completado)
+- [x] **Crash corregido**: `render_resumen_global()` importaba `ESTADO_OK`
+      e `ESTADO_INCOMPLETO`, pero usaba `ESTADO_ERROR` sin importarlo.
+- [x] **Estados cubiertos**: resumen global probado para OK, ERROR,
+      INCOMPLETO y PENDIENTE.
+- [x] **Log de errores**: el registro de procesamiento muestra el mensaje
+      real del error y el movimiento a `errores`, sin traceback de Streamlit.
+- [x] **Diagnóstico Mamíferos puentes**: el `.txt` real falla primero por
+      `FECHA: 03/05/2026`; el parser/validador esperan `YYYY-MM-DD`.
+      Además, `lugar_puente` en minúsculas no resolvería contra
+      `Puente de Aranzadi` si el catálogo está capitalizado así.
 
 ### Sesión 2026-05-03: Alineación vertical del panel principal (completado)
 - [x] **Panel derecho**: añadido un espaciador superior mínimo para que

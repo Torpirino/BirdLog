@@ -6,8 +6,10 @@ import pandas as pd
 import streamlit as st
 
 from app_pipeline.lib.estados import (
+    ESTADO_ERROR,
     ESTADO_INCOMPLETO,
     ESTADO_OK,
+    ESTADO_PENDIENTE,
     ETIQUETA,
     ICONO,
     EstadoEntorno,
@@ -113,16 +115,19 @@ def render_resumen_global(resultados: list[ResultadoArchivo] | None) -> None:
     n_ok = sum(1 for resultado in resultados if resultado.estado == ESTADO_OK)
     n_error = sum(1 for resultado in resultados if resultado.estado == ESTADO_ERROR)
     n_incompleto = sum(1 for resultado in resultados if resultado.estado == ESTADO_INCOMPLETO)
+    n_pendiente = sum(1 for resultado in resultados if resultado.estado == ESTADO_PENDIENTE)
 
     if n_error:
-        st.error(_texto_resumen(n_ok, n_error, n_incompleto), icon="🔴")
+        st.error(_texto_resumen(n_ok, n_error, n_incompleto, n_pendiente), icon="🔴")
     elif n_incompleto:
-        st.warning(_texto_resumen(n_ok, n_error, n_incompleto), icon="🟡")
+        st.warning(_texto_resumen(n_ok, n_error, n_incompleto, n_pendiente), icon="🟡")
+    elif n_pendiente:
+        st.info(_texto_resumen(n_ok, n_error, n_incompleto, n_pendiente), icon="⚪")
     else:
-        st.success(_texto_resumen(n_ok, n_error, n_incompleto), icon="🟢")
+        st.success(_texto_resumen(n_ok, n_error, n_incompleto, n_pendiente), icon="🟢")
 
 
-def _texto_resumen(n_ok: int, n_error: int, n_incompleto: int) -> str:
+def _texto_resumen(n_ok: int, n_error: int, n_incompleto: int, n_pendiente: int = 0) -> str:
     """Construye una frase corta de resumen global."""
     partes = []
     if n_ok:
@@ -138,6 +143,9 @@ def _texto_resumen(n_ok: int, n_error: int, n_incompleto: int) -> str:
     if n_incompleto:
         etiqueta = "incompleto" if n_incompleto == 1 else "incompletos"
         partes.append(f"{n_incompleto} {etiqueta}")
+    if n_pendiente:
+        etiqueta = "pendiente" if n_pendiente == 1 else "pendientes"
+        partes.append(f"{n_pendiente} {etiqueta}")
     return ". ".join(partes) + "."
 
 
@@ -319,7 +327,7 @@ def _mensajes_archivo(resultado: ResultadoArchivo) -> list[str]:
     if resultado.estado == ESTADO_OK:
         mensajes.append(f"- Mensaje: {resultado.mensaje}")
     else:
-        mensajes.append("- Mensaje: revisa el detalle desplegable de este archivo.")
+        mensajes.append(f"- Mensaje: {resultado.mensaje}")
     return mensajes
 
 

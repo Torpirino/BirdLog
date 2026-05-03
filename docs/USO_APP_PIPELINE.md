@@ -145,6 +145,11 @@ archivo, inserción, backup, movimiento de carpeta y resumen final. Si hay
 varios archivos o errores largos, puedes leerlos dentro del bloque de log
 sin depender tanto del scroll de la página.
 
+Cuando un archivo falla, el resumen global se muestra en rojo o amarillo,
+el registro incluye el mensaje del error y la tabla indica si el `.txt`
+se movió a `03_errores`. El detalle largo queda en el desplegable del
+archivo.
+
 ### Botones principales
 
 - **▶ Procesar grabaciones de Plaud** — lanza el procesado de todos los
