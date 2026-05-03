@@ -12,8 +12,9 @@
 - **Última sesión**: 2026-05-03
 - **Próxima tarea**: Prueba controlada con archivos Plaud reales o
   sintéticos subidos a `01_entrada` de Drive.
-  80 tests pasan. Branding unificado (🦅 en pipeline y dashboard).
-  Botón "Abrir dashboard" detecta si el dashboard está corriendo.
+  88 tests pasan. Branding unificado (🦅 en pipeline y dashboard).
+  Botón "Abrir dashboard" arranca el dashboard automáticamente si no
+  está corriendo.
   Mensajes de error de Drive/config simplificados para usuario no técnico.
 
 ---
@@ -68,6 +69,19 @@
 ---
 
 ## Tareas completadas
+
+### Sesión 2026-05-03: Autoarranque del dashboard desde app pipeline (completado)
+- [x] **Botón "Abrir dashboard"**: queda siempre activo en la app pipeline.
+      Si `http://127.0.0.1:8999` ya responde, abre el navegador.
+      Si no responde, lanza `scripts/abrir_dashboard.sh`, espera el arranque
+      y abre el navegador.
+- [x] **Sin duplicados**: antes de arrancar se comprueba si el dashboard
+      responde por HTTP o si el puerto 8999 ya está ocupado.
+- [x] **Apertura de navegador única**: cuando la app pipeline lanza
+      `scripts/abrir_dashboard.sh`, el script no abre otra pestaña extra;
+      la apertura queda controlada por la app pipeline.
+- [x] **Documentación**: `docs/USO_APP_PIPELINE.md` actualizada con el nuevo
+      comportamiento y fallback al icono **BirdLog Dashboard**.
 
 ### Sesión 2026-05-03: UX de app pipeline y lanzadores (completado)
 - [x] **Dashboard desde app pipeline**: si el dashboard está activo, el

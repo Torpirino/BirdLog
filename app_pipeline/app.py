@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 import socket
+import subprocess
 import sys
 import time
+from urllib.error import URLError
+from urllib.request import urlopen
+import webbrowser
 
 import streamlit as st
 
@@ -13,24 +18,91 @@ RAIZ_PROYECTO = Path(__file__).resolve().parents[1]
 if str(RAIZ_PROYECTO) not in sys.path:
     sys.path.insert(0, str(RAIZ_PROYECTO))
 
-from app_pipeline.lib.enlaces import COMANDO_DASHBOARD, LANZADOR_DASHBOARD, URL_CLAUDE_AI, URL_DASHBOARD
+from app_pipeline.lib.enlaces import (
+    LANZADOR_DASHBOARD,
+    URL_CLAUDE_AI,
+    URL_DASHBOARD,
+)
 from app_pipeline.lib.orquestador import comprobar_entorno, procesar_lote
 from app_pipeline.lib.ui import render_cabecera, render_registro_pipeline
 
+SCRIPT_DASHBOARD = RAIZ_PROYECTO / "scripts" / "abrir_dashboard.sh"
 
-def _dashboard_activo() -> bool:
-    """Comprueba si el dashboard responde en el puerto esperado (caché 10 s)."""
-    ahora = time.time()
-    cache = st.session_state.get("_dashboard_cache")
-    if cache and ahora - cache["ts"] < 10:
-        return cache["activo"]
+
+def _puerto_dashboard_activo() -> bool:
+    """Comprueba si hay un proceso escuchando en el puerto del dashboard."""
     try:
         with socket.create_connection(("127.0.0.1", 8999), timeout=0.5):
-            activo = True
+            return True
     except OSError:
-        activo = False
-    st.session_state["_dashboard_cache"] = {"ts": ahora, "activo": activo}
-    return activo
+        return False
+
+
+def _dashboard_responde() -> bool:
+    """Comprueba que el dashboard responde por HTTP."""
+    try:
+        with urlopen(URL_DASHBOARD, timeout=0.8) as respuesta:
+            return 200 <= respuesta.status < 400
+    except (OSError, URLError):
+        return False
+
+
+def _esperar_dashboard(segundos: float = 8.0) -> bool:
+    """Espera unos segundos a que el dashboard termine de arrancar."""
+    fin = time.monotonic() + segundos
+    while time.monotonic() < fin:
+        if _dashboard_responde():
+            return True
+        time.sleep(0.5)
+    return _dashboard_responde()
+
+
+def _arrancar_dashboard() -> subprocess.Popen[bytes]:
+    """Lanza el script del dashboard sin bloquear la app pipeline."""
+    entorno = os.environ.copy()
+    entorno["BIRDLOG_NO_ABRIR_NAVEGADOR"] = "1"
+    return subprocess.Popen(
+        ["bash", str(SCRIPT_DASHBOARD)],
+        cwd=RAIZ_PROYECTO,
+        env=entorno,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
+
+
+def abrir_dashboard_desde_pipeline() -> tuple[bool, str]:
+    """Abre el dashboard o lo arranca antes si no está disponible."""
+    if _dashboard_responde():
+        webbrowser.open(URL_DASHBOARD)
+        return True, "Dashboard abierto."
+
+    if _puerto_dashboard_activo():
+        if _esperar_dashboard():
+            webbrowser.open(URL_DASHBOARD)
+            return True, "Dashboard abierto."
+        return False, (
+            f"No se pudo abrir el dashboard. Puedes abrirlo manualmente "
+            f"con el icono {LANZADOR_DASHBOARD}."
+        )
+
+    if not SCRIPT_DASHBOARD.exists():
+        return False, (
+            f"No se encontró el script de arranque. Puedes abrirlo manualmente "
+            f"con el icono {LANZADOR_DASHBOARD}."
+        )
+
+    proceso = _arrancar_dashboard()
+    if _esperar_dashboard():
+        webbrowser.open(URL_DASHBOARD)
+        return True, "Dashboard abierto."
+
+    proceso.poll()
+    return False, (
+        f"No se pudo arrancar el dashboard. Puedes abrirlo manualmente "
+        f"con el icono {LANZADOR_DASHBOARD}."
+    )
 
 
 def _estado_entorno_cacheado() -> object:
@@ -68,12 +140,7 @@ def main() -> None:
             use_container_width=True,
         )
     with col2:
-        dashboard_ok = _dashboard_activo()
-        if dashboard_ok:
-            st.link_button("📊 Abrir dashboard", url=URL_DASHBOARD, use_container_width=True)
-        else:
-            st.button("📊 Dashboard no arrancado", disabled=True, use_container_width=True)
-            st.caption(f"Abre el icono **{LANZADOR_DASHBOARD}** y vuelve a pulsar aquí.")
+        abrir_dashboard = st.button("📊 Abrir dashboard", use_container_width=True)
     with col3:
         st.link_button("💬 Abrir Claude.ai", url=URL_CLAUDE_AI, use_container_width=True)
     st.caption(
@@ -88,6 +155,14 @@ def main() -> None:
         )
 
     st.divider()
+
+    if abrir_dashboard:
+        with st.spinner("Arrancando dashboard..."):
+            abierto, mensaje = abrir_dashboard_desde_pipeline()
+        if abierto:
+            st.success(mensaje)
+        else:
+            st.error(mensaje)
 
     if procesar:
         st.session_state["_entorno_cache"] = None
@@ -119,15 +194,6 @@ def main() -> None:
     else:
         render_registro_pipeline(st.session_state["resultados"])
 
-    if not _dashboard_activo():
-        with st.expander("Cómo abrir el dashboard"):
-            st.markdown(
-                f"1. Haz doble clic en el icono **{LANZADOR_DASHBOARD}** del Escritorio.\n"
-                "2. Espera a que se abra el navegador.\n"
-                "3. Vuelve a esta app si quieres abrirlo desde el botón superior.\n\n"
-                "También puedes arrancarlo desde terminal:"
-            )
-            st.code(COMANDO_DASHBOARD, language="bash")
 
-
-main()
+if __name__ == "__main__":
+    main()

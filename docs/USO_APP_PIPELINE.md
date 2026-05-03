@@ -127,8 +127,8 @@ Muestra si todo está listo para procesar:
   los archivos nuevos que haya en la carpeta `01_entrada` de Drive.
   Solo aparece activo cuando la cabecera es verde.
 - **📊 Abrir dashboard** — abre el dashboard en una pestaña nueva
-  (`http://127.0.0.1:8999`) si ya está arrancado. Si no lo está, abre
-  el icono **BirdLog Dashboard** del Escritorio y vuelve a la app.
+  (`http://127.0.0.1:8999`). Si no estaba arrancado, la app lo arranca
+  automáticamente y después lo abre.
 - **💬 Abrir Claude.ai** — abre Claude.ai en una pestaña nueva.
   Útil para consultar documentación del sistema o resolver dudas.
   **Claude no accede a Supabase directamente** desde aquí.
@@ -194,19 +194,22 @@ Pasos:
 
 ## Cómo abrir el dashboard
 
-El dashboard es una app separada. La forma recomendada es hacer doble
-clic en el icono **BirdLog Dashboard** del Escritorio. Se abrirá una
-terminal y el navegador se abrirá automáticamente en
-`http://localhost:8999`.
+Desde la app pipeline, pulsa **📊 Abrir dashboard**.
+
+Si el dashboard ya está abierto, la app abre
+`http://127.0.0.1:8999` en el navegador. Si no está abierto, la app
+lo arranca automáticamente con el mismo lanzador del icono
+**BirdLog Dashboard** y después abre el navegador.
+
+Si el arranque automático falla, abre el icono **BirdLog Dashboard**
+del Escritorio. Se abrirá una terminal con el servidor y el navegador
+se abrirá automáticamente en `http://localhost:8999`.
 
 Si prefieres terminal:
 
 ```
 streamlit run dashboard/app.py --server.port 8999
 ```
-
-Después pulsa el botón **📊 Abrir dashboard** en la app pipeline,
-o abre `http://127.0.0.1:8999` directamente en el navegador.
 
 ---
 

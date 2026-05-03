@@ -51,6 +51,10 @@ PY
 }
 
 abrir_navegador() {
+    if [ "${BIRDLOG_NO_ABRIR_NAVEGADOR:-}" = "1" ]; then
+        return
+    fi
+
     if ! command -v xdg-open &> /dev/null; then
         echo "No se encontró xdg-open. Abre manualmente: $URL"
         return
@@ -89,7 +93,11 @@ fi
 trap 'rmdir "$LOCK_DIR" 2>/dev/null || true' EXIT
 
 echo "Arrancando en $URL"
-echo "El navegador se abrirá automáticamente."
+if [ "${BIRDLOG_NO_ABRIR_NAVEGADOR:-}" = "1" ]; then
+    echo "La app pipeline abrirá el navegador."
+else
+    echo "El navegador se abrirá automáticamente."
+fi
 echo "Cierra esta ventana para detener el dashboard."
 echo ""
 
