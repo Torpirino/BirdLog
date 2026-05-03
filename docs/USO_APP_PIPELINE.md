@@ -21,13 +21,83 @@ los datos. Esta app sirve para **introducirlos**.
 
 ## Cómo arrancar la app
 
+### Desde el icono del Escritorio (recomendado)
+
+Haz doble clic en el icono **BirdLog Pipeline** del Escritorio.
+Se abrirá una terminal con el servidor y el navegador se abrirá
+automáticamente en `http://localhost:8502`.
+
+Ver sección [«Arrancar desde icono de escritorio»](#arrancar-desde-icono-de-escritorio)
+para más detalles.
+
+### Desde terminal
+
 Abre una terminal en la carpeta del proyecto y ejecuta:
 
-```
+```bash
+cd ~/Documentos/BirdLog
+source .venv/bin/activate
 streamlit run app_pipeline/app.py --server.port 8502
 ```
 
 Se abrirá en el navegador en `http://localhost:8502`.
+
+---
+
+## Arrancar desde icono de escritorio
+
+### Dónde está el icono
+
+El icono **BirdLog Pipeline** está en el Escritorio de Ubuntu.
+El archivo original se encuentra en:
+
+```
+~/Documentos/BirdLog/scripts/BirdLog_Pipeline.desktop
+```
+
+Si necesitas copiar el icono de nuevo al Escritorio:
+
+```bash
+cp ~/Documentos/BirdLog/scripts/BirdLog_Pipeline.desktop ~/Escritorio/
+chmod +x ~/Escritorio/BirdLog_Pipeline.desktop
+gio set ~/Escritorio/BirdLog_Pipeline.desktop metadata::trusted true
+```
+
+### Qué hacer si Ubuntu pide confiar en el lanzador
+
+La primera vez que uses el icono, Ubuntu puede mostrar
+un aviso de seguridad con el texto **"Este archivo de aplicación
+no es de confianza"**.
+
+Opciones:
+
+1. **Haz clic derecho sobre el icono → «Permitir ejecutar»**
+   (en GNOME 42+, «Allow Launching»). El icono pasa a ser ejecutable.
+2. O ejecuta este comando en una terminal:
+   ```bash
+   gio set ~/Escritorio/BirdLog_Pipeline.desktop metadata::trusted true
+   ```
+
+Tras confirmar la confianza, el doble clic funcionará directamente.
+
+### Cómo arrancar manualmente si el icono falla
+
+Si el icono no responde, abre una terminal y ejecuta:
+
+```bash
+bash ~/Documentos/BirdLog/scripts/abrir_app_pipeline.sh
+```
+
+El script muestra mensajes claros si falta el entorno virtual
+o Streamlit no está instalado.
+
+### Cómo cerrar la app
+
+Cierra la ventana de terminal que se abrió al pulsar el icono.
+Streamlit se detiene automáticamente.
+
+El navegador puede quedar abierto en la página — no pasa nada,
+simplemente ciérrala o déjala.
 
 ---
 

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=BirdLog Pipeline
+Comment=Procesa grabaciones Plaud e insértalas en Supabase
+Exec=gnome-terminal -- /home/javietavero/Documentos/BirdLog/scripts/abrir_app_pipeline.sh
+Path=/home/javietavero/Documentos/BirdLog
+Icon=utilities-terminal
+Terminal=false
+Categories=Science;Education;
+StartupNotify=false

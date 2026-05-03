@@ -12,11 +12,10 @@
 - **Última sesión**: 2026-05-03
 - **Próxima tarea**: Prueba controlada con archivos Plaud reales o
   sintéticos subidos a `01_entrada` de Drive. La app pipeline está
-  implementada y funcional. 80 tests pasan.
-  Archivos: `app_pipeline/app.py`, `app_pipeline/lib/`
-  (`estados.py`, `enlaces.py`, `orquestador.py`, `ui.py`).
-  Guía de uso del observador: `docs/USO_APP_PIPELINE.md`.
-  Arranque: `streamlit run app_pipeline/app.py --server.port 8502`.
+  implementada y funcional, con icono de escritorio operativo.
+  80 tests pasan.
+  Arranque desde icono: **BirdLog Pipeline** en el Escritorio.
+  Arranque manual: `bash scripts/abrir_app_pipeline.sh`.
 
 ---
 
@@ -70,6 +69,21 @@
 ---
 
 ## Tareas completadas
+
+### Sesión 2026-05-03: Lanzador de escritorio para app pipeline (completado)
+- [x] **Script de arranque**: `scripts/abrir_app_pipeline.sh` — activa
+      `.venv`, comprueba que Streamlit existe, arranca en puerto 8502 con
+      mensajes de error claros si falta el entorno.
+- [x] **Archivo `.desktop`**: `scripts/BirdLog_Pipeline.desktop` —
+      lanzador para Ubuntu/GNOME que abre `gnome-terminal` con el script.
+- [x] **Icono en Escritorio**: copiado a `~/Escritorio/BirdLog_Pipeline.desktop`
+      y marcado como de confianza con `gio set ... metadata::trusted true`.
+- [x] **Documentación actualizada**: `docs/USO_APP_PIPELINE.md` — nueva
+      sección «Arrancar desde icono de escritorio» con instrucciones para
+      primer uso, alternativa manual y cómo cerrar la app.
+- [x] Comprobaciones: `bash -n` OK, permisos OK, rutas correctas,
+      `pytest` 80/80, sin cambios en SQL ni `.env`, `git diff --check`
+      limpio, sin secretos en diff.
 
 ### Sesión 2026-05-03: Implementación de app pipeline (completado)
 - [x] **App pipeline implementada**: `app_pipeline/app.py` (Streamlit,
@@ -496,14 +510,19 @@
   tabla resumen, tarjetas expandibles).
 - `tests/test_app_pipeline_orquestador.py`: 19 tests del orquestador
   (clasificación de errores, traducción de resultados, monkeypatch).
+- `scripts/abrir_app_pipeline.sh`: script de arranque de la app pipeline
+  (activa venv, comprueba Streamlit, arranca en puerto 8502).
+- `scripts/BirdLog_Pipeline.desktop`: lanzador de escritorio para Ubuntu/
+  GNOME. Copia fuente; el icono activo está en `~/Escritorio/`.
 - `.env.example`: plantilla de variables de entorno (sin valores reales).
 - `diagrama_relaciones_v2.html`: diagrama visual de relaciones entre tablas.
 ---
 
 ## Handoff
 
-App pipeline implementada y funcional. 80 tests pasan.
-Commit: `feat(pipeline): añadir app local de procesamiento Plaud`.
+App pipeline implementada con icono de escritorio. 80 tests pasan.
+Commits: `feat(pipeline): añadir app local de procesamiento Plaud`,
+`chore(app): añadir lanzador de escritorio`.
 
 **Estado de la app pipeline (2026-05-03)**:
 - `app_pipeline/app.py` arranca en `localhost:8502` sin errores.
