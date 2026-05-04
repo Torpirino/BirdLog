@@ -69,6 +69,19 @@
 
 ## Tareas completadas
 
+### Sesión 2026-05-04: Reprocesado de observaciones Lindus (completado)
+- [x] **Recuperación de errores Lindus**: `OBSERVACIONES_LINDUS` puede
+      añadirse a una única visita Lindus existente para la fecha, aunque
+      la visita ya tenga `hora_fin`.
+- [x] **Errores claros**: si no existe visita Lindus para la fecha, el
+      mensaje pide procesar primero `INICIO_VISITA_LINDUS`; si hay varias,
+      no se elige automáticamente.
+- [x] **Sin deduplicación biológica**: se permite reprocesar contenido
+      idéntico porque dos observaciones iguales pueden ser reales; queda
+      pendiente una deduplicación futura por archivo/hash.
+- [x] **Documentación y decisión**: `docs/USO_APP_PIPELINE.md` actualizado
+      y decisión #38 añadida.
+
 ### Sesión 2026-05-04: Orden lógico de lotes Lindus en Drive (completado)
 - [x] **Orden de procesado Lindus**: cuando llegan varios `.txt` Lindus
       juntos, el pipeline los ordena por fecha y tipo lógico:

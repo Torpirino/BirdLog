@@ -146,6 +146,8 @@ def _clasificar_error(mensaje: str) -> tuple[str, str]:
 
 def _resumen_legible(resumen: dict) -> str:
     """Convierte el dict resumen de pipeline a texto legible para el observador."""
+    if resumen.get("mensaje"):
+        return resumen["mensaje"]
     tipo = resumen.get("tipo_visita", resumen.get("tipo", ""))
     id_visita = resumen.get("id_visita", "")
     partes = []

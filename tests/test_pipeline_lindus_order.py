@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from app_pipeline.lib.estados import ESTADO_OK, ResultadoArchivo
 from app_pipeline.lib.ui import _mensajes_registro
 from src.insercion.escritura import insertar_registro
-from src.pipeline import ordenar_descargas_lindus, procesar_drive
+from src.pipeline import ordenar_descargas_lindus, procesar_drive, procesar_txt_local
 from src.parser.plaud import parsear_txt_plaud
 
 from tests.test_escritura import ClienteFalso
@@ -91,7 +91,7 @@ def test_fin_lindus_sin_visita_abierta_no_crea_visita():
 
 
 def test_observaciones_lindus_sin_visita_abierta_mantiene_error_claro():
-    """OBSERVACIONES_LINDUS sigue fallando si no hay visita abierta."""
+    """OBSERVACIONES_LINDUS falla si no existe ninguna visita."""
     cliente = ClienteFalso()
     cliente.datos["visitas"] = []
     registro = {
@@ -101,7 +101,7 @@ def test_observaciones_lindus_sin_visita_abierta_mantiene_error_claro():
         "datos": [{"especie": "Milano negro", "hora": "10:00", "numero": 1, "comportamiento": "MIGRADOR"}],
     }
 
-    with pytest.raises(ValueError, match="No hay visita Lindus abierta para añadir observaciones en la fecha 2026-05-04"):
+    with pytest.raises(ValueError, match="No existe ninguna visita Lindus para la fecha 2026-05-04"):
         insertar_registro(registro, cliente)
 
 
@@ -157,3 +157,49 @@ def test_registro_pipeline_refleja_orden_recibido():
 
     assert mensajes.index("Archivo: inicio.txt") < mensajes.index("Archivo: obs.txt")
     assert mensajes.index("Archivo: obs.txt") < mensajes.index("Archivo: fin.txt")
+
+
+def test_lote_completo_lindus_inicio_observaciones_fin_sigue_funcionando(monkeypatch, tmp_path):
+    """Inicio crea visita, observaciones la usan y fin la cierra."""
+    import src.pipeline as pipeline
+
+    cliente = ClienteFalso()
+    cliente.datos["visitas"] = []
+    inicio = tmp_path / "inicio.txt"
+    obs = tmp_path / "obs.txt"
+    fin = tmp_path / "fin.txt"
+    inicio.write_text(
+        "TIPO_REGISTRO: INICIO_VISITA_LINDUS\n"
+        "TIPO_VISITA: LINDUS\n"
+        "FECHA: 2026-05-04\n"
+        "HORA_INICIO: 09:00\n"
+        "LUGAR_VISITA: Lindus\n"
+        "OBSERVADOR: Gabi\n",
+        encoding="utf-8",
+    )
+    obs.write_text(
+        "TIPO_REGISTRO: OBSERVACIONES_LINDUS\n"
+        "TIPO_VISITA: LINDUS\n"
+        "FECHA: 2026-05-04\n"
+        "---OBSERVACION_LINDUS---\n"
+        "ESPECIE: Milano negro\n"
+        "HORA: 10:00\n"
+        "NUMERO: 1\n"
+        "COMPORTAMIENTO: MIGRADOR\n",
+        encoding="utf-8",
+    )
+    fin.write_text(
+        "TIPO_REGISTRO: FIN_VISITA_LINDUS\n"
+        "TIPO_VISITA: LINDUS\n"
+        "FECHA: 2026-05-04\n"
+        "HORA_FIN: 12:00\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(pipeline, "hacer_backup", lambda _cliente: tmp_path / "backup")
+
+    procesar_txt_local(inicio, cliente)
+    procesar_txt_local(obs, cliente)
+    procesar_txt_local(fin, cliente)
+
+    assert cliente.datos["visitas"][0]["hora_fin"] == "12:00"
+    assert len(cliente.datos["lindus"]) == 1

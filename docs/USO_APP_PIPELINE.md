@@ -150,6 +150,16 @@ automáticamente antes de procesarlos: primero el inicio de visita, después
 las observaciones y por último el cierre con meteorología. Así no hace
 falta subirlos manualmente en ese orden.
 
+Si un archivo de **observaciones Lindus** falló y lo corriges después, puedes
+reprocesar solo ese archivo si ya existe una única visita Lindus para esa
+fecha. La app añadirá las observaciones a esa visita aunque ya esté cerrada.
+Si hay varias visitas Lindus en la misma fecha, la app no elige sola y pedirá
+resolverlo manualmente.
+
+Atención: de momento no hay deduplicación segura por archivo o hash. Si
+reprocesas dos veces el mismo archivo de observaciones Lindus, puedes crear
+observaciones duplicadas.
+
 Cuando un archivo falla, el resumen global se muestra en rojo o amarillo,
 el registro incluye un diagnóstico por problema y la tabla indica si el
 `.txt` se movió a `03_errores`. El desplegable del archivo muestra fase,

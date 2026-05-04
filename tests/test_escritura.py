@@ -116,7 +116,16 @@ class ClienteFalso:
                 {"id_especie": 13, "nombre_comun": "milano real", "nombre_cientifico": "Milvus milvus"},
                 {"id_especie": 16, "nombre_comun": "Milano real", "nombre_cientifico": "Milvus milvus"},
             ],
-            "visitas": [{"id_visita": 50, "tipo_visita": "LINDUS", "fecha": "2026-05-01", "hora_fin": None}],
+            "visitas": [
+                {
+                    "id_visita": 50,
+                    "tipo_visita": "LINDUS",
+                    "fecha": "2026-05-01",
+                    "hora_fin": None,
+                    "id_lugar": 2,
+                    "id_observador": 7,
+                }
+            ],
         }
 
     def table(self, nombre):
@@ -144,16 +153,94 @@ def test_insertar_observaciones_lindus_usa_visita_abierta():
     resumen = insertar_registro(registro, cliente)
     assert resumen["id_visita"] == 50
     assert resumen["insertados"] == {"lindus": 2}
+    assert resumen["mensaje"] == "Observaciones añadidas a la visita Lindus existente id=50."
     assert [fila["id_especie"] for fila in cliente.datos["lindus"]] in ([12, 13], [15, 16])
 
 
-def test_insertar_observaciones_lindus_falla_sin_visita_abierta():
-    """No inserta Lindus si no existe visita abierta."""
+def test_insertar_observaciones_lindus_usa_visita_cerrada_unica():
+    """Permite recuperar observaciones aunque la visita ya esté cerrada."""
+    cliente = ClienteFalso()
+    cliente.datos["visitas"][0]["hora_fin"] = "12:30"
+    registro = parsear_txt_plaud(str(EJEMPLOS / "observaciones_lindus_ok.txt"))
+
+    resumen = insertar_registro(registro, cliente)
+
+    assert resumen["id_visita"] == 50
+    assert "Aviso: la visita ya tenía hora de fin" in resumen["mensaje"]
+    assert len(cliente.datos["lindus"]) == 2
+
+
+def test_insertar_observaciones_lindus_falla_sin_visita_existente():
+    """No inserta Lindus si no existe ninguna visita para esa fecha."""
     cliente = ClienteFalso()
     cliente.datos["visitas"] = []
     registro = parsear_txt_plaud(str(EJEMPLOS / "observaciones_lindus_ok.txt"))
-    with pytest.raises(ValueError, match="No hay visita Lindus abierta"):
+
+    with pytest.raises(
+        ValueError,
+        match="No existe ninguna visita Lindus para la fecha 2026-05-01",
+    ):
         insertar_registro(registro, cliente)
+
+    assert "lindus" not in cliente.datos
+
+
+def test_insertar_observaciones_lindus_falla_con_varias_visitas():
+    """No elige automáticamente si hay varias visitas candidatas."""
+    cliente = ClienteFalso()
+    cliente.datos["visitas"].append(
+        {
+            "id_visita": 51,
+            "tipo_visita": "LINDUS",
+            "fecha": "2026-05-01",
+            "hora_fin": None,
+            "id_lugar": 2,
+            "id_observador": 7,
+        }
+    )
+    registro = parsear_txt_plaud(str(EJEMPLOS / "observaciones_lindus_ok.txt"))
+
+    with pytest.raises(
+        ValueError,
+        match="Hay varias visitas Lindus para la fecha 2026-05-01",
+    ):
+        insertar_registro(registro, cliente)
+
+    assert "lindus" not in cliente.datos
+
+
+def test_insertar_observaciones_lindus_filtra_por_lugar_y_observador_si_vienen():
+    """La lógica queda preparada para desambiguar con campos opcionales."""
+    cliente = ClienteFalso()
+    cliente.datos["lugares"].append({"id_lugar": 3, "nombre_lugar": "Trona"})
+    cliente.datos["visitas"].append(
+        {
+            "id_visita": 51,
+            "tipo_visita": "LINDUS",
+            "fecha": "2026-05-01",
+            "hora_fin": None,
+            "id_lugar": 3,
+            "id_observador": 7,
+        }
+    )
+    registro = parsear_txt_plaud(str(EJEMPLOS / "observaciones_lindus_ok.txt"))
+    registro["visita"]["lugar_visita"] = "Trona"
+    registro["visita"]["observador"] = "Gabi"
+
+    resumen = insertar_registro(registro, cliente)
+
+    assert resumen["id_visita"] == 51
+
+
+def test_insertar_observaciones_lindus_no_deduplica_contenido_biologico():
+    """Reprocesar el mismo contenido no se bloquea por deduplicación biológica."""
+    cliente = ClienteFalso()
+    registro = parsear_txt_plaud(str(EJEMPLOS / "observaciones_lindus_ok.txt"))
+
+    insertar_registro(registro, cliente)
+    insertar_registro(registro, cliente)
+
+    assert len(cliente.datos["lindus"]) == 4
 
 
 def test_insertar_caja_no_crea_visita_si_falta_especie():

@@ -91,12 +91,20 @@ def _combinar_obs(principal: str | None, adicional: str | None) -> str | None:
 
 
 def _insertar_observaciones_lindus(registro: dict, cliente) -> dict:
-    """Inserta observaciones en la visita Lindus abierta."""
-    id_visita = _buscar_visita_lindus_abierta(registro["visita"]["fecha"], cliente, "añadir observaciones")
+    """Inserta observaciones en la visita Lindus candidata."""
+    id_visita, cerrada = _buscar_visita_lindus_para_observaciones(registro, cliente)
     ids_especies = _resolver_especies_lindus(registro["datos"], cliente)
     filas = [_fila_lindus(dato, id_visita, id_especie) for dato, id_especie in zip(registro["datos"], ids_especies)]
     cliente.table("lindus").insert(filas).execute()
-    return {"tipo_registro": registro["tipo_registro"], "id_visita": id_visita, "insertados": {"lindus": len(filas)}}
+    mensaje = f"Observaciones añadidas a la visita Lindus existente id={id_visita}."
+    if cerrada:
+        mensaje += " Aviso: la visita ya tenía hora de fin."
+    return {
+        "tipo_registro": registro["tipo_registro"],
+        "id_visita": id_visita,
+        "insertados": {"lindus": len(filas)},
+        "mensaje": mensaje,
+    }
 
 
 def _insertar_fin_lindus(registro: dict, cliente) -> dict:
@@ -117,6 +125,56 @@ def _buscar_visita_lindus_abierta(fecha: str, cliente, accion: str) -> int:
     if not filas:
         raise ValueError(f"No hay visita Lindus abierta para {accion} en la fecha {fecha}.")
     return filas[0]["id_visita"]
+
+
+def _buscar_visita_lindus_para_observaciones(registro: dict, cliente) -> tuple[int, bool]:
+    """Busca una única visita Lindus por fecha y filtros opcionales."""
+    visita = registro["visita"]
+    fecha = visita["fecha"]
+    filas = _visitas_lindus_fecha(fecha, cliente)
+    filas = _filtrar_lindus_por_lugar(filas, visita, cliente)
+    filas = _filtrar_lindus_por_observador(filas, visita, cliente)
+    if not filas:
+        raise ValueError(
+            f"No existe ninguna visita Lindus para la fecha {fecha}. "
+            "Procesa primero el archivo INICIO_VISITA_LINDUS."
+        )
+    if len(filas) > 1:
+        raise ValueError(
+            f"Hay varias visitas Lindus para la fecha {fecha}. "
+            "No se puede saber a cuál añadir las observaciones. "
+            "Incluye lugar/observador en el archivo o resuélvelo manualmente."
+        )
+    fila = filas[0]
+    return fila["id_visita"], bool(fila.get("hora_fin"))
+
+
+def _visitas_lindus_fecha(fecha: str, cliente) -> list[dict]:
+    """Devuelve visitas Lindus candidatas de una fecha."""
+    respuesta = (
+        cliente.table("visitas")
+        .select("id_visita,hora_fin,id_lugar,id_observador")
+        .eq("tipo_visita", "LINDUS")
+        .eq("fecha", fecha)
+        .execute()
+    )
+    return getattr(respuesta, "data", None) or []
+
+
+def _filtrar_lindus_por_lugar(filas: list[dict], visita: dict, cliente) -> list[dict]:
+    """Filtra por lugar si OBSERVACIONES_LINDUS lo incluye en el futuro."""
+    if not visita.get("lugar_visita"):
+        return filas
+    id_lugar = resolver_lugar(visita["lugar_visita"], cliente)
+    return [fila for fila in filas if fila.get("id_lugar") == id_lugar]
+
+
+def _filtrar_lindus_por_observador(filas: list[dict], visita: dict, cliente) -> list[dict]:
+    """Filtra por observador si OBSERVACIONES_LINDUS lo incluye en el futuro."""
+    if not visita.get("observador"):
+        return filas
+    id_observador = resolver_observador(visita["observador"], cliente)
+    return [fila for fila in filas if fila.get("id_observador") == id_observador]
 
 
 def _insertar_meteorologia(bloques: list[dict], id_visita: int, cliente) -> None:

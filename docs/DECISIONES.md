@@ -503,3 +503,22 @@ antes de insertar observaciones.
 **Implicaciones**: `FIN_VISITA_LINDUS` nunca crea una visita nueva. Si no
 existe una visita Lindus abierta para esa fecha, el archivo falla con
 mensaje claro, se mueve a errores y no crea backup.
+
+---
+
+## #38 — Observaciones Lindus recuperables sobre visita existente
+**Fecha**: 2026-05-04
+**Decisión**: `OBSERVACIONES_LINDUS` ya no exige que la visita Lindus esté
+abierta. Si existe una única visita Lindus para la fecha, las observaciones
+se añaden a esa visita aunque ya tenga `hora_fin`. Si hay cero visitas o
+varias visitas candidatas, el pipeline falla con mensaje claro.
+**Razón**: Permite recuperar archivos de observaciones que fallaron por
+catálogo o validación sin borrar y repetir toda la jornada Lindus.
+**Implicaciones**:
+- No se crea ninguna visita desde `OBSERVACIONES_LINDUS`.
+- Si la visita está cerrada, se informa con aviso.
+- Si en el futuro el archivo incluye `LUGAR_VISITA` u `OBSERVADOR`, se usan
+  para desambiguar.
+- No hay deduplicación por especie/hora/número/comportamiento; reprocesar
+  el mismo archivo puede duplicar filas. Una deduplicación segura requerirá
+  diseño por archivo/hash.

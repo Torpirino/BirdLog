@@ -76,6 +76,15 @@ def test_resumen_legible_sin_datos_devuelve_texto_generico():
     assert len(texto) > 0
 
 
+def test_resumen_legible_prefiere_mensaje_de_recuperacion_lindus():
+    """Muestra el aviso específico devuelto por la inserción Lindus."""
+    resumen = {
+        "id_visita": 42,
+        "mensaje": "Observaciones añadidas a la visita Lindus existente id=42. Aviso: la visita ya tenía hora de fin.",
+    }
+    assert _resumen_legible(resumen) == resumen["mensaje"]
+
+
 # ---------------------------------------------------------------------------
 # Traducción de resultado procesado
 # ---------------------------------------------------------------------------
