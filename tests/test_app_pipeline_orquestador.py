@@ -127,6 +127,24 @@ def test_traducir_resultado_catalogo_es_incompleto():
     assert resultado.estado == ESTADO_INCOMPLETO
 
 
+def test_traducir_resultado_con_varios_diagnosticos():
+    """La app conserva varios errores para renderizarlos por archivo."""
+    raw = {
+        "archivo": "nido.txt",
+        "estado": "error",
+        "fase": "validación",
+        "mensaje": "El archivo nido.txt no es válido:\n- HORA_FIN ausente\n- HORA_METEO ausente",
+        "errores": [
+            {"fase": "validación", "campo": "hora_fin", "motivo": "campo obligatorio ausente"},
+            {"fase": "validación", "campo": "hora_meteo", "motivo": "campo obligatorio ausente"},
+        ],
+    }
+    resultado = _traducir_resultado(raw)
+    assert resultado.estado == ESTADO_ERROR
+    assert resultado.etapa == "Validación"
+    assert len(resultado.diagnosticos) == 2
+
+
 # ---------------------------------------------------------------------------
 # procesar_lote con monkeypatch
 # ---------------------------------------------------------------------------

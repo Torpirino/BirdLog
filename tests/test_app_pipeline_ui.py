@@ -85,3 +85,34 @@ def test_mensajes_registro_incluye_mensaje_de_error_y_movimiento():
     assert "- Estado: Error" in mensajes
     assert "- Drive: movido a errores" in mensajes
     assert "FECHA inválida" in mensajes
+
+
+def test_mensajes_registro_muestra_diagnosticos_multiples():
+    """El log desglosa fase, campo, valor, motivo y acción."""
+    resultado = ResultadoArchivo(
+        nombre="nido.txt",
+        estado=ESTADO_ERROR,
+        etapa="Validación",
+        mensaje="mensaje técnico oculto",
+        txt_movido_a="errores",
+        insertado_supabase=False,
+        backup_creado=False,
+        diagnosticos=(
+            {
+                "fase": "validación",
+                "campo": "viento_direccion",
+                "valor": "OESTE",
+                "motivo": "valor cerrado no válido",
+                "accion": "no insertado; movido a errores; sin backup",
+                "valores_aceptados": ["N", "W"],
+                "sugerencia": "usar W para oeste",
+            },
+        ),
+    )
+
+    mensajes = "\n".join(ui._mensajes_registro([resultado]))
+
+    assert "Fase: validación" in mensajes
+    assert "Campo: viento_direccion" in mensajes
+    assert "Valor recibido: 'OESTE'" in mensajes
+    assert "Acción realizada: no insertado; movido a errores; sin backup" in mensajes

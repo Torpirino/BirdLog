@@ -69,6 +69,21 @@
 
 ## Tareas completadas
 
+### Sesión 2026-05-04: Diagnóstico detallado de errores del pipeline (completado)
+- [x] **Errores de validación detallados**: el pipeline acumula campos
+      obligatorios ausentes, valores cerrados inválidos y meteorología
+      incompleta antes de fallar.
+- [x] **Errores de catálogo/FK detallados**: lugares, especies y
+      observadores no resueltos indican catálogo, campo Plaud, valor
+      recibido, motivo y sugerencia.
+- [x] **Advertencias de estructura**: texto antes de `TIPO_REGISTRO` se
+      ignora si no bloquea el parseo y queda registrado como advertencia.
+- [x] **App pipeline**: registro, resumen y detalle desplegable muestran
+      diagnósticos múltiples sin traceback técnico visible.
+- [x] **Caso de referencia**: prueba local de Nidos rapaces cubre
+      `HORA_FIN` ausente, `HORA_METEO` ausente, `OESTE` como viento
+      inválido y título narrativo inicial.
+
 ### Sesión 2026-05-04: Guía de campo Plaud y prueba Mamíferos puentes (completado)
 - [x] **Guía de campo Plaud**: añadida documentación para el observador
       en `docs/GUIA_CAMPO_PLAUD.docx` y `docs/GUIA_CAMPO_PLAUD.html`.

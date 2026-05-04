@@ -243,8 +243,14 @@ def _tarjeta_resultado(r: ResultadoArchivo) -> None:
 
         if r.estado != ESTADO_OK:
             st.markdown("---")
-            st.markdown("**Mensaje:**")
-            st.code(r.mensaje, language=None)
+            st.markdown("**Diagnóstico:**")
+            if r.diagnosticos:
+                for diagnostico in r.diagnosticos:
+                    _render_diagnostico(diagnostico)
+                with st.expander("Detalle técnico"):
+                    st.code(r.mensaje, language=None)
+            else:
+                st.code(r.mensaje, language=None)
             if r.estado == ESTADO_INCOMPLETO:
                 st.info(
                     "Da de alta el dato que falta en Supabase (tablas `especies`, `lugares` "
@@ -327,8 +333,49 @@ def _mensajes_archivo(resultado: ResultadoArchivo) -> list[str]:
     if resultado.estado == ESTADO_OK:
         mensajes.append(f"- Mensaje: {resultado.mensaje}")
     else:
-        mensajes.append(f"- Mensaje: {resultado.mensaje}")
+        if resultado.diagnosticos:
+            mensajes.append("- Diagnóstico:")
+            for diagnostico in resultado.diagnosticos:
+                mensajes.extend(_lineas_diagnostico(diagnostico))
+        else:
+            mensajes.append(f"- Mensaje: {resultado.mensaje}")
     return mensajes
+
+
+def _render_diagnostico(diagnostico: dict) -> None:
+    """Muestra un diagnóstico estructurado de forma legible."""
+    prefijo = "Advertencia" if diagnostico.get("advertencia") else "Error"
+    st.markdown(f"**{prefijo}:** {_resumen_diagnostico(diagnostico)}")
+    filas = _lineas_diagnostico(diagnostico)
+    st.markdown("\n".join(f"- {linea}" for linea in filas))
+
+
+def _lineas_diagnostico(diagnostico: dict) -> list[str]:
+    """Construye líneas de log para un diagnóstico."""
+    lineas = [
+        f"Fase: {diagnostico.get('fase', '-')}",
+        f"Campo: {diagnostico.get('campo', '-')}",
+        f"Motivo: {diagnostico.get('motivo', '-')}",
+        f"Acción realizada: {diagnostico.get('accion', '-')}",
+    ]
+    if diagnostico.get("valor") not in (None, ""):
+        lineas.insert(2, f"Valor recibido: {diagnostico['valor']!r}")
+    if diagnostico.get("valores_aceptados"):
+        aceptados = ", ".join(str(valor) for valor in diagnostico["valores_aceptados"])
+        lineas.append(f"Valores aceptados: {aceptados}")
+    if diagnostico.get("sugerencia"):
+        lineas.append(f"Sugerencia: {diagnostico['sugerencia']}")
+    return lineas
+
+
+def _resumen_diagnostico(diagnostico: dict) -> str:
+    """Devuelve una frase corta para el encabezado del diagnóstico."""
+    campo = diagnostico.get("campo") or "campo"
+    motivo = diagnostico.get("motivo") or "problema detectado"
+    valor = diagnostico.get("valor")
+    if valor not in (None, ""):
+        return f"{campo.upper()} recibió {valor!r}: {motivo}"
+    return f"{campo.upper()}: {motivo}"
 
 
 def _badge(texto_ok: str, texto_no: str, condicion: bool) -> None:

@@ -1,5 +1,8 @@
 """Inserta registros Plaud validados en Supabase."""
 
+from pathlib import Path
+
+from src.diagnosticos import ErrorDetalle, PipelineError
 from src.insercion.catalogos import resolver_especie, resolver_lugar, resolver_observador
 
 
@@ -35,18 +38,23 @@ def _resolver_referencias(registro: dict, cliente) -> dict:
     """Resuelve todas las FKs antes de insertar nada."""
     visita = registro["visita"]
     tipo = registro["tipo_registro"]
-    refs = {"id_lugar": resolver_lugar(visita[TIPOS_CON_LUGAR[tipo]], cliente)}
-    refs["id_observador"] = resolver_observador(visita["observador"], cliente)
-    refs["ids_especies"] = _resolver_especies_datos(tipo, registro["datos"], cliente)
+    errores = []
+    refs = {
+        "id_lugar": _resolver_lugar_seguro(visita[TIPOS_CON_LUGAR[tipo]], TIPOS_CON_LUGAR[tipo], cliente, errores),
+        "id_observador": _resolver_observador_seguro(visita["observador"], cliente, errores),
+        "ids_especies": _resolver_especies_datos(tipo, registro["datos"], cliente, errores),
+    }
+    if errores:
+        raise PipelineError(Path("<registro>").name, "catálogo/FK", errores)
     return refs
 
 
-def _resolver_especies_datos(tipo: str, datos: list[dict], cliente) -> list[int | None]:
+def _resolver_especies_datos(tipo: str, datos: list[dict], cliente, errores: list[ErrorDetalle]) -> list[int | None]:
     """Resuelve especies requeridas u opcionales de bloques específicos."""
     if tipo in {"VISITA_CAJA_NIDO", "VISITA_NIDO_RAPAZ"}:
-        return [_resolver_especie_opcional(datos[0], cliente)]
+        return [_resolver_especie_opcional(datos[0], cliente, errores)]
     if tipo == "VISITA_MAMIFEROS_PUENTE":
-        return [resolver_especie(dato["especie"], cliente) for dato in datos]
+        return [_resolver_especie_segura(dato["especie"], "especie", cliente, errores) for dato in datos]
     return []
 
 
@@ -85,7 +93,8 @@ def _combinar_obs(principal: str | None, adicional: str | None) -> str | None:
 def _insertar_observaciones_lindus(registro: dict, cliente) -> dict:
     """Inserta observaciones en la visita Lindus abierta."""
     id_visita = _buscar_visita_lindus_abierta(registro["visita"]["fecha"], cliente)
-    filas = [_fila_lindus(dato, id_visita, cliente) for dato in registro["datos"]]
+    ids_especies = _resolver_especies_lindus(registro["datos"], cliente)
+    filas = [_fila_lindus(dato, id_visita, id_especie) for dato, id_especie in zip(registro["datos"], ids_especies)]
     cliente.table("lindus").insert(filas).execute()
     return {"tipo_registro": registro["tipo_registro"], "id_visita": id_visita, "insertados": {"lindus": len(filas)}}
 
@@ -137,9 +146,9 @@ def _fila_meteo(bloque: dict, id_visita: int) -> dict:
     return {"id_visita": id_visita, "hora": bloque["hora_meteo"], "temperatura": bloque.get("temperatura"), "nubosidad": bloque.get("nubosidad"), "viento_direccion": bloque.get("viento_direccion"), "viento_intensidad": bloque.get("viento_intensidad"), "precipitacion": bloque.get("precipitacion"), "visibilidad": bloque.get("visibilidad")}
 
 
-def _fila_lindus(dato: dict, id_visita: int, cliente) -> dict:
+def _fila_lindus(dato: dict, id_visita: int, id_especie: int) -> dict:
     """Mapea observación Lindus a columnas SQL."""
-    return {"id_visita": id_visita, "id_especie": resolver_especie(dato["especie"], cliente), "hora": dato["hora"], "numero": dato["numero"], "comportamiento": dato["comportamiento"], "edad": dato.get("edad"), "sexo": dato.get("sexo"), "plumaje": dato.get("plumaje"), "observaciones": dato.get("observaciones")}
+    return {"id_visita": id_visita, "id_especie": id_especie, "hora": dato["hora"], "numero": dato["numero"], "comportamiento": dato["comportamiento"], "edad": dato.get("edad"), "sexo": dato.get("sexo"), "plumaje": dato.get("plumaje"), "observaciones": dato.get("observaciones")}
 
 
 def _insertar_caja(dato: dict, id_especie: int | None, id_visita: int, id_lugar: int, cliente) -> dict:
@@ -172,11 +181,67 @@ def _insertar_mamiferos(datos: list[dict], ids_especies: list[int], id_visita: i
     return {"mamiferos_puentes": len(filas)}
 
 
-def _resolver_especie_opcional(dato: dict, cliente) -> int | None:
+def _resolver_especie_opcional(dato: dict, cliente, errores: list[ErrorDetalle]) -> int | None:
     """Resuelve especie solo cuando Plaud la incluyó."""
     if not dato.get("especie"):
         return None
-    return resolver_especie(dato["especie"], cliente)
+    return _resolver_especie_segura(dato["especie"], "especie", cliente, errores)
+
+
+def _resolver_especies_lindus(datos: list[dict], cliente) -> list[int]:
+    """Resuelve especies Lindus antes de insertar filas."""
+    errores = []
+    ids = [_resolver_especie_segura(dato["especie"], "especie", cliente, errores) for dato in datos]
+    if errores:
+        raise PipelineError(Path("<registro>").name, "catálogo/FK", errores)
+    return ids
+
+
+def _resolver_lugar_seguro(nombre: str, campo: str, cliente, errores: list[ErrorDetalle]) -> int | None:
+    """Resuelve lugar acumulando error de catálogo si falla."""
+    try:
+        return resolver_lugar(nombre, cliente)
+    except ValueError as exc:
+        errores.append(_error_catalogo("lugares", campo, nombre, exc))
+        return None
+
+
+def _resolver_observador_seguro(nombre: str, cliente, errores: list[ErrorDetalle]) -> int | None:
+    """Resuelve observador acumulando error de catálogo si falla."""
+    try:
+        return resolver_observador(nombre, cliente)
+    except ValueError as exc:
+        errores.append(_error_catalogo("observadores", "observador", nombre, exc))
+        return None
+
+
+def _resolver_especie_segura(nombre: str, campo: str, cliente, errores: list[ErrorDetalle]) -> int | None:
+    """Resuelve especie acumulando error de catálogo si falla."""
+    try:
+        return resolver_especie(nombre, cliente)
+    except ValueError as exc:
+        errores.append(_error_catalogo("especies", campo, nombre, exc))
+        return None
+
+
+def _error_catalogo(tabla: str, campo: str, valor: str, exc: ValueError) -> ErrorDetalle:
+    """Convierte un error de catálogo en diagnóstico estructurado."""
+    mensaje = str(exc)
+    ambiguo = "ambiguo" in mensaje.lower()
+    etiqueta = {"lugares": "lugar", "observadores": "observador", "especies": "especie"}[tabla]
+    if ambiguo:
+        motivo = f"{etiqueta} ambiguo en catálogo"
+    else:
+        final = "encontrada" if etiqueta == "especie" else "encontrado"
+        motivo = f"{etiqueta} no {final} en catálogo"
+    return ErrorDetalle(
+        fase="catálogo/FK",
+        campo=campo,
+        contexto=tabla,
+        valor=valor,
+        motivo=motivo,
+        sugerencia=f"usa el nombre exacto del catálogo de {tabla}",
+    )
 
 
 def _id_insertado(respuesta, campo: str) -> int:

@@ -146,9 +146,10 @@ varios archivos o errores largos, puedes leerlos dentro del bloque de log
 sin depender tanto del scroll de la página.
 
 Cuando un archivo falla, el resumen global se muestra en rojo o amarillo,
-el registro incluye el mensaje del error y la tabla indica si el `.txt`
-se movió a `03_errores`. El detalle largo queda en el desplegable del
-archivo.
+el registro incluye un diagnóstico por problema y la tabla indica si el
+`.txt` se movió a `03_errores`. El desplegable del archivo muestra fase,
+campo afectado, valor recibido si existe, motivo, sugerencia y acción
+realizada. El detalle técnico queda oculto en un desplegable aparte.
 
 ### Botones principales
 
@@ -181,8 +182,8 @@ que no se había registrado antes.
 
 Pasos:
 
-1. Lee el mensaje del error — te dice exactamente qué falta
-   (p.ej. "Especie no encontrada: 'Milano negro'").
+1. Lee el diagnóstico del error — te dice el catálogo, el campo recibido
+   y el valor que no se pudo resolver.
 2. Entra en el dashboard → página **Edición / Catálogos**.
 3. Da de alta el nombre que falta (especie, lugar u observador).
 4. Añade ese nombre al vocabulario cerrado del Plaud para futuras
@@ -200,7 +201,8 @@ algo falló al guardarlo en Supabase.
 
 Pasos:
 
-1. Lee el mensaje — indica qué campo falta o qué salió mal.
+1. Lee el diagnóstico — indica fase, campo, valor recibido, motivo,
+   sugerencia y acción realizada.
 2. Si el error es de campo faltante: revisa la plantilla del Plaud
    y vuelve a grabar la visita.
 3. Si el error es de Supabase o Drive: ve a la sección de

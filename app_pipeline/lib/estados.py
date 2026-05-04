@@ -37,6 +37,7 @@ class ResultadoArchivo:
     txt_movido_a: Literal["procesados", "errores", "-"]
     insertado_supabase: bool
     backup_creado: bool
+    diagnosticos: tuple[dict, ...] = ()
 
 
 @dataclass(frozen=True)

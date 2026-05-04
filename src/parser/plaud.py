@@ -36,19 +36,45 @@ PARSERS = {}
 def parsear_txt_plaud(ruta: str) -> dict:
     """Lee un TXT de Plaud y devuelve su registro estructurado."""
     with open(ruta, encoding="utf-8") as archivo:
-        texto = archivo.read()
+        texto_original = archivo.read()
+    texto = _texto_parseable(texto_original)
     tipo = detectar_tipo(texto)
-    return PARSERS[tipo](texto)
+    registro = PARSERS[tipo](texto)
+    registro["_advertencias"] = detectar_advertencias_estructura(texto_original)
+    return registro
 
 
 def detectar_tipo(texto: str) -> str:
     """Extrae TIPO_REGISTRO y comprueba que sea un tipo activo."""
-    for clave, valor in _pares_clave_valor(texto):
+    for clave, valor in _pares_clave_valor(_texto_parseable(texto)):
         if clave == "tipo_registro":
             if valor in TIPOS_REGISTRO:
                 return valor
             raise ValueError(f"TIPO_REGISTRO no reconocido: {valor}")
     raise ValueError("TIPO_REGISTRO ausente")
+
+
+def _texto_parseable(texto: str) -> str:
+    """Extrae la salida estructurada si el archivo contiene una plantilla completa."""
+    marcador_ejemplo = "EJEMPLO DE SALIDA CORRECTA:"
+    marcador_validacion = "VALIDACIÓN FINAL ANTES DE RESPONDER:"
+    if marcador_ejemplo in texto:
+        texto = texto.split(marcador_ejemplo, 1)[1]
+    if marcador_validacion in texto:
+        texto = texto.split(marcador_validacion, 1)[0]
+    return texto
+
+
+def detectar_advertencias_estructura(texto: str) -> list[str]:
+    """Detecta líneas narrativas previas al primer TIPO_REGISTRO."""
+    advertencias = []
+    for linea in _lineas_utiles(texto):
+        if _es_tipo_registro(linea):
+            break
+        if ":" not in linea and not _nombre_bloque(linea):
+            advertencias.append("Se ignoró texto antes de TIPO_REGISTRO.")
+            break
+    return advertencias
 
 
 def parsear_inicio_visita_lindus(texto: str) -> dict:
@@ -99,10 +125,13 @@ def _parsear(texto: str, bloques: dict[str, str]) -> dict:
         if ":" not in linea:
             continue
         clave, valor = _parsear_linea(linea)
+        if valor == "":
+            continue
         if clave == "tipo_registro":
             registro["tipo_registro"] = valor
         else:
             destino[clave] = _convertir_valor(clave, valor)
+    _limpiar_bloques_vacios(registro)
     return registro
 
 
@@ -137,6 +166,14 @@ def _parsear_linea(linea: str) -> tuple[str, str]:
     return _a_snake_case(clave), valor.strip()
 
 
+def _es_tipo_registro(linea: str) -> bool:
+    """Indica si una línea contiene TIPO_REGISTRO."""
+    if ":" not in linea:
+        return False
+    clave, _valor = _parsear_linea(linea)
+    return clave == "tipo_registro"
+
+
 def _a_snake_case(clave: str) -> str:
     """Convierte claves de Plaud a snake_case minúscula."""
     return clave.strip().lower().replace(" ", "_")
@@ -158,6 +195,12 @@ def _convertir_valor(clave: str, valor: str):
     if clave == "ocupada" and valor.lower() in {"true", "false"}:
         return valor.lower() == "true"
     return valor
+
+
+def _limpiar_bloques_vacios(registro: dict) -> None:
+    """Descarta bloques de plantilla que no contienen ningún campo."""
+    registro["meteorologia"] = [bloque for bloque in registro["meteorologia"] if bloque]
+    registro["datos"] = [bloque for bloque in registro["datos"] if bloque]
 
 
 PARSERS.update(

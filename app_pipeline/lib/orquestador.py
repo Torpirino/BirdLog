@@ -112,6 +112,10 @@ def _traducir_resultado(raw: dict) -> ResultadoArchivo:
 
     mensaje = raw.get("mensaje", "Error desconocido.")
     estado, etapa = _clasificar_error(mensaje)
+    if raw.get("fase") == "catálogo/FK":
+        estado, etapa = ESTADO_INCOMPLETO, "Resolución de catálogos/FK"
+    elif raw.get("fase"):
+        etapa = str(raw["fase"]).capitalize()
     return ResultadoArchivo(
         nombre=nombre,
         estado=estado,
@@ -120,14 +124,19 @@ def _traducir_resultado(raw: dict) -> ResultadoArchivo:
         txt_movido_a="errores",
         insertado_supabase=False,
         backup_creado=False,
+        diagnosticos=tuple(raw.get("errores", ())),
     )
 
 
 def _clasificar_error(mensaje: str) -> tuple[str, str]:
     """Clasifica el error por subcadena del mensaje del pipeline."""
     m = mensaje.lower()
+    if "catálogo/fk" in m or any(p in m for p in ("lugar no encontrado", "observador no encontrado", "especie no encontrada")):
+        return ESTADO_INCOMPLETO, "Resolución de catálogos/FK"
+    if "fase': 'catálogo/fk" in m:
+        return ESTADO_INCOMPLETO, "Resolución de catálogos/FK"
     if any(p in m for p in ("lugar no encontrado", "observador no encontrado", "especie no encontrada")):
-        return ESTADO_INCOMPLETO, "Resolución de catálogos"
+        return ESTADO_INCOMPLETO, "Resolución de catálogos/FK"
     if "no es válido" in m:
         return ESTADO_ERROR, "Validación"
     if "pausado" in m:

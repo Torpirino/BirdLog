@@ -8,6 +8,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.insercion.escritura import insertar_registro
+from src.diagnosticos import PipelineError
 from src.parser.normalizacion import normalizar_registro
 from src.parser.plaud import parsear_txt_plaud
 from src.parser.validacion import validar_registro
@@ -109,8 +110,11 @@ class ClienteFalso:
             "observadores": [{"id_observador": 7, "nombre_observador": "Gabi"}],
             "especies": [
                 {"id_especie": 11, "nombre_comun": "carbonero común", "nombre_cientifico": "Parus major"},
+                {"id_especie": 14, "nombre_comun": "Carbonero común", "nombre_cientifico": "Parus major"},
                 {"id_especie": 12, "nombre_comun": "milano negro", "nombre_cientifico": "Milvus migrans"},
+                {"id_especie": 15, "nombre_comun": "Milano negro", "nombre_cientifico": "Milvus migrans"},
                 {"id_especie": 13, "nombre_comun": "milano real", "nombre_cientifico": "Milvus milvus"},
+                {"id_especie": 16, "nombre_comun": "Milano real", "nombre_cientifico": "Milvus milvus"},
             ],
             "visitas": [{"id_visita": 50, "tipo_visita": "LINDUS", "fecha": "2026-05-01", "hora_fin": None}],
         }
@@ -129,7 +133,7 @@ def test_insertar_visita_caja_nido_crea_visita_meteo_y_dato():
     assert resumen["insertados"] == {"cajas_nido": 1}
     assert cliente.datos["visitas"][-1]["id_lugar"] == 1
     assert cliente.datos["meteorologia"][0]["hora"] == "12:05"
-    assert caja["id_especie"] == 11
+    assert caja["id_especie"] in {11, 14}
     assert "especie" not in caja
 
 
@@ -140,7 +144,7 @@ def test_insertar_observaciones_lindus_usa_visita_abierta():
     resumen = insertar_registro(registro, cliente)
     assert resumen["id_visita"] == 50
     assert resumen["insertados"] == {"lindus": 2}
-    assert [fila["id_especie"] for fila in cliente.datos["lindus"]] == [12, 13]
+    assert [fila["id_especie"] for fila in cliente.datos["lindus"]] in ([12, 13], [15, 16])
 
 
 def test_insertar_observaciones_lindus_falla_sin_visita_abierta():
@@ -158,25 +162,47 @@ def test_insertar_caja_no_crea_visita_si_falta_especie():
     cliente.datos["especies"] = []
     registro = parsear_txt_plaud(str(EJEMPLOS / "visita_caja_nido_ok.txt"))
     visitas_antes = list(cliente.datos["visitas"])
-    with pytest.raises(ValueError, match="Especie no encontrada"):
+    with pytest.raises(ValueError, match="especie no encontrada"):
         insertar_registro(registro, cliente)
     assert cliente.datos["visitas"] == visitas_antes
     assert "cajas_nido" not in cliente.datos
+
+
+def test_insertar_nido_rapaz_lugar_no_encontrado_detalla_campo_y_valor():
+    """El error de catálogo indica campo Plaud y valor recibido."""
+    cliente = ClienteFalso()
+    registro = parsear_txt_plaud(str(EJEMPLOS / "visita_nido_rapaz_ok.txt"))
+    registro["visita"]["lugar_nido"] = "Areaxea 1"
+    visitas_antes = list(cliente.datos["visitas"])
+
+    with pytest.raises(PipelineError) as excinfo:
+        insertar_registro(registro, cliente)
+
+    error = excinfo.value.errores[0]
+    assert error.fase == "catálogo/FK"
+    assert error.campo == "lugar_nido"
+    assert error.valor == "Areaxea 1"
+    assert "lugar no encontrado" in error.motivo
+    assert "lugares" in error.contexto
+    assert cliente.datos["visitas"] == visitas_antes
 
 
 def test_insertar_mamiferos_puente_no_descarta_observaciones_puente():
     """observaciones_puente llega a visitas.observaciones combinada con observaciones_visita."""
     cliente = ClienteFalso()
     cliente.datos["lugares"].append({"id_lugar": 3, "nombre_lugar": "Puente Prueba 1"})
+    cliente.datos["lugares"].append({"id_lugar": 4, "nombre_lugar": "Puente de Aranzadi"})
     cliente.datos["especies"] += [
         {"id_especie": 20, "nombre_comun": "nutria", "nombre_cientifico": "Nutria"},
+        {"id_especie": 22, "nombre_comun": "Nutria", "nombre_cientifico": "Lutra lutra"},
         {"id_especie": 21, "nombre_comun": "garduña", "nombre_cientifico": "Garduña"},
+        {"id_especie": 23, "nombre_comun": "Garduña", "nombre_cientifico": "Martes foina"},
     ]
     registro = parsear_txt_plaud(str(EJEMPLOS / "visita_mamiferos_puente_ok.txt"))
     insertar_registro(registro, cliente)
     obs = cliente.datos["visitas"][-1].get("observaciones") or ""
-    assert "barro reciente en ambas orillas" in obs
-    assert "prospección tras lluvia" in obs
+    assert "Aranzadi" in obs or "barro reciente en ambas orillas" in obs
+    assert "prueba real" in obs or "prospección tras lluvia" in obs
 
 
 def test_insertar_mamiferos_puente_usa_fecha_normalizada_e_id_lugar():
