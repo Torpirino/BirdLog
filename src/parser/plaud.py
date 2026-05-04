@@ -57,11 +57,15 @@ def detectar_tipo(texto: str) -> str:
 def _texto_parseable(texto: str) -> str:
     """Extrae la salida estructurada si el archivo contiene una plantilla completa."""
     marcador_ejemplo = "EJEMPLO DE SALIDA CORRECTA:"
-    marcador_validacion = "VALIDACIÓN FINAL ANTES DE RESPONDER:"
+    marcadores_fin = (
+        "EJEMPLO DE SALIDA SI",
+        "VALIDACIÓN FINAL ANTES DE RESPONDER:",
+    )
     if marcador_ejemplo in texto:
         texto = texto.split(marcador_ejemplo, 1)[1]
-    if marcador_validacion in texto:
-        texto = texto.split(marcador_validacion, 1)[0]
+    for marcador in marcadores_fin:
+        if marcador in texto:
+            texto = texto.split(marcador, 1)[0]
     return texto
 
 

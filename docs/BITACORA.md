@@ -69,6 +69,19 @@
 
 ## Tareas completadas
 
+### Sesión 2026-05-04: Orden lógico de lotes Lindus en Drive (completado)
+- [x] **Orden de procesado Lindus**: cuando llegan varios `.txt` Lindus
+      juntos, el pipeline los ordena por fecha y tipo lógico:
+      inicio, observaciones y cierre.
+- [x] **Observaciones múltiples**: varias `OBSERVACIONES_LINDUS` quedan
+      entre inicio y cierre, con orden estable por metadatos de Drive o
+      nombre.
+- [x] **Cierre sin inicio**: `FIN_VISITA_LINDUS` no crea visita nueva; si
+      no hay visita abierta, falla con mensaje claro y el archivo va a
+      errores.
+- [x] **Documentación y decisión**: `docs/USO_APP_PIPELINE.md` actualizado
+      y decisión #37 añadida.
+
 ### Sesión 2026-05-04: Diagnóstico detallado de errores del pipeline (completado)
 - [x] **Errores de validación detallados**: el pipeline acumula campos
       obligatorios ausentes, valores cerrados inválidos y meteorología

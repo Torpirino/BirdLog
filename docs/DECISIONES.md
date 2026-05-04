@@ -486,3 +486,20 @@ minúsculas (`puente de aranzadi`). El sistema debe tolerar esas variaciones
 sin relajar valores cerrados ni inventar catálogos.
 **Implicaciones**: formatos de fecha fuera de esos dos siguen rechazándose
 con mensaje claro. Los nombres de lugares deben seguir viniendo del catálogo.
+
+---
+
+## #37 — Orden lógico de archivos Lindus en lotes Drive
+**Fecha**: 2026-05-04
+**Decisión**: Antes de insertar un lote de `.txt` desde Drive, el pipeline
+descarga los archivos y ordena los registros Lindus de la misma fecha por
+tipo lógico: `INICIO_VISITA_LINDUS`, `OBSERVACIONES_LINDUS`,
+`FIN_VISITA_LINDUS`. Las observaciones quedan entre inicio y fin y, si hay
+varias, se ordenan de forma estable por hora de Drive (`createdTime` o
+`modifiedTime`) y nombre.
+**Razón**: Drive puede devolver varios `.txt` Lindus en orden no lógico. Si
+se procesa primero el cierre, se cierra una visita inexistente o se cierra
+antes de insertar observaciones.
+**Implicaciones**: `FIN_VISITA_LINDUS` nunca crea una visita nueva. Si no
+existe una visita Lindus abierta para esa fecha, el archivo falla con
+mensaje claro, se mueve a errores y no crea backup.

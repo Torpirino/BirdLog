@@ -145,6 +145,11 @@ archivo, inserción, backup, movimiento de carpeta y resumen final. Si hay
 varios archivos o errores largos, puedes leerlos dentro del bloque de log
 sin depender tanto del scroll de la página.
 
+Si llegan varios archivos de **Lindus** juntos, la app los ordena
+automáticamente antes de procesarlos: primero el inicio de visita, después
+las observaciones y por último el cierre con meteorología. Así no hace
+falta subirlos manualmente en ese orden.
+
 Cuando un archivo falla, el resumen global se muestra en rojo o amarillo,
 el registro incluye un diagnóstico por problema y la tabla indica si el
 `.txt` se movió a `03_errores`. El desplegable del archivo muestra fase,

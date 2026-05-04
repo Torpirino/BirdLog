@@ -7,7 +7,10 @@ from pathlib import Path
 def listar_txt(carpeta_id: str, drive) -> list[dict]:
     """Lista archivos TXT directos de una carpeta Drive."""
     query = f"'{carpeta_id}' in parents and mimeType='text/plain' and trashed=false"
-    respuesta = drive.files().list(q=query, fields="files(id,name,parents)").execute()
+    respuesta = drive.files().list(
+        q=query,
+        fields="files(id,name,parents,createdTime,modifiedTime)",
+    ).execute()
     return respuesta.get("files", [])
 
 
