@@ -9,15 +9,11 @@
 ## Estado actual
 
 - **Fase activa**: Fase 8 — App local de pipeline
-- **Última sesión**: 2026-05-03
-- **Próxima tarea**: Prueba controlada con archivos Plaud reales o
-  sintéticos subidos a `01_entrada` de Drive.
-  102 tests pasan. Branding unificado (🦅 en pipeline y dashboard).
-  Botón "Abrir dashboard" arranca el dashboard automáticamente si no
-  está corriendo. App pipeline reorganizada en dos columnas operativas.
-  Corregida visualización de archivos con error en app pipeline.
-  Pipeline tolera fechas `DD/MM/YYYY` y lugares con distinta capitalización.
-  Mensajes de error de Drive/config simplificados para usuario no técnico.
+- **Última sesión**: 2026-05-04
+- **Próxima tarea**: Continuar pruebas reales con Nidos rapaces,
+  Cebos avispones, Cajas nido y Lindus. Guía de campo Plaud para el
+  observador añadida en formatos DOCX y HTML. Pruebas reales de
+  Mamíferos puentes funcionando correctamente de momento.
 
 ---
 
@@ -30,7 +26,8 @@
 ## Tareas pendientes
 
 ### Fase 2: Plantilla Plaud
-- [ ] Hacer grabaciones reales de prueba (Lindus, cebos avispón, cajas nido)
+- [ ] Continuar pruebas reales con Nidos rapaces, Cebos avispones,
+      Cajas nido y Lindus.
 - [ ] Confirmar con el observador el quinto ecosistema de cajas_nido
 
 ### Fase 3: Parser
@@ -71,6 +68,15 @@
 ---
 
 ## Tareas completadas
+
+### Sesión 2026-05-04: Guía de campo Plaud y prueba Mamíferos puentes (completado)
+- [x] **Guía de campo Plaud**: añadida documentación para el observador
+      en `docs/GUIA_CAMPO_PLAUD.docx` y `docs/GUIA_CAMPO_PLAUD.html`.
+- [x] **Formatos disponibles**: la guía queda disponible en DOCX y HTML.
+- [x] **Pruebas reales**: Mamíferos puentes funciona correctamente de
+      momento con pruebas reales.
+- [x] **Próxima tarea**: continuar pruebas reales con Nidos rapaces,
+      Cebos avispones, Cajas nido y Lindus.
 
 ### Sesión 2026-05-03: Robustez para fechas y lugares Plaud reales (completado)
 - [x] **Fechas tolerantes**: `normalizar_registro()` acepta `YYYY-MM-DD` y
