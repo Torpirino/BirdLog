@@ -17,12 +17,23 @@ Motivo: es documentación funcional del proyecto y será la referencia para el p
 ## Principios generales
 
 - Plaud debe devolver texto estructurado con formato `CLAVE: valor`.
+- Devuelve únicamente texto estructurado `CLAVE: valor` y marcadores de bloque
+  como `---MAMIFERO_PUENTE---`. No añadas texto narrativo, resumen, Markdown
+  ni explicaciones fuera de los campos.
+- Las claves deben mantenerse exactamente como están definidas: por ejemplo
+  `FECHA`, `HORA_INICIO` y `LUGAR_PUENTE`. No traduzcas claves, no cambies
+  mayúsculas/minúsculas y no inventes campos.
 - El parser Python no usará IA: leerá claves, valores y bloques.
 - Los campos `id_*` no los dicta el observador. Los genera o resuelve el sistema.
 - Los nombres de lugares, especies y observadores deben resolverse contra catálogos.
-- El formato preferido de `FECHA` es `YYYY-MM-DD`. El sistema también
-  tolera `DD/MM/YYYY` porque Plaud puede generarlo, pero lo normaliza
-  internamente a `YYYY-MM-DD`.
+- `FECHA` debe salir siempre en formato `YYYY-MM-DD`.
+  Ejemplo correcto: `FECHA: 2026-05-03`.
+  Ejemplo incorrecto: `FECHA: 03/05/2026`.
+- No uses formato de fecha `DD/MM/YYYY` en la salida de Plaud.
+  Nota técnica: el parser puede tolerar `DD/MM/YYYY` por robustez, pero la
+  salida esperada/preferida de Plaud sigue siendo `YYYY-MM-DD`.
+- Las horas deben salir siempre en formato `HH:MM`.
+  Ejemplo correcto: `HORA_INICIO: 10:00`.
 - Los nombres de lugares deben venir del catálogo. El sistema tolera
   diferencias simples de mayúsculas/minúsculas, pero no nombres ambiguos
   ni lugares que no existan en el catálogo.
