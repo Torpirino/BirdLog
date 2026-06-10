@@ -1,11 +1,35 @@
 # Revisión de `BirdLog_tablas_cliente_v03.xlsx`
 
 Fecha de revisión: 2026-06-10.
-Resultado de diseño: decisiones #40–#43 y esquema `sql/003_esquema_v3.sql`.
+Resultado de diseño: decisiones #40–#44 y esquema `sql/003_esquema_v3.sql`.
 
 Este documento recoge los problemas de **datos** detectados en el
 Excel, separados en dos bloques: lo que debe corregir/confirmar el
 cliente y lo que resolverá el script de importación.
+
+---
+
+## 0. Respuestas del cliente (2026-06-10) — RESUELTO en el Excel
+
+Gabi respondió en `docs/Informe_revision.docx` (resaltado en amarillo).
+Aplicado sobre `BirdLog_tablas_cliente_v03.xlsx` (decisión #44):
+
+- ✅ **Meteo 11 valores**: corregidos con el dato real (ver 1.1).
+- ✅ **Bloque V0043 (M0464–M0478)**: reordenado, presión movida a
+  `presion_atm`, `humedad_relativa` vacía.
+- ✅ **Especies (21 entradas `revisar`)**: aceptadas todas como
+  correctas; `revisar` SI→NO en el Excel.
+- ✅ **UTM**: sistema del proyecto = **ETRS89, huso 30N** (todo Navarra);
+  columnas `datum` y `huso` añadidas a las hojas con UTM.
+- ✅ **TOTAL** confirmado como suma de los 3 campos; **3 columnas**
+  `migrador`/`direccion_norte`/`local` se mantienen (origen Trektellen.nl).
+- 🟡 **Deducido sin cliente (decisión #45)**: `M1002`→6.8 y `M1039`→9.5
+  (mismo patrón de decimal); `visitas.id_lugar` de 97 visitas derivado
+  de `meteo` (59 Lindus / 38 Trona); `grupo` y `nombre_comun` de las 135
+  especies por taxonomía estándar. Revisables por el cliente, no bloquean.
+- ⚠️ **Pendiente del cliente (no deducible)**: observador de las 98
+  visitas; UTM X/Y y municipio de Lindus y Trona; `id_lugar` de V0001
+  (sin meteo); vocabularios de las tablas nuevas; quinto ecosistema.
 
 ---
 

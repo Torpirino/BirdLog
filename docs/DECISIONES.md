@@ -672,3 +672,94 @@ reglas:
 **Razón**: Los datos son sagrados: el importador puede transformar
 formato (notación de rumbos, pivotar columnas) pero no inventar
 valores medidos.
+
+---
+
+## #44 — Respuestas del cliente al informe de revisión (Gabi)
+**Fecha**: 2026-06-10
+**Contexto**: Gabi respondió por escrito (resaltado en amarillo) a
+`docs/Informe_revision.docx`, que recogía las cuestiones abiertas del
+informe de revisión del Excel. Las respuestas se han aplicado
+directamente sobre `docs/BirdLog_tablas_cliente_v03.xlsx` (copia de
+seguridad previa `docs/BirdLog_tablas_cliente_v03.bak_<timestamp>.xlsx`).
+**Decisiones del cliente y su aplicación al Excel**:
+- **2.3 TOTAL**: confirmado que `total = migrador + direccion_norte +
+  local`. Sin cambio (la fórmula viva ya estaba aplicada).
+- **3.1 Tipo de observación**: el cliente **mantiene las 3 columnas**
+  `migrador`/`direccion_norte`/`local`; **no** se unifican en un único
+  `tipo_observacion`. Motivo: los datos se descargan de la base general
+  Trektellen.nl en ese formato. **Anula la propuesta de pivotar en la
+  importación** y matiza la regla de "Comportamiento Lindus" de la
+  decisión #43: en BD se conserva `comportamiento`+`numero`, pero la
+  fuente mantiene el formato de 3 columnas.
+- **3.2 Especies a revisar**: las 21 entradas `revisar=SI` son
+  **correctas y se aceptan todas** en el catálogo (nombres genéricos de
+  uso recurrente). En el Excel `revisar` pasa de `SI` a `NO` en las 21.
+  Confirma el criterio de #43 (entran al catálogo).
+- **3.3 Valores meteo fuera de rango**: corregidos los 11 valores con el
+  dato real que indicó el cliente (presiones a hPa con decimal, humedades
+  reales, y `temperatura` de M0588 sin la nota "+V593"). Ver lista en
+  `docs/REVISION_EXCEL_CLIENTE_V03.md`.
+- **3.4 Desplazamiento V0043 (M0464–M0478)**: confirmado error
+  estructural. Se reordena: el valor de presión mal ubicado en
+  `humedad_relativa` se mueve a `presion_atm`; `humedad_relativa` queda
+  vacía (dato original no recuperable).
+- **3.5 Coordenadas UTM**: sistema de referencia del proyecto =
+  **ETRS89, huso 30N** (todos los puntos están en Navarra). Se añaden
+  columnas `datum` (ETRS89) y `huso` (30N) a las hojas con UTM
+  (`cuaderno_campo`, `castor_rastros`, `cajas_nido`, `cebos_avispones`,
+  `nidos_rapaces`, `mamiferos_puentes`).
+**Implicaciones para el esquema/importación**:
+- Las 24 filas de meteo de #43 que dependían del cliente quedan
+  resueltas (11 valores + bloque V0043). Las temperaturas 68/95 °C u
+  otras filas no listadas en el informe siguen pendientes si las hubiera.
+- La importación ya **no** pivota comportamiento Lindus desde una única
+  fuente: el origen mantiene 3 columnas (decisión del cliente).
+- Conviene reflejar el sistema de referencia ETRS89/30N en `lugares`
+  (o documentarlo) al aplicar el esquema v3 y migrar el histórico.
+
+---
+
+## #45 — Valores deducidos en el Excel (pendientes que no requerían al cliente)
+**Fecha**: 2026-06-10
+**Contexto**: Tras aplicar las respuestas del cliente (#44) quedaban
+huecos en el Excel. Parte eran **deducibles de los propios datos o de
+conocimiento taxonómico estándar**; el resto solo los conoce el cliente.
+Se resuelven los primeros sin inventar (principio: los datos son
+sagrados), y se marcan los segundos como pendientes.
+**Deducido y aplicado al Excel** (`BirdLog_tablas_cliente_v03.xlsx`):
+- **Temperaturas M1002 (68) y M1039 (95)** → **6.8** y **9.5**. Mismo
+  patrón de decimal perdido que el cliente ya confirmó para el resto de
+  valores meteo de #44 (p.ej. 786→78.6, 818→81.8). No estaban en el
+  informe, pero la regla es la misma; se marcan como deducidos.
+- **`visitas.id_lugar`** (98 filas, todas vacías) → derivado de la hoja
+  `meteo`, que sí trae `id_lugar` por visita **sin ambigüedad** (cada
+  visita mapea a un único lugar). **97 visitas** rellenadas (59 LUG01
+  Lindus / 38 LUG02 Trona). **V0001** (2025-07-16) no tiene filas de
+  meteo ni `id_lugar` en `Lindus_Trona`: se deja **vacía** y pendiente
+  del cliente (no se infiere de visitas vecinas).
+- **`especies.grupo`** (135, vacías) → asignado por taxonomía a los
+  valores cerrados: RAPAZ (29), PASERIFORME (66), ACUATICA (13),
+  INVERTEBRADO (13), OTRO (14). Criterio: orden Passeriformes →
+  PASERIFORME (incluye córvidos, hirundínidos, aláudidos); rapaces
+  diurnas y nocturnas (Strix) → RAPAZ; aves acuáticas, limícolas,
+  láridos y zancudas → ACUATICA; insectos (mariposas, polillas,
+  abejorros) → INVERTEBRADO; aves terrestres no paseriformes
+  (vencejos, pícidos, palomas, cuco, abejaruco, abubilla) → OTRO.
+- **`especies.nombre_comun`** (135, vacías) → nombre común en español
+  (nomenclatura SEO/BirdLife) deducido del nombre científico; entradas
+  genéricas/rango como "sp." o categorías informales reciben un nombre
+  común genérico equivalente.
+**Pendiente del cliente (no deducible, NO inventado)**:
+- **Observador** de las 98 visitas 2025: no hay dato en el Excel.
+- **UTM X/Y y municipio** de Lindus (LUG01) y Trona (LUG02): no se
+  inventan coordenadas; la hoja `lugares` no tiene esas columnas.
+- **`id_lugar` de V0001**.
+- **Vocabularios** de las tablas nuevas (`fototrampeo.tipo_media`,
+  `estudio_campo.deteccion/migracion/altura`,
+  `castor_rastros.tipo_rastro/intensidad_rastro/reciente_antiguo`).
+- **Quinto ecosistema** de `cajas_nido`.
+**Aviso**: `grupo` y `nombre_comun` son deducciones; conviene que el
+cliente las revise (sobre todo el grupo OTRO y los nombres de las
+entradas genéricas) antes de la importación definitiva, pero no
+bloquean: son corregibles editando la tabla `especies`.

@@ -12,10 +12,12 @@
   esquema v3 y migración del histórico 2025)
 - **Última sesión**: 2026-06-10
 - **Próxima tarea**: Doble vía: (a) continuar pruebas reales con
-  Nidos rapaces, Cebos avispones, Cajas nido y Lindus; (b) enviar al
-  cliente `docs/REVISION_EXCEL_CLIENTE_V03.md` y, con sus respuestas,
-  planificar el script de importación del histórico y la aplicación
-  del esquema v3 en dev.
+  Nidos rapaces, Cebos avispones, Cajas nido y Lindus; (b) recoger
+  del cliente las respuestas que aún faltan (`grupo`/`nombre_comun`
+  de especies, `id_lugar` y observador de las 98 visitas, UTM/
+  municipio de Lindus y Trona, temperaturas M1002/M1039, vocabularios
+  de las tablas nuevas y quinto ecosistema) e implementar el script de
+  importación del histórico + aplicar el esquema v3 en dev.
 
 ---
 
@@ -36,11 +38,17 @@
 - [ ] Recoger 5-6 .txt de ejemplo de tipos distintos de visita
 
 ### Esquema v3 y migración del histórico (abierto 2026-06-10)
-- [ ] Enviar `docs/REVISION_EXCEL_CLIENTE_V03.md` al cliente y
-      recoger respuestas: 24 filas de meteo erróneas, `grupo` y
-      `nombre_comun` de las 135 especies, huso/datum UTM,
-      observador e `id_lugar` de las 98 visitas históricas,
-      vocabularios de las tablas nuevas.
+- [x] Recoger respuestas del cliente al informe de revisión
+      (`docs/Informe_revision.docx`) y aplicarlas al Excel:
+      11 valores de meteo + bloque V0043, especies aceptadas,
+      UTM ETRS89/30N (decisión #44).
+- [x] Resolver por deducción lo que no requería al cliente (decisión
+      #45): temperaturas M1002/M1039, `id_lugar` de 97 visitas,
+      `grupo` y `nombre_comun` de las 135 especies.
+- [ ] Recoger las respuestas que **solo** puede dar el cliente:
+      observador de las 98 visitas, `id_lugar` de V0001, UTM/municipio
+      de Lindus y Trona, vocabularios de las tablas nuevas y quinto
+      ecosistema. (Opcional: que revise `grupo`/`nombre_comun`.)
 - [ ] Implementar script de importación del histórico 2025
       (reglas en decisión #43: rumbos de viento, pivote de
       comportamiento Lindus, codigo_origen, sin autocorregir
@@ -87,6 +95,34 @@
 ---
 
 ## Tareas completadas
+
+### Sesión 2026-06-10: Respuestas del cliente aplicadas al Excel (completado)
+- [x] **Lectura de `docs/Informe_revision.docx`**: extraídas las
+      respuestas que Gabi resaltó en amarillo a las cuestiones del
+      informe de revisión.
+- [x] **Correcciones aplicadas a `BirdLog_tablas_cliente_v03.xlsx`**
+      (copia de seguridad previa `.bak_20260610_163659.xlsx`):
+      - Meteo 3.3: 11 valores corregidos (presiones a hPa con decimal,
+        humedades reales, `temperatura` M0588 sin la nota "+V593").
+      - Meteo 3.4: bloque V0043 (M0464–M0478) reordenado, presión
+        movida de `humedad_relativa` a `presion_atm`; humedad vacía.
+      - Especies 3.2: las 21 entradas `revisar` SI→NO (aceptadas todas).
+      - UTM 3.5: columnas `datum` (ETRS89) y `huso` (30N, Navarra)
+        añadidas a las 6 hojas con coordenadas.
+      - TOTAL y 3 columnas Lindus: confirmados, sin cambio (fórmula
+        viva conservada).
+- [x] **Valores deducibles resueltos (decisión #45)**, sin inventar:
+      - Temperaturas M1002→6.8 y M1039→9.5 (mismo patrón de decimal).
+      - `visitas.id_lugar`: 97 de 98 derivadas de `meteo` (59 Lindus /
+        38 Trona); V0001 queda vacía (sin meteo) para el cliente.
+      - `especies.grupo` (135) por taxonomía y `nombre_comun` (135)
+        por nomenclatura estándar.
+- [x] **Decisión #44 y #45** añadidas en `docs/DECISIONES.md`.
+- [x] **Docs actualizados**: `docs/REVISION_EXCEL_CLIENTE_V03.md`
+      (sección 0 de estado resuelto) y `docs/Revisar con GABI.md`
+      (respuestas rellenadas y pendientes marcados).
+- [x] Verificado en el Excel que los cambios persistieron y que la
+      fórmula `total` (`=N(F2)+N(G2)+N(H2)`) sigue intacta.
 
 ### Sesión 2026-06-10: Revisión del Excel del cliente y esquema v3 (completado)
 - [x] **Revisión de `docs/BirdLog_tablas_cliente_v03.xlsx`**: 14 hojas,
@@ -601,10 +637,14 @@
 ## Bloqueos / dudas
 
 - Quinto ecosistema de cajas_nido pendiente de confirmar con el observador.
-- Migración del histórico bloqueada por respuestas del cliente
-  (`docs/REVISION_EXCEL_CLIENTE_V03.md`): correcciones de meteo,
-  `grupo`/`nombre_comun` de especies, huso/datum UTM, observador y
-  lugar de las visitas 2025.
+- Migración del histórico: en gran parte desbloqueada (2026-06-10).
+  **Resuelto por el cliente** (decisión #44): 11 valores de meteo +
+  bloque V0043, especies aceptadas, UTM ETRS89/30N. **Resuelto por
+  deducción** (decisión #45): temperaturas M1002/M1039, `id_lugar` de
+  97 visitas, `grupo`/`nombre_comun` de especies. **Aún pendiente del
+  cliente** (no deducible): observador de las 98 visitas, `id_lugar`
+  de V0001, UTM/municipio de Lindus y Trona, vocabularios de tablas
+  nuevas y quinto ecosistema.
 - Vocabularios cerrados pendientes con el cliente:
   `fototrampeo.tipo_media`, `estudio_campo.deteccion/migracion/altura`,
   `castor_rastros.tipo_rastro/intensidad_rastro/reciente_antiguo`.
@@ -696,6 +736,10 @@
 - `docs/Revisar con GABI.md`: cuestionario para el cliente con las
   preguntas que bloquean la migración (meteo errónea, especies,
   UTM, visitas 2025, vocabularios nuevos, quinto ecosistema).
+  Actualizado 2026-06-10 con las respuestas ya recibidas.
+- `docs/Informe_revision.docx`: informe de revisión del Excel enviado
+  al cliente; Gabi respondió resaltando en amarillo (meteo, especies,
+  UTM, 3 columnas vs campo único). Fuente de la decisión #44.
 - `docs/modelo_datos.md`: descripción completa de las 14 tablas (v3)
   con todos los campos, tipos y valores cerrados.
 - `docs/formato_plaud.md`: plantillas Plaud definitivas v1 y formato
