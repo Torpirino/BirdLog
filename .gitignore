@@ -30,6 +30,9 @@ data_real/
 # Excel del cliente con observaciones reales (decisión #9)
 docs/*.xlsx
 
+# Archivos de bloqueo de LibreOffice
+.~lock.*#
+
 # =============================================================
 # Python
 # =============================================================
