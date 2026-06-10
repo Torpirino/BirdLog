@@ -110,21 +110,30 @@ def _insertar_observaciones_lindus(registro: dict, cliente) -> dict:
 def _insertar_fin_lindus(registro: dict, cliente) -> dict:
     """Cierra una visita Lindus abierta e inserta meteorología."""
     visita = registro["visita"]
-    id_visita = _buscar_visita_lindus_abierta(visita["fecha"], cliente, "cerrar")
-    cliente.table("visitas").update({"hora_fin": visita["hora_fin"], "observaciones": visita.get("observaciones_visita")}).eq("id_visita", id_visita).execute()
+    abierta = _buscar_visita_lindus_abierta(visita["fecha"], cliente, "cerrar")
+    id_visita = abierta["id_visita"]
+    cambios = {"hora_fin": visita["hora_fin"]}
+    # Las observaciones del cierre se combinan con las del inicio para no
+    # perder ninguna; un cierre sin observaciones no toca el campo.
+    if visita.get("observaciones_visita"):
+        cambios["observaciones"] = _combinar_obs(
+            abierta.get("observaciones"),
+            visita["observaciones_visita"],
+        )
+    cliente.table("visitas").update(cambios).eq("id_visita", id_visita).execute()
     _insertar_meteorologia(registro["meteorologia"], id_visita, cliente)
     return {"tipo_registro": registro["tipo_registro"], "id_visita": id_visita, "insertados": {"meteorologia": len(registro["meteorologia"])}}
 
 
-def _buscar_visita_lindus_abierta(fecha: str, cliente, accion: str) -> int:
-    """Localiza la visita Lindus abierta para una fecha."""
-    consulta = cliente.table("visitas").select("id_visita").eq("tipo_visita", "LINDUS").eq("fecha", fecha)
+def _buscar_visita_lindus_abierta(fecha: str, cliente, accion: str) -> dict:
+    """Localiza la visita Lindus abierta para una fecha y devuelve su fila."""
+    consulta = cliente.table("visitas").select("id_visita,observaciones").eq("tipo_visita", "LINDUS").eq("fecha", fecha)
     consulta = consulta.is_("hora_fin", "null") if hasattr(consulta, "is_") else consulta.eq("hora_fin", None)
     respuesta = consulta.limit(1).execute()
     filas = getattr(respuesta, "data", None) or []
     if not filas:
         raise ValueError(f"No hay visita Lindus abierta para {accion} en la fecha {fecha}.")
-    return filas[0]["id_visita"]
+    return filas[0]
 
 
 def _buscar_visita_lindus_para_observaciones(registro: dict, cliente) -> tuple[int, bool]:

@@ -73,7 +73,8 @@ class TablaFalsa:
         if self.columnas == "*":
             return filas
         columnas = [columna.strip() for columna in self.columnas.split(",")]
-        return [{columna: fila[columna] for columna in columnas} for fila in filas]
+        # Como Supabase real: una columna sin valor en la fila devuelve null.
+        return [{columna: fila.get(columna) for columna in columnas} for fila in filas]
 
     def _insertar(self):
         filas = self.payload if isinstance(self.payload, list) else [self.payload]
@@ -241,6 +242,46 @@ def test_insertar_observaciones_lindus_no_deduplica_contenido_biologico():
     insertar_registro(registro, cliente)
 
     assert len(cliente.datos["lindus"]) == 4
+
+
+def test_insertar_fin_lindus_sin_observaciones_no_borra_las_de_inicio():
+    """Un cierre sin observaciones no machaca las dictadas al inicio."""
+    cliente = ClienteFalso()
+    cliente.datos["visitas"][0]["observaciones"] = "dictadas al inicio"
+    registro = parsear_txt_plaud(str(EJEMPLOS / "fin_visita_lindus_ok.txt"))
+    registro["visita"].pop("observaciones_visita", None)
+
+    resumen = insertar_registro(registro, cliente)
+
+    visita = cliente.datos["visitas"][0]
+    assert resumen["id_visita"] == 50
+    assert visita["hora_fin"] == "11:30"
+    assert visita["observaciones"] == "dictadas al inicio"
+
+
+def test_insertar_fin_lindus_combina_observaciones_de_inicio_y_cierre():
+    """Las observaciones del cierre se combinan con las del inicio."""
+    cliente = ClienteFalso()
+    cliente.datos["visitas"][0]["observaciones"] = "dictadas al inicio"
+    registro = parsear_txt_plaud(str(EJEMPLOS / "fin_visita_lindus_ok.txt"))
+
+    insertar_registro(registro, cliente)
+
+    visita = cliente.datos["visitas"][0]
+    assert visita["hora_fin"] == "11:30"
+    assert visita["observaciones"] == "dictadas al inicio | cierre sin incidencias."
+
+
+def test_insertar_fin_lindus_con_observaciones_y_sin_previas_las_guarda():
+    """Si el inicio no dejó observaciones, quedan solo las del cierre."""
+    cliente = ClienteFalso()
+    registro = parsear_txt_plaud(str(EJEMPLOS / "fin_visita_lindus_ok.txt"))
+
+    insertar_registro(registro, cliente)
+
+    visita = cliente.datos["visitas"][0]
+    assert visita["hora_fin"] == "11:30"
+    assert visita["observaciones"] == "cierre sin incidencias."
 
 
 def test_insertar_caja_no_crea_visita_si_falta_especie():

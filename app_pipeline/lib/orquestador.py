@@ -133,10 +133,6 @@ def _clasificar_error(mensaje: str) -> tuple[str, str]:
     m = mensaje.lower()
     if "catálogo/fk" in m or any(p in m for p in ("lugar no encontrado", "observador no encontrado", "especie no encontrada")):
         return ESTADO_INCOMPLETO, "Resolución de catálogos/FK"
-    if "fase': 'catálogo/fk" in m:
-        return ESTADO_INCOMPLETO, "Resolución de catálogos/FK"
-    if any(p in m for p in ("lugar no encontrado", "observador no encontrado", "especie no encontrada")):
-        return ESTADO_INCOMPLETO, "Resolución de catálogos/FK"
     if "no es válido" in m:
         return ESTADO_ERROR, "Validación"
     if "pausado" in m:

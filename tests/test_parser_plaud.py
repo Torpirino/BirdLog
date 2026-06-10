@@ -202,6 +202,34 @@ def test_validar_registro_viento_direccion_invalido_detalla_valores():
     assert error.sugerencia == "usar W para oeste"
 
 
+def test_parsear_campo_numerico_invalido_da_mensaje_claro(tmp_path):
+    """Un valor no numérico informa campo y valor, sin traceback técnico."""
+    ruta = tmp_path / "nido_nubosidad_mal.txt"
+    ruta.write_text(
+        "TIPO_REGISTRO: VISITA_NIDO_RAPAZ\n"
+        "TIPO_VISITA: NIDO_RAPAZ\n"
+        "FECHA: 2026-05-04\n"
+        "HORA_INICIO: 20:26\n"
+        "HORA_FIN: 20:40\n"
+        "LUGAR_NIDO: AREATZEA1\n"
+        "OBSERVADOR: Gabi\n"
+        "---METEOROLOGIA---\n"
+        "HORA_METEO: 20:30\n"
+        "NUBOSIDAD: tres\n"
+        "---NIDO_RAPAZ---\n"
+        "TEXTO_REVISION: adulto posado cerca del nido.\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError) as excinfo:
+        parsear_txt_plaud(str(ruta))
+
+    mensaje = str(excinfo.value)
+    assert "NUBOSIDAD" in mensaje
+    assert "'tres'" in mensaje
+    assert "número entero" in mensaje
+
+
 def test_parsear_txt_ignora_titulo_antes_de_tipo_registro(tmp_path):
     """El texto narrativo inicial no bloquea y queda como advertencia."""
     ruta = tmp_path / "nido_real.txt"

@@ -35,13 +35,6 @@ def procesar_drive() -> list[dict]:
     return resultados
 
 
-def _procesar_archivo_drive(archivo: dict, config, cliente, drive) -> dict:
-    """Procesa un TXT concreto de Drive."""
-    with TemporaryDirectory() as temporal:
-        ruta = descargar_archivo(archivo["id"], Path(temporal) / archivo["name"], drive)
-        return _procesar_descarga_drive({"archivo": archivo, "ruta": ruta, "indice": 0}, config, cliente, drive)
-
-
 def _descargar_lote(archivos: list[dict], carpeta_temporal: Path, drive) -> list[dict]:
     """Descarga todos los archivos para poder ordenarlos antes de insertar."""
     descargas = []

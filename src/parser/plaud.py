@@ -193,12 +193,22 @@ def _nombre_bloque(linea: str) -> str:
 def _convertir_valor(clave: str, valor: str):
     """Convierte tipos simples sin tocar textos libres."""
     if clave in CAMPOS_ENTEROS:
-        return int(valor)
+        return _convertir_numero(clave, valor, int, "un número entero")
     if clave in CAMPOS_FLOAT:
-        return float(valor)
+        return _convertir_numero(clave, valor, float, "un número")
     if clave == "ocupada" and valor.lower() in {"true", "false"}:
         return valor.lower() == "true"
     return valor
+
+
+def _convertir_numero(clave: str, valor: str, conversor, descripcion: str):
+    """Convierte un valor numérico con mensaje claro si no es válido."""
+    try:
+        return conversor(valor)
+    except ValueError:
+        raise ValueError(
+            f"El campo {clave.upper()} recibió '{valor}' y debe ser {descripcion}."
+        ) from None
 
 
 def _limpiar_bloques_vacios(registro: dict) -> None:

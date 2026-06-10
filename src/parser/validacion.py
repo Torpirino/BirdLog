@@ -4,7 +4,8 @@ from datetime import datetime
 
 from src.diagnosticos import ErrorDetalle
 
-FORMATOS_HORA = {"hora_inicio", "hora_fin", "hora_meteo", "hora"}
+# Tupla (no set) para que el orden de los diagnósticos sea determinista.
+FORMATOS_HORA = ("hora_inicio", "hora_fin", "hora_meteo", "hora")
 COMPORTAMIENTOS = {"MIGRADOR", "NORTE", "LOCAL"}
 PRESENCIAS = {"PRESENTE", "AUSENTE", "POSIBLE"}
 TIPOS_EVIDENCIA = {"HUELLA", "EXCREMENTO", "MADRIGUERA", "AVISTAMIENTO"}
