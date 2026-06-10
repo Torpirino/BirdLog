@@ -47,35 +47,57 @@ Script Python (parsea + resuelve FKs + inserta + backup)
 Dashboard Streamlit local
 ```
 
-### Modelo de datos — 10 tablas
+### Modelo de datos — 14 tablas (v3)
 Detalle completo en `docs/modelo_datos.md`.
 
 **Catálogos** (se rellenan una vez):
-- `especies` — id_especie, nombre_cientifico, nombre_comun, grupo
+- `especies` — id_especie, nombre_cientifico, nombre_comun, grupo,
+  codigo_origen
 - `observadores` — id_observador, nombre_observador
 - `lugares` — id_lugar, nombre_lugar, tipo_lugar, municipio,
-  utm_x, utm_y
+  utm_x, utm_y, codigo_origen
 
 **Hub central**:
 - `visitas` — id_visita, id_lugar(FK), id_observador(FK),
-  tipo_visita, fecha, hora_inicio, hora_fin, observaciones
+  tipo_visita, fecha, hora_inicio, hora_fin, observaciones,
+  codigo_origen
 - `meteorologia` — id_meteo, id_visita(FK), hora, temperatura,
   nubosidad, viento_direccion, viento_intensidad,
-  precipitacion, visibilidad
+  precipitacion, visibilidad, presentes, observando, visitantes,
+  observaciones + campos históricos opcionales (humedad_relativa,
+  presion_atm, precipitacion_tipo, niveles de nubes) +
+  codigo_origen
 
 **Tablas específicas** (cuelgan de visitas):
 - `lindus` — id_lindus, id_visita(FK), id_especie(FK), hora,
-  numero, comportamiento, edad, sexo, plumaje, observaciones
+  numero, comportamiento, edad, sexo, plumaje, observaciones,
+  especie_texto, codigo_origen
 - `cajas_nido` — id_cajanido, id_visita(FK), id_lugar(FK),
   id_especie(FK), ecosistema, especie_arbol, estado_nido,
   ocupada, huevos, pollos + 12 campos IB+ opcionales
 - `nidos_rapaces` — id_nido_rapaz, id_visita(FK), id_lugar(FK),
-  id_especie(FK), texto_revision, comunicacion_personal
+  id_especie(FK), texto_revision, comunicacion_personal,
+  descripcion_nido, incuba, numero_pollos, pollos_volados
 - `cebos_avispones` — id_cebo, id_visita(FK), id_lugar(FK),
   vv, crabro, avispa_europea, polilla, mariposa, otros,
-  observaciones
+  observaciones, numero_trampa, fecha_colocacion, utm_x_nido,
+  utm_y_nido
 - `mamiferos_puentes` — id_mamifero, id_visita(FK), id_lugar(FK),
   id_especie(FK), presencia, tipo_evidencia, observaciones
+- `fototrampeo` — id_fototrampeo, id_visita(FK), id_lugar(FK),
+  id_especie(FK), especie_texto, fecha_colocacion, fecha_revision,
+  fecha_imagen, tipo_media, numero_imagenes, observaciones
+  *(imágenes vía tabla fotos)*
+- `cuaderno_campo` — id_cuaderno, id_visita(FK), id_lugar(FK
+  opcional), id_especie(FK), especie_texto, numero, observaciones
+- `estudio_campo` — id_estudio, id_visita(FK), id_especie(FK),
+  especie_texto, numero, deteccion, hora_observacion, distancias y
+  lados (inicial/mínima/final), vuelo_sobre, direccion_vuelo,
+  migracion, altura, observaciones *(la sesión es una visita
+  IMPACTO_AMBIENTAL + meteorologia)*
+- `castor_rastros` — id_castor_rastro, id_visita(FK), id_lugar(FK),
+  id_especie(FK), tipo_rastro, intensidad_rastro, reciente_antiguo,
+  aplicacion, observaciones
 - `fotos` — id_foto, id_visita(FK), tabla_origen, id_origen,
   url_drive, descripcion, fecha_subida *(fase futura)*
 
@@ -83,9 +105,11 @@ Detalle completo en `docs/modelo_datos.md`.
 - `especies.grupo`: RAPAZ, PASERIFORME, ACUATICA, INVERTEBRADO,
   MAMIFERO, OTRO
 - `lugares.tipo_lugar`: CONTEO_MIGRATORIO, CAJA_NIDO,
-  CEBO_AVISPON, NIDO_RAPAZ, PUENTE
+  CEBO_AVISPON, NIDO_RAPAZ, PUENTE, FOTOTRAMPEO, ESTUDIO_CAMPO,
+  OTRO
 - `visitas.tipo_visita`: LINDUS, CAJA_NIDO, CEBO_AVISPON,
-  NIDO_RAPAZ, MAMIFEROS_PUENTES, IMPACTO_AMBIENTAL
+  NIDO_RAPAZ, MAMIFEROS_PUENTES, IMPACTO_AMBIENTAL, FOTOTRAMPEO,
+  CUADERNO_CAMPO, CASTOR_RASTROS
 - `lindus.comportamiento`: MIGRADOR, NORTE, LOCAL
 - `cajas_nido.ecosistema`: ZONA_SALVAJE, ZONA_URBANA,
   PARQUE_CON_RIO, PARQUE_URBANO *(quinto pendiente)*
@@ -96,8 +120,12 @@ Detalle completo en `docs/modelo_datos.md`.
 - `mamiferos_puentes.tipo_evidencia`: HUELLA, EXCREMENTO,
   MADRIGUERA, AVISTAMIENTO
 - `meteorologia.nubosidad`: INTEGER entre 0 y 8
+- Vocabularios pendientes con el cliente: `fototrampeo.tipo_media`,
+  `estudio_campo.deteccion/migracion/altura`,
+  `castor_rastros.tipo_rastro/intensidad_rastro/reciente_antiguo`
 
-**SQL**: `sql/002_esquema_v2.sql`
+**SQL**: `sql/003_esquema_v3.sql` (v2 en `sql/002_esquema_v2.sql`,
+aún aplicado en Supabase dev)
 
 ---
 

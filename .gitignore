@@ -27,6 +27,9 @@ backup_*/
 *_export.csv
 data_real/
 
+# Excel del cliente con observaciones reales (decisión #9)
+docs/*.xlsx
+
 # =============================================================
 # Python
 # =============================================================

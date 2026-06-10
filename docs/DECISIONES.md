@@ -522,3 +522,153 @@ catálogo o validación sin borrar y repetir toda la jornada Lindus.
 - No hay deduplicación por especie/hora/número/comportamiento; reprocesar
   el mismo archivo puede duplicar filas. Una deduplicación segura requerirá
   diseño por archivo/hash.
+
+---
+
+## #39 — Cierre Lindus: las observaciones se conservan y se combinan
+**Fecha**: 2026-06-10
+**Contexto**: Una jornada Lindus escribe dos veces sobre la misma fila
+de `visitas`: `INICIO_VISITA_LINDUS` la crea (y puede dejar
+observaciones, p.ej. "amenaza de tormenta") y `FIN_VISITA_LINDUS` la
+cierra rellenando `hora_fin` (y puede traer sus propias observaciones,
+o no traer ninguna).
+**Problema detectado**: el cierre siempre incluía `observaciones` en el
+UPDATE. Si el archivo de cierre no traía observaciones, enviaba
+`observaciones: None` y borraba silenciosamente las dictadas al inicio.
+**Decisión**:
+- Cierre **sin** observaciones → solo actualiza `hora_fin`; las
+  observaciones del inicio se conservan intactas.
+- Cierre **con** observaciones → se **combinan** con las existentes
+  usando ` | ` como separador (mismo criterio que `observaciones_puente`
+  en mamíferos): `"amenaza de tormenta | cierre sin incidencias"`.
+  No se pierde texto de ninguna de las dos grabaciones.
+**Razón**: Los datos son sagrados (principio #3). El observador puede
+dictar notas tanto al abrir como al cerrar la jornada y ambas deben
+quedar en la visita.
+**Implicaciones**: `_buscar_visita_lindus_abierta` ahora lee también
+`observaciones` de la visita abierta para poder combinar antes del
+UPDATE. Cubierto con tests (cierre sin observaciones, cierre con
+observaciones sin previas, y combinación de ambas).
+
+---
+
+## #40 — Revisión del Excel del cliente v03: se mantiene la estructura v2
+**Fecha**: 2026-06-10
+**Contexto**: El cliente entregó `docs/BirdLog_tablas_cliente_v03.xlsx`
+con un rediseño de la BD: histórico Lindus 2025 cargado (10.903
+observaciones, 1.048 meteo, 98 visitas), 4 tablas nuevas (`fototrampeo`,
+`cuaderno_campo`, `estudio_campo_tipo`, `castor_rastros`) y cambios
+estructurales (IDs de texto `V0001`/`SP001`, sin `observadores` ni
+`tipo_visita`, UTM/municipio repetidos en cada tabla, meteo de 25
+columnas, comportamiento Lindus como 3 columnas de conteo).
+**Decisión**: Se mantiene la estructura base del esquema v2:
+- `id_observador` y `tipo_visita` en `visitas`.
+- **`visitas.id_lugar` se conserva**: `lindus` y `meteorologia` no
+  tienen `id_lugar` propio y solo conocen su lugar vía la visita;
+  el pipeline (`LUGAR_VISITA`, decisión #38) y el dashboard dependen
+  de él. El `id_lugar` de las tablas específicas es el punto concreto
+  (caja, trampa, puente); el de `visitas`, la jornada. No es duplicado.
+- UTM y municipio solo en `lugares`; las tablas hijas llevan `id_lugar`.
+- IDs `INTEGER GENERATED ALWAYS AS IDENTITY` (decisión #29). Para
+  trazar la migración del Excel se podrá usar una columna
+  `codigo_origen` temporal.
+- Comportamiento Lindus sigue como `comportamiento` + `numero`
+  (solo 1 de 10.903 filas históricas mezcla tipos; se partirá en dos
+  al migrar). `total` no se almacena: se calcula (criterio #17).
+**Razón**: El Excel pierde piezas de las que dependen parser,
+inserción y dashboard, y desnormaliza lugares. Lo valioso del Excel
+(4 tipos de registro nuevos y campos de detalle: incuba/pollos en
+rapaces, fechas y UTM de trampa en cebos, conteos de personas en
+meteo) se incorporará sobre la estructura v2.
+**Pendiente de concretar**: alcance exacto de las 4 tablas nuevas
+(ajustes propuestos: `estudio_campo_tipo` solo detecciones,
+`fototrampeo` enlazando imágenes vía `fotos`), tratamiento de la meteo
+histórica de 25 columnas, y limpieza de datos (valores meteo fuera de
+rango, 33 variantes de dirección de viento, `especies` sin `grupo` ni
+`nombre_comun`, 21 especies marcadas `revisar`).
+*(Concretado en #41, #42 y #43.)*
+
+---
+
+## #41 — Esquema v3: 4 tablas nuevas con ajustes
+**Fecha**: 2026-06-10
+**Decisión**: Se crean `fototrampeo`, `cuaderno_campo`,
+`estudio_campo` y `castor_rastros` en `sql/003_esquema_v3.sql`, con
+estos ajustes respecto al Excel del cliente:
+- `estudio_campo` guarda **solo detecciones**. La sesión de muestreo
+  (punto, hora inicio/fin, meteo abreviada) del Excel se modela como
+  visita de tipo `IMPACTO_AMBIENTAL` + fila en `meteorologia`, sin
+  duplicar campos de meteo en la tabla.
+- `fototrampeo` y `castor_rastros` **no** llevan `url_drive` ni
+  `foto`: las imágenes van a la tabla `fotos` existente con
+  `tabla_origen`/`id_origen`.
+- `cuaderno_campo` permite `id_lugar` NULL (observaciones fuera de
+  los puntos del catálogo; el sitio se describe en `observaciones`).
+- CHECKs ampliados: `visitas.tipo_visita` añade `FOTOTRAMPEO`,
+  `CUADERNO_CAMPO` y `CASTOR_RASTROS`; `lugares.tipo_lugar` añade
+  `FOTOTRAMPEO`, `ESTUDIO_CAMPO` y `OTRO`.
+**Razón**: Incorporar los nuevos tipos de registro del cliente sin
+romper la normalización del v2 (decisión #40).
+**Implicaciones**:
+- Vocabularios pendientes de cerrar con el cliente antes de poner
+  CHECK: `fototrampeo.tipo_media`, `estudio_campo.deteccion/
+  migracion/altura`, `castor_rastros.tipo_rastro/intensidad_rastro/
+  reciente_antiguo`. De momento son TEXT libres.
+- El esquema v3 **no se ha aplicado** a Supabase dev: dev sigue en
+  v2 con datos. Aplicarlo implica DROP+CREATE y reimportar; se hará
+  cuando se planifique la migración del histórico.
+- Plantillas Plaud, parser e inserción para los 4 tipos nuevos
+  quedan para una fase posterior.
+
+---
+
+## #42 — Meteorología: 9 campos de captura + extras nullable
+**Fecha**: 2026-06-10
+**Decisión**: `meteorologia` mantiene los 9 campos que dicta el
+observador al Plaud (decisión #15) y añade:
+- Conteos de personas del protocolo Lindus: `presentes`,
+  `observando`, `visitantes`, y un campo `observaciones`.
+- Campos históricos opcionales que **solo rellena la importación
+  del Excel 2025**: `humedad_relativa`, `presion_atm`,
+  `precipitacion_tipo`, `mar_nubes_cobertura`, `mar_nubes_altura`,
+  `nubes_n1_cobertura`, `nubes_n1_altura`, `nubes_n1_tipo`,
+  `nubes_n2_cobertura`, `nubes_n2_tipo`.
+- `total_nubes_suma` del Excel se mapea a `nubosidad` (0–8).
+- `fecha` e `id_lugar` del Excel de meteo no se importan como
+  columnas: se derivan de `id_visita`.
+**Razón**: El histórico 2025 trae 25 columnas con datos reales que
+no deben perderse (principio #3), pero el flujo de captura Plaud
+sigue siendo de 9 campos: nadie dicta dos niveles de nubes por hora.
+**Alternativas descartadas**: importar con pérdida (tira datos
+reales); tabla `meteo_historica` aparte (dos tablas para el mismo
+concepto complican dashboard y consultas; columnas NULL son baratas).
+
+---
+
+## #43 — Limpieza del histórico: corregir en la importación, sin inventar
+**Fecha**: 2026-06-10
+**Decisión**: La limpieza de datos del Excel del cliente se hará en
+el script de importación (pendiente de implementar), con estas
+reglas:
+- **Valores medidos fuera de rango NO se autocorrigen** (24 filas de
+  meteo detectadas: temperaturas 68/95 °C, humedades >100 %,
+  presiones de 4–6 dígitos, y el bloque desplazado de V0043,
+  M0464–M0478). Se devuelven al cliente para corrección; lista
+  concreta en `docs/REVISION_EXCEL_CLIENTE_V03.md`.
+- **Direcciones de viento**: se normalizan en la importación a los
+  16 rumbos en convención inglesa (N, NNE, NE... igual que
+  `cajas_nido.orientacion_caja`), traduciendo la notación española
+  (O→W, NNO→NNW...). Valores compuestos tipo "S N" o "SO/NE"
+  (cambios de dirección) se dejan NULL y el literal pasa a
+  `observaciones`.
+- **Comportamiento Lindus**: las 3 columnas de conteo se convierten
+  a filas `comportamiento`+`numero`. La única fila mixta de 10.903
+  (L002724, 3 MIGRADOR + 1 LOCAL) se parte en dos filas.
+- **Especies**: las 21 entradas `revisar=SI` (rangos tipo
+  `Accipiter sp`) se importan como entradas válidas del catálogo;
+  la columna `revisar` no entra en la BD. `grupo` y `nombre_comun`
+  (vacíos en las 135 filas) los debe completar el cliente o se
+  rellenan en una pasada posterior.
+**Razón**: Los datos son sagrados: el importador puede transformar
+formato (notación de rumbos, pivotar columnas) pero no inventar
+valores medidos.
