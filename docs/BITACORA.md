@@ -8,12 +8,14 @@
 
 ## Estado actual
 
-- **Fase activa**: Fase 8 — App local de pipeline
-- **Última sesión**: 2026-05-04
-- **Próxima tarea**: Continuar pruebas reales con Nidos rapaces,
-  Cebos avispones, Cajas nido y Lindus. Guía de campo Plaud para el
-  observador añadida en formatos DOCX y HTML. Pruebas reales de
-  Mamíferos puentes funcionando correctamente de momento.
+- **Fase activa**: Fase 8 — App local de pipeline (+ frente nuevo:
+  esquema v3 y migración del histórico 2025)
+- **Última sesión**: 2026-06-10
+- **Próxima tarea**: Doble vía: (a) continuar pruebas reales con
+  Nidos rapaces, Cebos avispones, Cajas nido y Lindus; (b) enviar al
+  cliente `docs/REVISION_EXCEL_CLIENTE_V03.md` y, con sus respuestas,
+  planificar el script de importación del histórico y la aplicación
+  del esquema v3 en dev.
 
 ---
 
@@ -32,6 +34,23 @@
 
 ### Fase 3: Parser
 - [ ] Recoger 5-6 .txt de ejemplo de tipos distintos de visita
+
+### Esquema v3 y migración del histórico (abierto 2026-06-10)
+- [ ] Enviar `docs/REVISION_EXCEL_CLIENTE_V03.md` al cliente y
+      recoger respuestas: 24 filas de meteo erróneas, `grupo` y
+      `nombre_comun` de las 135 especies, huso/datum UTM,
+      observador e `id_lugar` de las 98 visitas históricas,
+      vocabularios de las tablas nuevas.
+- [ ] Implementar script de importación del histórico 2025
+      (reglas en decisión #43: rumbos de viento, pivote de
+      comportamiento Lindus, codigo_origen, sin autocorregir
+      valores medidos).
+- [ ] Aplicar `sql/003_esquema_v3.sql` en Supabase dev
+      (DROP+CREATE; aprovechar para limpiar visitas de prueba)
+      y reimportar catálogos + histórico.
+- [ ] Diseñar plantillas Plaud para los 4 tipos nuevos
+      (fototrampeo, cuaderno_campo, estudio_campo, castor_rastros)
+      y su soporte en parser/inserción/dashboard (fase futura).
 
 ### Fase 8: App local de pipeline
 - [x] Diseño de la app local de pipeline completado (2026-05-03).
@@ -68,6 +87,37 @@
 ---
 
 ## Tareas completadas
+
+### Sesión 2026-06-10: Revisión del Excel del cliente y esquema v3 (completado)
+- [x] **Revisión de `docs/BirdLog_tablas_cliente_v03.xlsx`**: 14 hojas,
+      histórico Lindus 2025 (10.903 observaciones, 1.048 meteo,
+      98 visitas) y 4 tipos de registro nuevos.
+- [x] **Decisión #40**: se mantiene la estructura v2 (observador,
+      `tipo_visita`, `visitas.id_lugar`, lugares normalizados, IDs
+      enteros) frente a la estructura del Excel.
+- [x] **Decisión #41 / esquema v3**: `sql/003_esquema_v3.sql` con
+      `fototrampeo`, `cuaderno_campo`, `estudio_campo` (solo
+      detecciones) y `castor_rastros`; campos nuevos en
+      `nidos_rapaces` y `cebos_avispones`; CHECKs ampliados.
+      **No aplicado aún en Supabase dev** (dev sigue en v2).
+- [x] **Decisión #42**: `meteorologia` mantiene los 9 campos Plaud y
+      añade conteos de personas + campos históricos opcionales.
+- [x] **Decisión #43**: reglas de limpieza del histórico (sin
+      autocorregir valores medidos; rumbos de viento normalizados;
+      fila Lindus mixta L002724 se parte en dos).
+- [x] **Documentación**: `docs/modelo_datos.md` a 14 tablas,
+      `AGENTS.md`/`CLAUDE.md` actualizados,
+      `docs/REVISION_EXCEL_CLIENTE_V03.md` creado con la lista de
+      correcciones para el cliente.
+- [x] **Seguridad**: `docs/*.xlsx` añadido a `.gitignore` — el Excel
+      con observaciones reales queda fuera de git (decisión #9).
+- [x] **Cierre Lindus (decisión #39)** commiteado: las observaciones
+      del inicio se conservan y se combinan con las del cierre.
+- [x] Comprobaciones: `pytest` 126/126, diffs revisados sin secretos
+      ni datos reales.
+- [x] Commits: `ac8b169 fix(pipeline): conservar observaciones al
+      cerrar visita Lindus` y `a9c8f66 feat(sql): esquema v3 tras
+      revisión del Excel del cliente`.
 
 ### Sesión 2026-05-04: Reprocesado de observaciones Lindus (completado)
 - [x] **Recuperación de errores Lindus**: `OBSERVACIONES_LINDUS` puede
@@ -551,6 +601,13 @@
 ## Bloqueos / dudas
 
 - Quinto ecosistema de cajas_nido pendiente de confirmar con el observador.
+- Migración del histórico bloqueada por respuestas del cliente
+  (`docs/REVISION_EXCEL_CLIENTE_V03.md`): correcciones de meteo,
+  `grupo`/`nombre_comun` de especies, huso/datum UTM, observador y
+  lugar de las visitas 2025.
+- Vocabularios cerrados pendientes con el cliente:
+  `fototrampeo.tipo_media`, `estudio_campo.deteccion/migracion/altura`,
+  `castor_rastros.tipo_rastro/intensidad_rastro/reciente_antiguo`.
 
 ---
 
@@ -626,11 +683,18 @@
   Plaud activas.
 - `data/pendientes/.gitkeep`: mantiene versionada la carpeta donde más
   adelante quedarán los `.txt` pendientes de reproceso.
-- `sql/002_esquema_v2.sql`: esquema definitivo. Incluye DROP de tablas
-  anteriores y CREATE de las 10 tablas nuevas. Aplicar en SQL Editor
-  de Supabase.
-- `docs/modelo_datos.md`: descripción completa de las 10 tablas con
-  todos los campos, tipos y valores cerrados.
+- `sql/002_esquema_v2.sql`: esquema v2 (10 tablas). Es el que está
+  aplicado actualmente en Supabase dev.
+- `sql/003_esquema_v3.sql`: esquema v3 definitivo (14 tablas) tras la
+  revisión del Excel del cliente. DROP+CREATE; pendiente de aplicar
+  en Supabase dev junto con la migración del histórico.
+- `docs/REVISION_EXCEL_CLIENTE_V03.md`: correcciones de datos que
+  debe responder el cliente y reglas del futuro script de
+  importación del histórico 2025.
+- `docs/BirdLog_tablas_cliente_v03.xlsx`: Excel del cliente con el
+  histórico real. **Fuera de git** (`docs/*.xlsx` en `.gitignore`).
+- `docs/modelo_datos.md`: descripción completa de las 14 tablas (v3)
+  con todos los campos, tipos y valores cerrados.
 - `docs/formato_plaud.md`: plantillas Plaud definitivas v1 y formato
   estructurado esperado para los `.txt`.
 - `docs/SEGURIDAD.md`: reglas de seguridad y manejo de credenciales.
