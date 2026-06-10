@@ -763,3 +763,29 @@ sagrados), y se marcan los segundos como pendientes.
 cliente las revise (sobre todo el grupo OTRO y los nombres de las
 entradas genéricas) antes de la importación definitiva, pero no
 bloquean: son corregibles editando la tabla `especies`.
+
+---
+
+## #46 — Importación del histórico 2025: decisiones de carga
+**Fecha**: 2026-06-10
+**Decisión**: La importación del histórico 2025 en el proyecto BirdLog
+de Supabase (`mbphfgmjryyxzjgcwqxo`) se ejecutó con estas reglas:
+- `utm_x`/`utm_y` de `lugares` → **NULL** (coords de Lindus y Trona
+  pendientes del cliente). Se eliminó el NOT NULL del esquema v3.
+- `id_observador` de las 97 visitas → **Gabi** (placeholder; el cliente
+  no entregó el dato para las visitas históricas).
+- `tipo_visita` de las 97 visitas → **LINDUS** (Lindus y Trona son
+  conteos migratorios).
+- **V0001** (sin `id_lugar`) y sus 34 lindus → **omitidos**; pendiente
+  del cliente.
+- **Fila mixta L002724** (3 MIGRADOR + 1 LOCAL) → dividida en
+  L002724_1 y L002724_2 con sus respectivos `comportamiento`/`numero`.
+- **Viento compuesto** (12 registros tipo "N/SO", "S N"...) → NULL en
+  `viento_direccion`; literal original en `observaciones`.
+- **Clave** en `.env`: clave anon del proyecto (JWT `eyJ...`). Permite
+  INSERT/UPDATE/DELETE gracias a grants explícitos. Sustituir por
+  `service_role` cuando se obtenga del dashboard de Supabase.
+**Scripts**: `scripts/insertar_historico.py` (inserta via supabase-py)
+y `scripts/importar_historico.py` (genera SQL de auditoría).
+**Resultado**: 135 especies, 2 observadores, 2 lugares, 97 visitas,
+1.048 meteo, 10.870 lindus.
