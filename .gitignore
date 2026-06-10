@@ -84,6 +84,7 @@ htmlcov/
 .claude/
 .vscode/
 .idea/
+.mcp.json
 *.swp
 *.swo
 

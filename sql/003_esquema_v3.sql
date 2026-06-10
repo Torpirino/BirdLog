@@ -99,8 +99,8 @@ CREATE TABLE lugares (
                         'OTRO'
                     )),
     municipio       TEXT,
-    utm_x           DOUBLE PRECISION NOT NULL,
-    utm_y           DOUBLE PRECISION NOT NULL,
+    utm_x           DOUBLE PRECISION,  -- nullable: coords de Lindus/Trona pendientes del cliente
+    utm_y           DOUBLE PRECISION,
     codigo_origen   TEXT UNIQUE  -- id del Excel del cliente (LUG01...)
 );
 

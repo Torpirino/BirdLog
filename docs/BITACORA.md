@@ -8,22 +8,52 @@
 
 ## Estado actual
 
-- **Fase activa**: Fase 8 — App local de pipeline (+ frente nuevo:
-  esquema v3 y migración del histórico 2025)
+- **Fase activa**: Fase 8 — App local de pipeline (histórico 2025 ya
+  importado en Supabase BirdLog)
 - **Última sesión**: 2026-06-10
-- **Próxima tarea**: Doble vía: (a) continuar pruebas reales con
-  Nidos rapaces, Cebos avispones, Cajas nido y Lindus; (b) recoger
-  del cliente las respuestas que aún faltan (`grupo`/`nombre_comun`
-  de especies, `id_lugar` y observador de las 98 visitas, UTM/
-  municipio de Lindus y Trona, temperaturas M1002/M1039, vocabularios
-  de las tablas nuevas y quinto ecosistema) e implementar el script de
-  importación del histórico + aplicar el esquema v3 en dev.
+- **Próxima tarea**: (a) Sustituir clave anon del `.env` por la clave
+  `service_role` del proyecto BirdLog (dashboard → Settings → API);
+  (b) continuar pruebas reales con Nidos rapaces, Cebos avispones,
+  Cajas nido y Lindus; (c) recoger del cliente lo pendiente: observador
+  de las 98 visitas, `id_lugar` de V0001, UTM/municipio de Lindus y
+  Trona, vocabularios de las tablas nuevas y quinto ecosistema.
 
 ---
 
 ## Tareas en curso
 
 - [ ] (sin tareas en curso)
+
+---
+
+## Sesión 2026-06-10: Importación histórico 2025 en Supabase BirdLog (completado)
+
+---
+
+### Sesión 2026-06-10: Importación histórico 2025 en Supabase BirdLog (completado)
+- [x] **Esquema v3 aplicado** en proyecto Supabase BirdLog
+      (`mbphfgmjryyxzjgcwqxo`): 14 tablas con `utm_x`/`utm_y` nullable
+      (coords de Lindus/Trona pendientes del cliente — decisión #45).
+- [x] **Importación del histórico 2025**:
+      - 135 especies (con `grupo` y `nombre_comun` deducidos — decisión #45)
+      - 2 observadores: Gabi y Ander
+      - 2 lugares: Lindus (LUG01) y Trona (LUG02), sin UTM por ahora
+      - 97 visitas (V0001 omitida — sin `id_lugar`, pendiente del cliente)
+      - 1.048 registros de meteorología (12 vientos compuestos → NULL
+        con literal en `observaciones`)
+      - 10.870 observaciones Lindus (34 de V0001 omitidas; fila mixta
+        L002724 dividida en L002724_1 y L002724_2)
+- [x] **`.env` actualizado** al nuevo proyecto BirdLog: URL
+      `mbphfgmjryyxzjgcwqxo.supabase.co`. Clave anon temporal (JWT);
+      **pendiente**: sustituir por clave `service_role` desde el dashboard
+      de Supabase (Settings → API → service_role key).
+- [x] **Scripts creados**:
+      - `scripts/importar_historico.py`: genera SQL desde el Excel (útil
+        para reimportaciones o auditoría).
+      - `scripts/insertar_historico.py`: inserta meteo y lindus via
+        `supabase-py` por lotes de 200.
+- [x] **`sql/003_esquema_v3.sql`** actualizado: `utm_x`/`utm_y` nullable.
+- [x] 126 tests pasan.
 
 ---
 
@@ -37,7 +67,7 @@
 ### Fase 3: Parser
 - [ ] Recoger 5-6 .txt de ejemplo de tipos distintos de visita
 
-### Esquema v3 y migración del histórico (abierto 2026-06-10)
+### Esquema v3 y migración del histórico
 - [x] Recoger respuestas del cliente al informe de revisión
       (`docs/Informe_revision.docx`) y aplicarlas al Excel:
       11 valores de meteo + bloque V0043, especies aceptadas,
@@ -49,13 +79,10 @@
       observador de las 98 visitas, `id_lugar` de V0001, UTM/municipio
       de Lindus y Trona, vocabularios de las tablas nuevas y quinto
       ecosistema. (Opcional: que revise `grupo`/`nombre_comun`.)
-- [ ] Implementar script de importación del histórico 2025
-      (reglas en decisión #43: rumbos de viento, pivote de
-      comportamiento Lindus, codigo_origen, sin autocorregir
-      valores medidos).
-- [ ] Aplicar `sql/003_esquema_v3.sql` en Supabase dev
-      (DROP+CREATE; aprovechar para limpiar visitas de prueba)
-      y reimportar catálogos + histórico.
+- [x] Implementar scripts de importación del histórico 2025
+      (`scripts/importar_historico.py` + `scripts/insertar_historico.py`).
+- [x] Aplicar `sql/003_esquema_v3.sql` en Supabase BirdLog (DROP+CREATE)
+      y reimportar catálogos + histórico (2026-06-10).
 - [ ] Diseñar plantillas Plaud para los 4 tipos nuevos
       (fototrampeo, cuaderno_campo, estudio_campo, castor_rastros)
       y su soporte en parser/inserción/dashboard (fase futura).
@@ -76,8 +103,10 @@
       observaciones "demo del pipeline") si se llegaron a insertar
 
 ### Pendiente general
-- [ ] Limpiar visitas de prueba duplicadas en Supabase dev
-      (borrar `id_visita` 3, 4, 5, 6 y sus cebos asociados)
+- [ ] Sustituir clave anon en `.env` por `service_role` del proyecto
+      BirdLog (Supabase dashboard → Settings → API → service_role).
+- [ ] Rellenar `utm_x`/`utm_y` de Lindus y Trona cuando el cliente
+      entregue las coordenadas (ETRS89 huso 30N).
 
 ### Fase 6: Dashboard
 - [x] Implementar `dashboard/app.py`
@@ -733,6 +762,11 @@
   importación del histórico 2025.
 - `docs/BirdLog_tablas_cliente_v03.xlsx`: Excel del cliente con el
   histórico real. **Fuera de git** (`docs/*.xlsx` en `.gitignore`).
+- `scripts/importar_historico.py`: genera SQL INSERT desde el Excel
+  (auditoría y reimportaciones). Usa `openpyxl`; salida a stdout.
+- `scripts/insertar_historico.py`: inserta meteo y lindus en Supabase
+  BirdLog via `supabase-py` por lotes de 200. Requiere clave anon o
+  service_role con permisos de INSERT en el proyecto.
 - `docs/Revisar con GABI.md`: cuestionario para el cliente con las
   preguntas que bloquean la migración (meteo errónea, especies,
   UTM, visitas 2025, vocabularios nuevos, quinto ecosistema).
@@ -742,8 +776,11 @@
   UTM, 3 columnas vs campo único). Fuente de la decisión #44.
 - `docs/modelo_datos.md`: descripción completa de las 14 tablas (v3)
   con todos los campos, tipos y valores cerrados.
-- `docs/formato_plaud.md`: plantillas Plaud definitivas v1 y formato
-  estructurado esperado para los `.txt`.
+- `docs/formato_plaud.md`: plantillas Plaud definitivas v1.1 y formato
+  estructurado esperado para los `.txt`. Revisado 2026-06-10 con los
+  campos nuevos del esquema v3 (conteos de personas en meteo Lindus,
+  trampa/UTM en cebos, cría en nidos rapaces) y la lista de las 4
+  plantillas futuras pendientes de vocabulario.
 - `docs/SEGURIDAD.md`: reglas de seguridad y manejo de credenciales.
 - `docs/DECISIONES.md`: historial de decisiones técnicas tomadas.
 - `docs/USO_DASHBOARD.md`: guía de uso local del dashboard para el

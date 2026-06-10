@@ -1,8 +1,22 @@
-# Formato Plaud — Plantillas definitivas v1
+# Formato Plaud — Plantillas definitivas v1.1
 
 Sistema de gestión de datos de fauna.
 
 Este documento define las plantillas Plaud que se usarán para generar `.txt` estructurados a partir de grabaciones de campo.
+
+> **Revisión 2026-06-10 (esquema v3, decisiones #40–#45)**: se añaden a
+> las plantillas los campos nuevos del esquema v3 — conteos de personas
+> en la meteorología Lindus (`PRESENTES`, `OBSERVANDO`, `VISITANTES`),
+> datos de trampa y nido en cebos de avispón (`NUMERO_TRAMPA`,
+> `FECHA_COLOCACION`, `UTM_X_NIDO`, `UTM_Y_NIDO`) y seguimiento de cría
+> en nidos de rapaz (`DESCRIPCION_NIDO`, `INCUBA`, `NUMERO_POLLOS`,
+> `POLLOS_VOLADOS`).
+>
+> **Nota de compatibilidad**: Supabase dev sigue en esquema v2. El
+> parser actual tolera claves desconocidas (decisión #22), por lo que
+> estos campos nuevos ya pueden dictarse hoy: quedan guardados en el
+> `.txt` y se insertarán en BD cuando se aplique
+> `sql/003_esquema_v3.sql`. Hasta entonces la inserción los ignora.
 
 ## Ubicación recomendada
 
@@ -40,7 +54,14 @@ Motivo: es documentación funcional del proyecto y será la referencia para el p
 - Si un valor de catálogo no existe, el script no insertará y enviará el `.txt` a `pendientes/`.
 - Plaud puede completar fecha y hora desde la fecha/hora de la grabación si el observador no las dicta.
 - El pipeline debe tener una segunda red de seguridad: si Plaud no devuelve `FECHA` o `HORA_*`, las completará desde el archivo cuando sea posible.
-- No se crea plantilla para `IMPACTO_AMBIENTAL` en esta fase.
+- Las coordenadas UTM se dictan como números enteros en metros (X e Y).
+  El sistema de referencia del proyecto es único y fijo: **ETRS89,
+  huso 30N** (decisión #44; todos los puntos están en Navarra). El
+  observador NO dicta huso ni datum; el sistema los conoce.
+- No se crea plantilla para `IMPACTO_AMBIENTAL` en esta fase. En el
+  esquema v3 las sesiones de estudio de campo se modelan como visita
+  `IMPACTO_AMBIENTAL` + meteorología (decisión #41); su plantilla
+  llegará con las plantillas futuras.
 
 ## Plantillas definitivas
 
@@ -51,6 +72,23 @@ Motivo: es documentación funcional del proyecto y será la referencia para el p
 5. `Visita_Cebo_Avispon`
 6. `Visita_Nido_Rapaz`
 7. `Visita_Mamiferos_Puente`
+
+## Plantillas futuras (pendientes de vocabulario del cliente)
+
+El esquema v3 añade 4 tipos de registro (decisión #41) que tendrán
+plantilla Plaud cuando el cliente cierre sus vocabularios
+(`docs/Revisar con GABI.md` §5):
+
+| Plantilla futura | Tabla destino | Bloqueada por |
+|---|---|---|
+| `Visita_Fototrampeo` | `fototrampeo` | vocabulario `tipo_media` (¿FOTO/VIDEO?) |
+| `Cuaderno_Campo` | `cuaderno_campo` | nada crítico (campos libres); diseño pendiente |
+| `Estudio_Campo` | `estudio_campo` | vocabularios `deteccion`, `migracion`, `altura`, `lado` |
+| `Castor_Rastros` | `castor_rastros` | vocabularios `tipo_rastro`, `intensidad_rastro`, `reciente_antiguo`, significado de `aplicacion` |
+
+No se redactan aún sus prompts: el vocabulario cerrado es la clave del
+sistema (decisión #4) y redactarlos sin valores cerrados confirmados
+generaría `.txt` que el pipeline no podría validar.
 
 ---
 
@@ -308,6 +346,16 @@ Fin de registro.
 
 Cerrar la visita Lindus abierta, rellenando `hora_fin`, y crear una o varias filas en `meteorologia`.
 
+Cada registro meteorológico puede incluir los conteos de personas del
+protocolo Lindus (`PRESENTES`, `OBSERVANDO`, `VISITANTES`), igual que
+en el histórico de Trektellen.
+
+Nota (decisión #39): si el cierre trae `OBSERVACIONES_VISITA`, el
+pipeline las **combina** con las observaciones dictadas al inicio de la
+jornada usando ` | ` como separador; si no trae, las del inicio se
+conservan intactas. El observador puede dictar notas al abrir y al
+cerrar sin miedo a perder ninguna.
+
 ## Prompt Plaud
 
 ```text
@@ -434,6 +482,14 @@ REGLAS PARA CADA REGISTRO METEOROLÓGICO:
 - VIENTO_INTENSIDAD debe ir en mayúsculas.
 - PRECIPITACION debe ir en mayúsculas.
 - VISIBILIDAD debe ir en mayúsculas.
+- PRESENTES, OBSERVANDO y VISITANTES son conteos de personas del protocolo de conteo migratorio. Deben ser números enteros.
+- PRESENTES es el número de personas presentes en el punto de conteo.
+- OBSERVANDO es el número de personas observando activamente.
+- VISITANTES es el número de visitantes ajenos al conteo.
+- Si el observador dice "somos tres", "tres personas" o "tres presentes", usa PRESENTES: 3.
+- Si el observador dice "dos observando" o "dos contando", usa OBSERVANDO: 2.
+- Si el observador dice "cinco visitantes", "cinco visitas" o "ha pasado gente, cinco personas", usa VISITANTES: 5.
+- No inventes conteos de personas: si no se mencionan, omite esos campos.
 - OBSERVACIONES_METEO recoge notas libres de ese registro meteorológico concreto.
 
 FORMATO DE SALIDA:
@@ -452,6 +508,9 @@ VIENTO_DIRECCION:
 VIENTO_INTENSIDAD:
 PRECIPITACION:
 VISIBILIDAD:
+PRESENTES:
+OBSERVANDO:
+VISITANTES:
 OBSERVACIONES_METEO:
 
 ---METEOROLOGIA---
@@ -462,6 +521,9 @@ VIENTO_DIRECCION:
 VIENTO_INTENSIDAD:
 PRECIPITACION:
 VISIBILIDAD:
+PRESENTES:
+OBSERVANDO:
+VISITANTES:
 OBSERVACIONES_METEO:
 ```
 
@@ -655,6 +717,7 @@ REGLAS PARA METEOROLOGIA:
 - VIENTO_INTENSIDAD debe ir en mayúsculas.
 - PRECIPITACION debe ir en mayúsculas.
 - VISIBILIDAD debe ir en mayúsculas.
+- OBSERVACIONES_METEO recoge notas libres del registro meteorológico. Omítelo si no hay notas.
 
 FORMATO DE SALIDA:
 
@@ -675,6 +738,7 @@ VIENTO_DIRECCION:
 VIENTO_INTENSIDAD:
 PRECIPITACION:
 VISIBILIDAD:
+OBSERVACIONES_METEO:
 
 ---CAJA_NIDO---
 ESPECIE:
@@ -831,6 +895,14 @@ REGLAS PARA DATOS DEL CEBO:
 - Si el observador dice "otros", "otros insectos" u "otras capturas", usa el campo OTROS.
 - Si el observador dice "cero", "ninguna", "ninguno", "sin capturas" o "no hay", usa el número 0 en el campo correspondiente si se entiende a qué taxón se refiere.
 - No inventes ceros para campos que no se mencionan.
+- NUMERO_TRAMPA debe ser un número entero, si el observador identifica la trampa por número.
+- Si el observador dice "trampa tres" o "trampa número tres", usa NUMERO_TRAMPA: 3.
+- FECHA_COLOCACION es la fecha en que se colocó la trampa, solo si el observador la menciona. Formato YYYY-MM-DD.
+- Si el observador dice "la coloqué el quince de mayo", usa FECHA_COLOCACION con esa fecha.
+- UTM_X_NIDO y UTM_Y_NIDO son las coordenadas UTM de un nido de velutina localizado, solo si el observador las dicta.
+- UTM_X_NIDO y UTM_Y_NIDO deben ser números enteros, en metros, sin huso ni datum (el sistema usa siempre ETRS89 huso 30N).
+- Si el observador dice "nido localizado en equis seiscientos doce mil trescientos cuarenta, ye cuatro millones setecientos dos mil cien", usa UTM_X_NIDO: 612340 y UTM_Y_NIDO: 4702100.
+- No inventes coordenadas: si no se dictan, omite UTM_X_NIDO y UTM_Y_NIDO.
 - OBSERVACIONES_CEBO recoge notas libres sobre el estado del cebo, líquido, incidencias, recambio o cualquier comentario específico.
 
 REGLAS PARA METEOROLOGIA:
@@ -864,6 +936,7 @@ REGLAS PARA METEOROLOGIA:
 - Si el observador dice "visibilidad buena" o "buena visibilidad", usa VISIBILIDAD: BUENA.
 - Si el observador dice "visibilidad regular", usa VISIBILIDAD: REGULAR.
 - Si el observador dice "visibilidad mala", usa VISIBILIDAD: MALA.
+- OBSERVACIONES_METEO recoge notas libres del registro meteorológico. Omítelo si no hay notas.
 
 FORMATO DE SALIDA:
 
@@ -884,6 +957,7 @@ VIENTO_DIRECCION:
 VIENTO_INTENSIDAD:
 PRECIPITACION:
 VISIBILIDAD:
+OBSERVACIONES_METEO:
 
 ---CEBO_AVISPON---
 VV:
@@ -892,6 +966,10 @@ AVISPA_EUROPEA:
 POLILLA:
 MARIPOSA:
 OTROS:
+NUMERO_TRAMPA:
+FECHA_COLOCACION:
+UTM_X_NIDO:
+UTM_Y_NIDO:
 OBSERVACIONES_CEBO:
 ```
 
@@ -968,6 +1046,15 @@ REGLAS PARA DATOS DEL NIDO:
 - ESPECIE debe ser la especie del nido si se menciona. No inventes especie.
 - TEXTO_REVISION es obligatorio si el observador describe el nido.
 - TEXTO_REVISION debe recoger literalmente la descripción de lo observado en el nido, sin resumir, sin interpretar y sin reescribir.
+- DESCRIPCION_NIDO recoge la descripción física del nido (estructura, soporte, tamaño, estado), si el observador la separa de la revisión.
+- INCUBA solo puede ser true o false, y solo si el observador lo menciona.
+- Si el observador dice "está incubando", "incuba", "echada en el nido" o "en incubación", escribe INCUBA: true.
+- Si el observador dice "no incuba", "no está incubando" o "nido sin incubación", escribe INCUBA: false.
+- NUMERO_POLLOS debe ser un número entero, solo si se menciona.
+- Si el observador dice "veo dos pollos" o "dos pollos en el nido", usa NUMERO_POLLOS: 2.
+- POLLOS_VOLADOS debe ser un número entero, solo si se menciona.
+- Si el observador dice "han volado tres pollos", "tres pollos volados" o "tres volantones", usa POLLOS_VOLADOS: 3.
+- No inventes INCUBA, NUMERO_POLLOS ni POLLOS_VOLADOS: si no se mencionan, omite esos campos.
 - Si el observador dice que la información procede de otra persona, recoge el nombre en COMUNICACION_PERSONAL.
 - Si el observador dice "comunicación personal de X", "me lo dice X", "dato aportado por X" o "según X", escribe:
   COMUNICACION_PERSONAL: X
@@ -1005,6 +1092,7 @@ REGLAS PARA METEOROLOGIA:
 - Si el observador dice "visibilidad buena" o "buena visibilidad", usa VISIBILIDAD: BUENA.
 - Si el observador dice "visibilidad regular", usa VISIBILIDAD: REGULAR.
 - Si el observador dice "visibilidad mala", usa VISIBILIDAD: MALA.
+- OBSERVACIONES_METEO recoge notas libres del registro meteorológico. Omítelo si no hay notas.
 
 FORMATO DE SALIDA:
 
@@ -1025,10 +1113,15 @@ VIENTO_DIRECCION:
 VIENTO_INTENSIDAD:
 PRECIPITACION:
 VISIBILIDAD:
+OBSERVACIONES_METEO:
 
 ---NIDO_RAPAZ---
 ESPECIE:
 TEXTO_REVISION:
+DESCRIPCION_NIDO:
+INCUBA:
+NUMERO_POLLOS:
+POLLOS_VOLADOS:
 COMUNICACION_PERSONAL:
 OBSERVACIONES_NIDO:
 ```
@@ -1173,6 +1266,7 @@ REGLAS PARA METEOROLOGIA:
 - Si el observador dice "visibilidad buena" o "buena visibilidad", usa VISIBILIDAD: BUENA.
 - Si el observador dice "visibilidad regular", usa VISIBILIDAD: REGULAR.
 - Si el observador dice "visibilidad mala", usa VISIBILIDAD: MALA.
+- OBSERVACIONES_METEO recoge notas libres del registro meteorológico. Omítelo si no hay notas.
 
 FORMATO DE SALIDA:
 
@@ -1194,6 +1288,7 @@ VIENTO_DIRECCION:
 VIENTO_INTENSIDAD:
 PRECIPITACION:
 VISIBILIDAD:
+OBSERVACIONES_METEO:
 
 ---MAMIFERO_PUENTE---
 ESPECIE:
