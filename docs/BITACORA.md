@@ -693,6 +693,9 @@
   importación del histórico 2025.
 - `docs/BirdLog_tablas_cliente_v03.xlsx`: Excel del cliente con el
   histórico real. **Fuera de git** (`docs/*.xlsx` en `.gitignore`).
+- `docs/Revisar con GABI.md`: cuestionario para el cliente con las
+  preguntas que bloquean la migración (meteo errónea, especies,
+  UTM, visitas 2025, vocabularios nuevos, quinto ecosistema).
 - `docs/modelo_datos.md`: descripción completa de las 14 tablas (v3)
   con todos los campos, tipos y valores cerrados.
 - `docs/formato_plaud.md`: plantillas Plaud definitivas v1 y formato
