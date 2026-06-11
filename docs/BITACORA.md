@@ -820,6 +820,12 @@
 - `docs/USO_APP_PIPELINE.md`: guía de uso de la app pipeline para el
   observador (arranque, colores, errores frecuentes, reproceso de
   archivos fallidos).
+- `docs/Pruebas_pipeline_junio.md`: plan de pruebas de campo del
+  pipeline con Plaud (junio 2026). Dictados y `.txt` esperados de las
+  7 plantillas, pruebas de error, huecos conocidos (campos v3 sin
+  insertar), SQL de verificación/limpieza por marcador «prueba junio»,
+  tabla de seguimiento y plantilla para reportar errores a cualquier
+  LLM/agente. Criterio de proyecto finalizado en §11.
 - `app_pipeline/app.py`: app Streamlit del pipeline (puerto 8502).
   Cabecera de estado, botón "Procesar", tarjetas de resultado y
   botones "Abrir dashboard" y "Abrir Claude.ai".
