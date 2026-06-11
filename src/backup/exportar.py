@@ -3,8 +3,9 @@
 from csv import DictWriter
 from datetime import date
 from pathlib import Path
+from shutil import rmtree
 
-
+# Todas las tablas del esquema v3 (sql/003_esquema_v3.sql).
 TABLAS_BACKUP = [
     "especies",
     "observadores",
@@ -16,8 +17,13 @@ TABLAS_BACKUP = [
     "nidos_rapaces",
     "cebos_avispones",
     "mamiferos_puentes",
+    "fototrampeo",
+    "cuaderno_campo",
+    "estudio_campo",
+    "castor_rastros",
     "fotos",
 ]
+RETENCION_BACKUPS = 30
 
 
 def hacer_backup(cliente, carpeta_base: str = "backups") -> Path:
@@ -27,7 +33,15 @@ def hacer_backup(cliente, carpeta_base: str = "backups") -> Path:
     for tabla in TABLAS_BACKUP:
         filas = _leer_tabla(cliente, tabla)
         _escribir_csv(carpeta / f"{tabla}.csv", filas)
+    _aplicar_retencion(Path(carpeta_base))
     return carpeta
+
+
+def _aplicar_retencion(carpeta_base: Path, maximo: int = RETENCION_BACKUPS) -> None:
+    """Conserva solo los backups más recientes (por nombre de fecha)."""
+    carpetas = sorted(ruta for ruta in carpeta_base.glob("backup_*") if ruta.is_dir())
+    for antigua in carpetas[:-maximo]:
+        rmtree(antigua, ignore_errors=True)
 
 
 def _leer_tabla(cliente, tabla: str) -> list[dict]:
