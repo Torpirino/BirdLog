@@ -8,15 +8,16 @@
 
 ## Estado actual
 
-- **Fase activa**: Fase 8 — App local de pipeline (código del pipeline
-  revisado y robustecido; listo para pruebas reales con Plaud)
+- **Fase activa**: Fase 8 — App local de pipeline (pipeline revisado,
+  campos v3 insertándose y plan de pruebas de campo listo)
 - **Última sesión**: 2026-06-11
-- **Próxima tarea**: (a) Sustituir clave anon del `.env` por la clave
-  `service_role` del proyecto BirdLog (dashboard → Settings → API);
-  (b) continuar pruebas reales con Nidos rapaces, Cebos avispones,
-  Cajas nido y Lindus vía Plaud; (c) recoger del cliente lo pendiente:
-  observador de las 98 visitas, `id_lugar` de V0001, UTM/municipio de
-  Lindus y Trona, vocabularios de las tablas nuevas y quinto ecosistema.
+- **Próxima tarea**: (a) Ejecutar el plan de pruebas
+  `docs/Pruebas_pipeline_junio.md` empezando por su Fase 0 (clave
+  `service_role` en `.env` + altas de catálogo: 4 lugares y 4 especies
+  de mamíferos) y después las pruebas P-01 a P-10 con Plaud real;
+  (b) recoger del cliente lo pendiente: observador de las 98 visitas,
+  `id_lugar` de V0001, UTM/municipio de Lindus y Trona, vocabularios
+  de las tablas nuevas y quinto ecosistema.
 
 ---
 
@@ -93,6 +94,37 @@
 ---
 
 ## Tareas completadas
+
+### Sesión 2026-06-11 (tarde): Plan de pruebas de campo + campos v3 en BD (completado)
+- [x] **`docs/Pruebas_pipeline_junio.md` creado** (commit `457f580`):
+      guía autocontenida para el usuario y para cualquier LLM/agente.
+      Dictados y `.txt` esperados de las 7 plantillas, pruebas de error
+      deliberado, SQL de verificación/limpieza por marcador
+      «prueba junio», tabla de seguimiento, plantilla de reporte de
+      errores y criterio de proyecto finalizado (§11).
+- [x] **Catálogo real verificado contra Supabase BirdLog**: solo
+      existen los lugares Lindus y Trona y no hay especies de grupo
+      MAMIFERO → la Fase 0 del plan incluye las altas necesarias
+      (4 lugares de prueba/reales + nutria, visón, garduña, castor).
+- [x] **Campos v3 implementados en la inserción** (decisión #48,
+      commit `3f9931e`): `presentes/observando/visitantes` y
+      `observaciones_meteo` en meteorología; `numero_trampa`,
+      `fecha_colocacion` y UTM del nido en cebos; `descripcion_nido`,
+      `incuba`, `numero_pollos`, `pollos_volados` y
+      `observaciones_nido` en nidos rapaces. Antes se parseaban pero
+      se descartaban en silencio.
+- [x] **Columna nueva `nidos_rapaces.observaciones`**: migración
+      aditiva `sql/004_observaciones_nidos_rapaces.sql` aplicada al
+      proyecto BirdLog el 2026-06-11 (verificada con
+      `information_schema`); `sql/003_esquema_v3.sql` actualizado.
+- [x] **Parser ampliado**: enteros v3 en `CAMPOS_ENTEROS`, `incuba`
+      como booleano (parser + normalización sí/no), `fecha_colocacion`
+      normalizada (acepta DD/MM/YYYY) y validada con diagnóstico claro.
+- [x] **Docs actualizados**: `modelo_datos.md`, nota de compatibilidad
+      de `formato_plaud.md`, `AGENTS.md`/`CLAUDE.md` sincronizados,
+      guía de pruebas (hueco #1 resuelto, P-08 espera valores).
+- [x] **Tests**: 142 pasan (135 + 7 nuevos de parser, normalización,
+      validación e inserción de campos v3).
 
 ### Sesión 2026-06-11: Revisión del pipeline — robustez y mensajes claros (completado)
 - [x] **Revisión completa del código del pipeline**: parser, inserción,
@@ -782,9 +814,13 @@
   adelante quedarán los `.txt` pendientes de reproceso.
 - `sql/002_esquema_v2.sql`: esquema v2 (10 tablas). Es el que está
   aplicado actualmente en Supabase dev.
-- `sql/003_esquema_v3.sql`: esquema v3 definitivo (14 tablas) tras la
-  revisión del Excel del cliente. DROP+CREATE; pendiente de aplicar
-  en Supabase dev junto con la migración del histórico.
+- `sql/003_esquema_v3.sql`: esquema v3 definitivo (15 tablas) tras la
+  revisión del Excel del cliente. DROP+CREATE; aplicado en el proyecto
+  Supabase BirdLog el 2026-06-10. Incluye
+  `nidos_rapaces.observaciones` desde 2026-06-11.
+- `sql/004_observaciones_nidos_rapaces.sql`: migración aditiva que
+  añade `observaciones TEXT` a `nidos_rapaces` (decisión #48).
+  Aplicada en el proyecto BirdLog el 2026-06-11.
 - `docs/REVISION_EXCEL_CLIENTE_V03.md`: correcciones de datos que
   debe responder el cliente y reglas del futuro script de
   importación del histórico 2025.
@@ -852,12 +888,15 @@
 
 ## Handoff
 
-**Estado a 2026-06-11**: histórico 2025 importado en Supabase BirdLog,
-dashboard verificado con datos reales y código del pipeline revisado y
-robustecido (decisión #47). 135 tests pasan.
+**Estado a 2026-06-11 (cierre)**: histórico 2025 importado en Supabase
+BirdLog, dashboard verificado con datos reales, pipeline revisado y
+robustecido (decisión #47), campos v3 insertándose en BD (decisión
+#48) y plan de pruebas de campo listo
+(`docs/Pruebas_pipeline_junio.md`). 142 tests pasan.
 
 **Supabase BirdLog** (`mbphfgmjryyxzjgcwqxo`, EU-West-3):
-- Esquema v3 activo (14 tablas). `.env` apunta a este proyecto.
+- Esquema v3 activo (15 tablas, con `nidos_rapaces.observaciones`
+  desde sql/004). `.env` apunta a este proyecto.
 - Datos: 135 especies, 2 observadores, 2 lugares, 97 visitas, 1.048 meteo,
   10.870 lindus. Tablas vacías: cajas_nido, nidos_rapaces, cebos_avispones,
   mamiferos_puentes, fototrampeo, cuaderno_campo, estudio_campo,
@@ -879,9 +918,11 @@ dashboard/app.py --server.port 8999`):
 - Pendiente: prueba real con `.txt` en `01_entrada` de Drive.
 
 **Próximas tareas (en orden)**:
-1. Sustituir clave anon en `.env` por `service_role` (Supabase →
-   Settings → API → service_role key).
-2. Prueba real del pipeline con Nidos rapaces, Cebos, Cajas nido y Lindus.
+1. Ejecutar `docs/Pruebas_pipeline_junio.md` — Fase 0: clave
+   `service_role` en `.env` + altas de catálogo (4 lugares; especies
+   nutria/visón/garduña/castor).
+2. Pruebas P-01 a P-10 del plan con Plaud real (Lindus completo, caja,
+   cebo, nido, puente, errores deliberados, backup, entorno).
 3. Recoger del cliente: observador de las 98 visitas, `id_lugar` de V0001,
    UTM/municipio de Lindus y Trona, vocabularios de tablas nuevas, quinto
    ecosistema de cajas_nido.
