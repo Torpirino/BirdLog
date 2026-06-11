@@ -21,8 +21,12 @@ PRIORIDAD_LINDUS = {
 }
 
 
-def procesar_drive() -> list[dict]:
-    """Procesa todos los TXT de la carpeta de entrada."""
+def procesar_drive(al_procesar=None) -> list[dict]:
+    """Procesa todos los TXT de la carpeta de entrada.
+
+    `al_procesar(resultado)` se invoca tras cada archivo para poder
+    informar del progreso sin esperar al final del lote.
+    """
     config = cargar_config_pipeline()
     cliente = get_cliente()
     drive = get_drive()
@@ -31,7 +35,10 @@ def procesar_drive() -> list[dict]:
     with TemporaryDirectory() as temporal:
         descargas = _descargar_lote(archivos, Path(temporal), drive)
         for descarga in ordenar_descargas_lindus(descargas):
-            resultados.append(_procesar_descarga_drive(descarga, config, cliente, drive))
+            resultado = _procesar_descarga_drive(descarga, config, cliente, drive)
+            resultados.append(resultado)
+            if al_procesar is not None:
+                al_procesar(resultado)
     return resultados
 
 
@@ -50,14 +57,33 @@ def _procesar_descarga_drive(descarga: dict, config, cliente, drive) -> dict:
     try:
         resumen = procesar_txt_local(descarga["ruta"], cliente, drive)
     except PipelineError as exc:
-        mover_archivo(archivo, config.DRIVE_ERRORES_ID, drive)
-        return _resultado_error(archivo, str(exc), exc.errores, exc.fase)
+        movido = _mover_seguro(archivo, config.DRIVE_ERRORES_ID, drive)
+        return _resultado_error(archivo, str(exc), exc.errores, exc.fase, movido)
     except ValueError as exc:
-        mover_archivo(archivo, config.DRIVE_ERRORES_ID, drive)
+        movido = _mover_seguro(archivo, config.DRIVE_ERRORES_ID, drive)
         error = _error_generico("parseo", str(exc))
-        return _resultado_error(archivo, mensaje_pipeline(archivo["name"], [error]), [error], "parseo")
-    mover_archivo(archivo, config.DRIVE_PROCESADOS_ID, drive)
-    return {"archivo": archivo["name"], "estado": "procesado", "resumen": resumen}
+        return _resultado_error(archivo, mensaje_pipeline(archivo["name"], [error]), [error], "parseo", movido)
+    movido = _mover_seguro(archivo, config.DRIVE_PROCESADOS_ID, drive)
+    resultado = {"archivo": archivo["name"], "estado": "procesado", "resumen": resumen, "movido": movido}
+    if not movido:
+        resumen["aviso"] = AVISO_NO_MOVIDO_PROCESADO
+    return resultado
+
+
+AVISO_NO_MOVIDO_PROCESADO = (
+    "Los datos SÍ se insertaron, pero el archivo no se pudo mover en Drive "
+    "y sigue en 01_entrada. Muévelo a mano a 02_procesados antes de volver "
+    "a procesar, o los datos se duplicarán."
+)
+
+
+def _mover_seguro(archivo: dict, carpeta_destino: str, drive) -> bool:
+    """Mueve el archivo en Drive sin tumbar el lote si Drive falla."""
+    try:
+        mover_archivo(archivo, carpeta_destino, drive)
+        return True
+    except Exception:
+        return False
 
 
 def ordenar_descargas_lindus(descargas: list[dict]) -> list[dict]:
@@ -141,14 +167,20 @@ def _con_advertencias(registro: dict, errores: list[ErrorDetalle]) -> list[Error
     return [*advertencias, *errores]
 
 
-def _resultado_error(archivo: dict, mensaje: str, errores: list[ErrorDetalle] | None = None, fase: str = "procesamiento") -> dict:
+def _resultado_error(archivo: dict, mensaje: str, errores: list[ErrorDetalle] | None = None, fase: str = "procesamiento", movido: bool = True) -> dict:
     """Devuelve un resumen de error de procesamiento."""
+    if not movido:
+        mensaje += (
+            "\nAviso: el archivo no se pudo mover en Drive y sigue en "
+            "01_entrada; muévelo a mano a 03_errores."
+        )
     return {
         "archivo": archivo["name"],
         "estado": "error",
         "mensaje": mensaje,
         "fase": fase,
         "errores": [error.a_dict() for error in errores or []],
+        "movido": movido,
     }
 
 

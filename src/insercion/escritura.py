@@ -1,7 +1,5 @@
 """Inserta registros Plaud validados en Supabase."""
 
-from pathlib import Path
-
 from src.diagnosticos import ErrorDetalle, PipelineError
 from src.insercion.catalogos import resolver_especie, resolver_lugar, resolver_observador
 
@@ -45,7 +43,7 @@ def _resolver_referencias(registro: dict, cliente) -> dict:
         "ids_especies": _resolver_especies_datos(tipo, registro["datos"], cliente, errores),
     }
     if errores:
-        raise PipelineError(Path("<registro>").name, "catálogo/FK", errores)
+        raise PipelineError("<registro>", "catálogo/FK", errores)
     return refs
 
 
@@ -132,7 +130,10 @@ def _buscar_visita_lindus_abierta(fecha: str, cliente, accion: str) -> dict:
     respuesta = consulta.limit(1).execute()
     filas = getattr(respuesta, "data", None) or []
     if not filas:
-        raise ValueError(f"No hay visita Lindus abierta para {accion} en la fecha {fecha}.")
+        raise ValueError(
+            f"No hay visita Lindus abierta para {accion} en la fecha {fecha}. "
+            "Procesa primero el archivo INICIO_VISITA_LINDUS de ese día."
+        )
     return filas[0]
 
 
@@ -260,7 +261,7 @@ def _resolver_especies_lindus(datos: list[dict], cliente) -> list[int]:
     errores = []
     ids = [_resolver_especie_segura(dato["especie"], "especie", cliente, errores) for dato in datos]
     if errores:
-        raise PipelineError(Path("<registro>").name, "catálogo/FK", errores)
+        raise PipelineError("<registro>", "catálogo/FK", errores)
     return ids
 
 

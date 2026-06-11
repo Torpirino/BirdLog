@@ -21,12 +21,12 @@ def _crear_cliente():
 
         return create_client(get_supabase_url(), get_supabase_key())
     except Exception as exc:
-        if _parece_proyecto_pausado(exc):
+        if es_error_de_pausa(exc):
             raise RuntimeError(MENSAJE_PAUSA) from exc
         raise
 
 
-def _parece_proyecto_pausado(error: Exception) -> bool:
+def es_error_de_pausa(error: Exception) -> bool:
     """Detecta errores frecuentes cuando Supabase está pausado."""
     texto = str(error).lower()
     pistas = ["paused", "pause", "connection", "timeout", "resolve", "refused", "unreachable"]

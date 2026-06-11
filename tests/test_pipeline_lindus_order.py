@@ -145,6 +145,37 @@ def test_procesar_drive_devuelve_resultados_en_orden_lindus(monkeypatch, tmp_pat
     assert [r["archivo"] for r in resultados] == procesados
 
 
+def test_procesar_drive_no_aborta_si_drive_no_puede_mover(monkeypatch, tmp_path):
+    """Un fallo al mover el .txt avisa al usuario sin tumbar el lote."""
+    import src.pipeline as pipeline
+
+    Config = make_dataclass("Config", [("DRIVE_ENTRADA_ID", str), ("DRIVE_ERRORES_ID", str), ("DRIVE_PROCESADOS_ID", str)])
+    archivos = [{"id": "caja", "name": "caja.txt", "parents": ["entrada"]}]
+
+    def descargar(archivo_id, destino, _drive):
+        ruta = Path(destino)
+        ruta.write_text("TIPO_REGISTRO: VISITA_CAJA_NIDO\nFECHA: 2026-05-04\n", encoding="utf-8")
+        return ruta
+
+    def mover_falla(*_args):
+        raise OSError("Drive no responde")
+
+    monkeypatch.setattr(pipeline, "cargar_config_pipeline", lambda: Config("entrada", "errores", "procesados"))
+    monkeypatch.setattr(pipeline, "get_cliente", lambda: object())
+    monkeypatch.setattr(pipeline, "get_drive", lambda: object())
+    monkeypatch.setattr(pipeline, "listar_txt", lambda _carpeta, _drive: archivos)
+    monkeypatch.setattr(pipeline, "descargar_archivo", descargar)
+    monkeypatch.setattr(pipeline, "procesar_txt_local", lambda *_args: {"id_visita": 1, "backup": "/tmp/b"})
+    monkeypatch.setattr(pipeline, "mover_archivo", mover_falla)
+
+    resultados = pipeline.procesar_drive()
+
+    assert len(resultados) == 1
+    assert resultados[0]["estado"] == "procesado"
+    assert resultados[0]["movido"] is False
+    assert "01_entrada" in resultados[0]["resumen"]["aviso"]
+
+
 def test_registro_pipeline_refleja_orden_recibido():
     """El registro mantiene el orden de resultados ya ordenado por pipeline."""
     resultados = [
