@@ -265,11 +265,15 @@ def _etiqueta_registro_tabla(tabla: str, registro: pd.Series, tablas: dict[str, 
 
 
 def _vista_tabla(tabla: str, df: pd.DataFrame, tablas: dict[str, pd.DataFrame]) -> pd.DataFrame:
-    """Prepara vista compacta de tabla."""
+    """Prepara vista completa de la tabla, con lo más reciente arriba."""
     if df.empty:
         return df
-    columnas = [ID_TABLA[tabla]] + campos_editables(tabla)
-    return df[[c for c in columnas if c in df.columns]].head(200)
+    id_columna = ID_TABLA[tabla]
+    columnas = [id_columna] + campos_editables(tabla)
+    vista = df[[c for c in columnas if c in df.columns]]
+    if id_columna in vista.columns:
+        vista = vista.sort_values(id_columna, ascending=False)
+    return vista
 
 
 def _guardar_alta(tabla: str, datos: dict[str, Any]) -> None:
