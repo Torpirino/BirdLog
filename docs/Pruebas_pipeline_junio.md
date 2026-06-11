@@ -242,6 +242,42 @@ aunque se subieran desordenadas. Una sola visita LINDUS nueva con
 **Verificar en dashboard**: páginas Visitas y Lindus muestran la visita
 nueva con sus 3 observaciones y su meteo.
 
+> **Hallazgos del primer intento real (2026-06-11)**:
+>
+> Se grabaron los 3 TXT con Plaud real y se analizaron antes de procesar.
+> Se detectaron dos incidencias en los TXT generados:
+>
+> 1. **Especie en plural**: en el archivo de observaciones,
+>    Plaud escribió `ESPECIE: milanos reales` (plural). El catálogo
+>    tiene `Milano real` en singular. `resolver_especie` prueba exacto
+>    y `.capitalize()`, ambos fallan con `milanos reales`. **Causa**:
+>    el prompt de `Observaciones_Lindus` decía "escribe la especie TAL
+>    COMO la dice el observador", sin instruir a convertir a singular.
+>    **Corrección aplicada en documentación**: sección `NORMALIZACIÓN DE
+>    ESPECIE` añadida al prompt de `Observaciones_Lindus` en
+>    `docs/formato_plaud.md`, y formas plurales de especies frecuentes
+>    añadidas a la lista de vocabulario que debe cargarse en Plaud.
+>    **Acción pendiente en Plaud**: actualizar el prompt
+>    `Observaciones_Lindus` y el vocabulario con esas nuevas entradas.
+>
+> 2. **Nombre de archivo incongruente con contenido**: el archivo de
+>    observaciones se llamó `06-11_Visita_Inicio_en_Lindus_-_11_de_junio...`
+>    pero su `TIPO_REGISTRO` era `OBSERVACIONES_LINDUS`. Ocurrió porque
+>    Plaud genera el nombre del archivo a partir de su propio resumen LLM
+>    de las primeras palabras del dictado, no del campo `TIPO_REGISTRO`.
+>    **Sin impacto en el pipeline** (que lee `TIPO_REGISTRO` del contenido).
+>    **Causa probable**: la grabación de observaciones no empezó con la
+>    frase exacta "Observaciones Lindus." o Plaud tituló a partir de su
+>    resumen interno, no del campo estructurado. **Corrección aplicada**: regla de
+>    "Nombre del archivo" añadida a los "Principios generales" de
+>    `docs/formato_plaud.md`. **Acción en Plaud**: seguir la convención
+>    de título inicial al dictar (ver "Nombre del archivo" en
+>    `docs/formato_plaud.md`).
+>
+> **Repetir P-01 desde Plaud** con el prompt `Observaciones_Lindus`
+> actualizado (que incluye `NORMALIZACIÓN DE ESPECIE`). El resto del
+> flujo (inicio, fin, meteo, combinación de observaciones) era correcto.
+
 ### P-02 — Caja nido (plantilla `Visita_Caja_Nido`)
 
 **Dictado:**

@@ -60,6 +60,23 @@ Motivo: es documentación funcional del proyecto y será la referencia para el p
   El sistema de referencia del proyecto es único y fijo: **ETRS89,
   huso 30N** (decisión #44; todos los puntos están en Navarra). El
   observador NO dicta huso ni datum; el sistema los conoce.
+- **Nombre del archivo**: Plaud genera el título del archivo a partir de
+  las primeras palabras de la grabación (su resumen interno), no del campo
+  `TIPO_REGISTRO`. Para que el nombre del archivo identifique claramente
+  el tipo de registro, el observador debe **empezar cada grabación** con
+  una frase que lo identifique:
+  - `Inicio_visita_Lindus` → empezar con "Inicio visita Lindus."
+  - `Observaciones_Lindus` → empezar con "Observaciones Lindus."
+  - `Fin_visita_Lindus` → empezar con "Fin visita Lindus."
+  - `Visita_Caja_Nido` → empezar con "Visita caja nido, [código caja]."
+  - `Visita_Cebo_Avispon` → empezar con "Visita cebo avispón [número]."
+  - `Visita_Nido_Rapaz` → empezar con "Visita nido rapaz, [nombre nido]."
+  - `Visita_Mamiferos_Puente` → empezar con "Visita mamíferos, [nombre puente]."
+  Si la grabación empieza con otra frase (p. ej. "Inicio en Lindus" en vez
+  de "Observaciones Lindus"), el archivo puede tener un nombre que no
+  corresponde a su contenido. **El pipeline no usa el nombre del archivo**
+  (lee `TIPO_REGISTRO` del contenido), pero el nombre incorrecto dificulta
+  identificar los archivos a mano en Drive.
 - No se crea plantilla para `IMPACTO_AMBIENTAL` en esta fase. En el
   esquema v3 las sesiones de estudio de campo se modelan como visita
   `IMPACTO_AMBIENTAL` + meteorología (decisión #41); su plantilla
@@ -119,6 +136,10 @@ IMPORTANTE:
 - No inventes datos.
 - No incluyas campos vacíos.
 - Aunque la grabación sea corta, intenta extraer todos los datos disponibles.
+
+TÍTULO / NOMBRE DE ARCHIVO:
+- Para que Plaud titule bien el archivo, la grabación debe empezar literalmente con: "Inicio visita Lindus."
+- Aunque el título del archivo salga distinto, no lo copies ni lo uses en la salida. La salida debe depender solo de los campos estructurados.
 
 REGLAS GENERALES:
 - Esta plantilla solo crea la visita.
@@ -233,6 +254,10 @@ IMPORTANTE:
 - Si hay varias observaciones en la grabación, crea un bloque separado para cada una.
 - Cada observación debe ir precedida por el marcador ---OBSERVACION_LINDUS---.
 
+TÍTULO / NOMBRE DE ARCHIVO:
+- Para que Plaud titule bien el archivo, la grabación debe empezar literalmente con: "Observaciones Lindus."
+- Aunque el título del archivo salga distinto, no lo copies ni lo uses en la salida. La salida debe depender solo de los campos estructurados.
+
 REGLAS GENERALES:
 - TIPO_REGISTRO siempre debe ser OBSERVACIONES_LINDUS.
 - TIPO_VISITA siempre debe ser LINDUS.
@@ -271,8 +296,30 @@ NORMALIZACIÓN DE VALORES CERRADOS:
 - Si no puedes reconocer con seguridad el comportamiento, omite COMPORTAMIENTO en esa observación.
 - No copies errores de transcripción en los valores cerrados. Normalízalos usando este vocabulario.
 
+NORMALIZACIÓN DE ESPECIE:
+- ESPECIE debe escribirse siempre en **singular**, con la misma forma que figura en el catálogo.
+- Si el observador dicta el nombre en plural, conviértelo al singular del catálogo.
+- Si el observador dice "milanos reales", "milanos real" o formas parecidas, escribe exactamente:
+  ESPECIE: milano real
+- Si el observador dice "milanos negros", "milanos negro" o formas parecidas, escribe exactamente:
+  ESPECIE: milano negro
+- Si el observador dice "abejeros europeos" o formas parecidas, escribe exactamente:
+  ESPECIE: abejero europeo
+- Si el observador dice "busardos ratoneros" o formas parecidas, escribe exactamente:
+  ESPECIE: busardo ratonero
+- Si el observador dice "buitres leonados" o formas parecidas, escribe exactamente:
+  ESPECIE: buitre leonado
+- Si el observador dice "cernícalos vulgares" o formas parecidas, escribe exactamente:
+  ESPECIE: cernícalo vulgar
+- Si el observador dice "cigüeñas blancas" o formas parecidas, escribe exactamente:
+  ESPECIE: cigüeña blanca
+- Regla general: si la especie termina en -s (plural) o en -es, usa la forma singular del catálogo.
+- Para especies no listadas arriba, escribe el nombre común en singular tal como aparece en el vocabulario de Plaud o en el catálogo.
+- No conviertas nombres comunes a nombres científicos salvo que el observador los diga así.
+- Si no puedes reconocer con seguridad el nombre de la especie, escríbelo tal como lo entendiste; el pipeline lo parará como falta de catálogo si no existe.
+
 REGLAS PARA CADA OBSERVACIÓN:
-- ESPECIE debe ser el nombre de la especie tal como lo dice el observador.
+- ESPECIE debe ser el nombre de la especie en singular (ver NORMALIZACIÓN DE ESPECIE arriba).
 - No conviertas nombres comunes a nombres científicos salvo que el observador los diga así.
 - No agrupes especies distintas en un mismo bloque.
 - No agrupes comportamientos distintos en un mismo bloque.
@@ -380,6 +427,10 @@ IMPORTANTE:
 - Aunque la grabación sea corta, intenta extraer todos los datos disponibles.
 - Si hay varios registros meteorológicos en la grabación, crea un bloque separado para cada uno.
 - Cada registro meteorológico debe ir precedido por el marcador ---METEOROLOGIA---.
+
+TÍTULO / NOMBRE DE ARCHIVO:
+- Para que Plaud titule bien el archivo, la grabación debe empezar literalmente con: "Fin visita Lindus."
+- Aunque el título del archivo salga distinto, no lo copies ni lo uses en la salida. La salida debe depender solo de los campos estructurados.
 
 REGLAS GENERALES:
 - TIPO_REGISTRO siempre debe ser FIN_VISITA_LINDUS.
@@ -557,6 +608,10 @@ IMPORTANTE:
 - Aunque la grabación sea corta, intenta extraer todos los datos disponibles.
 - Esta plantilla corresponde a UNA sola caja nido. No crees varias cajas en una misma salida.
 
+TÍTULO / NOMBRE DE ARCHIVO:
+- Para que Plaud titule bien el archivo, la grabación debe empezar literalmente con: "Visita caja nido." o "Visita caja nido, [código caja]."
+- Aunque el título del archivo salga distinto, no lo copies ni lo uses en la salida. La salida debe depender solo de los campos estructurados.
+
 REGLAS GENERALES:
 - TIPO_REGISTRO siempre debe ser VISITA_CAJA_NIDO.
 - TIPO_VISITA siempre debe ser CAJA_NIDO.
@@ -696,8 +751,20 @@ NORMALIZACIÓN DE VALORES CERRADOS:
 - Si el observador dice "oeste", escribe ORIENTACION_CAJA: W.
 - Si el observador dice "noroeste", escribe ORIENTACION_CAJA: NW.
 
+NORMALIZACIÓN DE ESPECIE:
+- ESPECIE debe escribirse siempre en singular, con la misma forma que figura en el catálogo.
+- Si el observador dicta el nombre en plural, conviértelo al singular del catálogo.
+- Si el observador dice "carboneros comunes" o formas parecidas, escribe exactamente:
+  ESPECIE: carbonero común
+- Si el observador dice "herrerillos comunes" o formas parecidas, escribe exactamente:
+  ESPECIE: herrerillo común
+- Si el observador dice "gorriones comunes" o formas parecidas, escribe exactamente:
+  ESPECIE: gorrión común
+- No conviertas nombres comunes a nombres científicos salvo que el observador los diga así.
+- Si no puedes reconocer con seguridad la especie, escríbela tal como la entendiste; el pipeline la parará como falta de catálogo si no existe.
+
 REGLAS PARA DATOS DE LA CAJA:
-- ESPECIE debe ser la especie ocupante tal como la dice el observador. No inventes especie si no se menciona.
+- ESPECIE debe ser la especie ocupante en singular (ver NORMALIZACIÓN DE ESPECIE arriba). No inventes especie si no se menciona.
 - ESPECIE_ARBOL debe recogerse tal como la dice el observador.
 - NUMERO_HUEVOS debe ser un número entero.
 - NUMERO_POLLOS debe ser un número entero.
@@ -792,6 +859,10 @@ IMPORTANTE:
 - Si un dato no se menciona, omite ese campo completo.
 - Aunque la grabación sea corta, intenta extraer todos los datos disponibles.
 - Esta plantilla corresponde a UN solo cebo de avispón. No crees varios cebos en una misma salida.
+
+TÍTULO / NOMBRE DE ARCHIVO:
+- Para que Plaud titule bien el archivo, la grabación debe empezar literalmente con: "Visita cebo avispón." o "Visita cebo avispón [número]."
+- Aunque el título del archivo salga distinto, no lo copies ni lo uses en la salida. La salida debe depender solo de los campos estructurados.
 
 REGLAS GENERALES:
 - TIPO_REGISTRO siempre debe ser VISITA_CEBO_AVISPON.
@@ -1004,6 +1075,10 @@ IMPORTANTE:
 - Esta plantilla corresponde a UN solo nido de rapaz. No crees varios nidos en una misma salida.
 - El campo TEXTO_REVISION debe conservar la descripción de campo de forma literal y completa, sin resumirla.
 
+TÍTULO / NOMBRE DE ARCHIVO:
+- Para que Plaud titule bien el archivo, la grabación debe empezar literalmente con: "Visita nido rapaz." o "Visita nido rapaz, [nombre nido]."
+- Aunque el título del archivo salga distinto, no lo copies ni lo uses en la salida. La salida debe depender solo de los campos estructurados.
+
 REGLAS GENERALES:
 - TIPO_REGISTRO siempre debe ser VISITA_NIDO_RAPAZ.
 - TIPO_VISITA siempre debe ser NIDO_RAPAZ.
@@ -1043,9 +1118,25 @@ NORMALIZACIÓN DE VALORES CERRADOS:
 - Si el observador dice algo parecido a "Ander", escribe exactamente:
   OBSERVADOR: Ander
 
+NORMALIZACIÓN DE ESPECIE:
+- ESPECIE debe escribirse siempre en singular, con la misma forma que figura en el catálogo.
+- Si el observador dicta el nombre en plural, conviértelo al singular del catálogo.
+- Si el observador dice "milanos reales" o formas parecidas, escribe exactamente:
+  ESPECIE: milano real
+- Si el observador dice "milanos negros" o formas parecidas, escribe exactamente:
+  ESPECIE: milano negro
+- Si el observador dice "busardos ratoneros" o formas parecidas, escribe exactamente:
+  ESPECIE: busardo ratonero
+- Si el observador dice "buitres leonados" o formas parecidas, escribe exactamente:
+  ESPECIE: buitre leonado
+- Si el observador dice "cernícalos vulgares" o formas parecidas, escribe exactamente:
+  ESPECIE: cernícalo vulgar
+- No conviertas nombres comunes a nombres científicos salvo que el observador los diga así.
+- Si no puedes reconocer con seguridad la especie, escríbela tal como la entendiste; el pipeline la parará como falta de catálogo si no existe.
+
 REGLAS PARA DATOS DEL NIDO:
 - LUGAR_NIDO debe ser el nombre o identificador del nido tal como lo dice el observador.
-- ESPECIE debe ser la especie del nido si se menciona. No inventes especie.
+- ESPECIE debe ser la especie del nido en singular (ver NORMALIZACIÓN DE ESPECIE arriba), si se menciona. No inventes especie.
 - TEXTO_REVISION es obligatorio si el observador describe el nido.
 - TEXTO_REVISION debe recoger literalmente la descripción de lo observado en el nido, sin resumir, sin interpretar y sin reescribir.
 - DESCRIPCION_NIDO recoge la descripción física del nido (estructura, soporte, tamaño, estado), si el observador la separa de la revisión.
@@ -1158,6 +1249,10 @@ IMPORTANTE:
 - Si hay varias especies detectadas en el puente, crea un bloque separado para cada especie.
 - Cada detección debe ir precedida por el marcador ---MAMIFERO_PUENTE---.
 
+TÍTULO / NOMBRE DE ARCHIVO:
+- Para que Plaud titule bien el archivo, la grabación debe empezar literalmente con: "Visita mamíferos puente." o "Visita mamíferos puente, [nombre puente]."
+- Aunque el título del archivo salga distinto, no lo copies ni lo uses en la salida. La salida debe depender solo de los campos estructurados.
+
 REGLAS GENERALES:
 - TIPO_REGISTRO siempre debe ser VISITA_MAMIFEROS_PUENTE.
 - TIPO_VISITA siempre debe ser MAMIFEROS_PUENTES.
@@ -1225,9 +1320,25 @@ NORMALIZACIÓN DE VALORES CERRADOS:
 - Si el observador dice "avistamiento", "visto", "observado", "ejemplar visto" o "lo veo", escribe:
   TIPO_EVIDENCIA: AVISTAMIENTO
 
+NORMALIZACIÓN DE ESPECIE:
+- ESPECIE debe escribirse siempre en singular, con la misma forma que figura en el catálogo.
+- Si el observador dicta el nombre en plural, conviértelo al singular del catálogo.
+- Si el observador dice "nutrias", "nutrias paleárticas" o formas parecidas, escribe exactamente:
+  ESPECIE: Nutria paleártica
+- Si el observador dice "visones", "visones europeos" o formas parecidas, escribe exactamente:
+  ESPECIE: Visón europeo
+- Si el observador dice "garduñas" o formas parecidas, escribe exactamente:
+  ESPECIE: Garduña
+- Si el observador dice "castores", "castores europeos" o formas parecidas, escribe exactamente:
+  ESPECIE: Castor europeo
+- Si el observador dice "tejones", "tejones europeos" o formas parecidas, escribe exactamente:
+  ESPECIE: Tejón europeo
+- No conviertas nombres comunes a nombres científicos salvo que el observador los diga así.
+- Si no puedes reconocer con seguridad la especie, escríbela tal como la entendiste; el pipeline la parará como falta de catálogo si no existe.
+
 REGLAS PARA DETECCIONES DE MAMÍFEROS:
 - Cada bloque ---MAMIFERO_PUENTE--- representa una fila en la tabla mamiferos_puentes.
-- ESPECIE debe ser la especie detectada tal como la dice el observador.
+- ESPECIE debe ser la especie detectada en singular (ver NORMALIZACIÓN DE ESPECIE arriba).
 - No conviertas nombres comunes a nombres científicos salvo que el observador los diga así.
 - Si se detectan varias especies, crea un bloque separado para cada especie.
 - Si una especie se menciona como presente o posible, crea un bloque.
@@ -1333,16 +1444,45 @@ Milvus migrans
 Milvus milvus
 Pernis apivorus
 milano negro
+milanos negros
 milano real
+milanos reales
 abejero europeo
+abejeros europeos
+carbonero común
+carboneros comunes
+herrerillo común
+herrerillos comunes
+gorrión común
+gorriones comunes
+busardo ratonero
+busardos ratoneros
+buitre leonado
+buitres leonados
+cernícalo vulgar
+cernícalos vulgares
+cigüeña blanca
+cigüeñas blancas
 Vespa velutina
 Vespa crabro
 avispa asiática
 avispón europeo
 nutria
+nutrias
+nutria paleártica
+nutrias paleárticas
 castor
+castores
+castor europeo
+castores europeos
 visón
+visones
+visón europeo
+visones europeos
 garduña
+garduñas
+tejón europeo
+tejones europeos
 HUELLA
 EXCREMENTO
 MADRIGUERA
