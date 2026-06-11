@@ -864,3 +864,25 @@ entornos nuevos.
   ISO) y se valida su formato con diagnóstico claro.
 **Tests**: 142 pasan (135 previos + 7 nuevos de parser, normalización,
 validación e inserción de los campos v3).
+
+---
+
+## #49 — Pantalla del pipeline sin registro textual: tabla y tarjetas como única vista
+**Fecha**: 2026-06-12
+**Decisión**: Se elimina el bloque «Registro de procesamiento» (la
+consola grande de texto) de la app pipeline. El panel derecho queda
+con: resumen global, **Resumen por archivo** (tabla) y **Detalle por
+archivo** (tarjetas desplegables). El progreso en vivo durante el
+procesado se mantiene dentro de `st.status` (decisión #47).
+**Razón**: el registro textual duplicaba la información que ya dan la
+tabla y las tarjetas, y ocupaba la mayor parte de la pantalla.
+Petición del usuario tras usar la app.
+**Implicaciones**:
+- `render_registro_pipeline`, `_mensajes_registro` y
+  `_mensajes_archivo` eliminadas de `app_pipeline/lib/ui.py`; nueva
+  `render_resultados_archivos`. También se eliminó `render_resultados`
+  (código muerto de Fase B) y el CSS de la consola.
+- Los 3 tests que verificaban el log ahora comprueban lo mismo sobre
+  la tabla resumen y los diagnósticos (`_tabla_resumen`,
+  `_lineas_diagnostico`), incluido el orden lógico de lotes Lindus.
+- `docs/USO_APP_PIPELINE.md` actualizado.

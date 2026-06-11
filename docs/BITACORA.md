@@ -8,16 +8,17 @@
 
 ## Estado actual
 
-- **Fase activa**: Fase 8 — App local de pipeline (pipeline revisado,
-  campos v3 insertándose y plan de pruebas de campo listo)
-- **Última sesión**: 2026-06-11
-- **Próxima tarea**: (a) Ejecutar el plan de pruebas
-  `docs/Pruebas_pipeline_junio.md` empezando por su Fase 0 (clave
-  `service_role` en `.env` + altas de catálogo: 4 lugares y 4 especies
-  de mamíferos) y después las pruebas P-01 a P-10 con Plaud real;
-  (b) recoger del cliente lo pendiente: observador de las 98 visitas,
-  `id_lugar` de V0001, UTM/municipio de Lindus y Trona, vocabularios
-  de las tablas nuevas y quinto ecosistema.
+- **Fase activa**: Fase 8 — App local de pipeline (pruebas de campo en
+  curso: primer intento de P-01 con hallazgos documentados)
+- **Última sesión**: 2026-06-12
+- **Próxima tarea**: (a) Actualizar en el Plaud el prompt
+  `Observaciones_Lindus` (sección NORMALIZACIÓN DE ESPECIE) y el
+  vocabulario con los plurales de especies, y **repetir P-01**;
+  (b) continuar el plan `docs/Pruebas_pipeline_junio.md`: Fase 0 si
+  falta (clave `service_role` en `.env` + altas de catálogo) y pruebas
+  P-02 a P-10 con Plaud real; (c) recoger del cliente lo pendiente:
+  observador de las 98 visitas, `id_lugar` de V0001, UTM/municipio de
+  Lindus y Trona, vocabularios de las tablas nuevas y quinto ecosistema.
 
 ---
 
@@ -58,6 +59,10 @@
       y su soporte en parser/inserción/dashboard (fase futura).
 
 ### Fase 8: App local de pipeline
+- [ ] Actualizar en el Plaud el prompt `Observaciones_Lindus`
+      (NORMALIZACIÓN DE ESPECIE) y el vocabulario con plurales de
+      especies frecuentes; repetir la prueba P-01 (hallazgos del
+      2026-06-11 documentados en `docs/Pruebas_pipeline_junio.md`).
 - [x] Diseño de la app local de pipeline completado (2026-05-03).
       Documento: `docs/PLAN_APP_PIPELINE.md`. Decisiones #31, #32 y #33.
 - [x] Implementar Fase A del plan: esqueleto `app_pipeline/` con
@@ -94,6 +99,39 @@
 ---
 
 ## Tareas completadas
+
+### Sesión 2026-06-12: Guías de campo v1.1, pipeline sin registro textual y fix de edición (completado)
+- [x] **Guías de campo Plaud actualizadas a v1.1**
+      (`docs/GUIA_CAMPO_PLAUD.html` y `.docx`): por cada plantilla se
+      indican los campos **obligatorios** (los exactos de
+      `MINIMOS_VISITA` en `src/parser/validacion.py`), los **cerrados
+      con sus valores** y el resto de opcionales, con leyenda
+      🔴/⚪/🟢. Incorporados los campos v3 que faltaban: conteos de
+      personas y observaciones en meteo Lindus; trampa, fecha de
+      colocación y UTM del nido en cebos; descripción/incuba/pollos/
+      volados en nidos rapaces. Hora del parte meteo marcada
+      obligatoria; en cebos se aclara «al menos una captura o una
+      observación»; ejemplos de dictado actualizados; chuleta ampliada
+      (16 rumbos, sí/no, personas). DOCX regenerado desde versión
+      lineal con LibreOffice (verificado el contenido).
+- [x] **App pipeline sin «Registro de procesamiento»** (decisión #49):
+      eliminada la consola de texto; el panel derecho queda con resumen
+      global + tabla resumen + tarjetas de detalle. Código del log
+      textual y `render_resultados` (muerto) eliminados; 3 tests
+      adaptados a la tabla y los diagnósticos; `docs/USO_APP_PIPELINE.md`
+      actualizado. Smoke test HTTP 200.
+- [x] **Fix dashboard Edición/Catálogos**: `_vista_tabla` ya no recorta
+      a 200 filas (`head(200)` eliminado); muestra todos los registros
+      ordenados por ID descendente. Afectaba a `lindus` (10.870) y
+      `meteorologia` (1.048), que parecían incompletas.
+- [x] **Hallazgos del primer intento real de P-01 commiteados**
+      (heredados de la sesión anterior): especie en plural
+      («milanos reales») y nombre de archivo incongruente. Prompts de
+      `docs/formato_plaud.md` actualizados (NORMALIZACIÓN DE ESPECIE,
+      regla de título) y hallazgos documentados en
+      `docs/Pruebas_pipeline_junio.md`. Queda pendiente aplicar el
+      prompt/vocabulario en el Plaud físico y repetir P-01.
+- [x] **Tests**: 142 pasan.
 
 ### Sesión 2026-06-11 (tarde): Plan de pruebas de campo + campos v3 en BD (completado)
 - [x] **`docs/Pruebas_pipeline_junio.md` creado** (commit `457f580`):
@@ -861,7 +899,13 @@
   7 plantillas, pruebas de error, huecos conocidos (campos v3 sin
   insertar), SQL de verificación/limpieza por marcador «prueba junio»,
   tabla de seguimiento y plantilla para reportar errores a cualquier
-  LLM/agente. Criterio de proyecto finalizado en §11.
+  LLM/agente. Criterio de proyecto finalizado en §11. Incluye los
+  hallazgos del primer intento real de P-01 (2026-06-11).
+- `docs/GUIA_CAMPO_PLAUD.html` y `docs/GUIA_CAMPO_PLAUD.docx`: guía de
+  campo para el observador (v1.1, junio 2026). Por plantilla: campos
+  obligatorios, valores cerrados y opcionales, con ejemplos de dictado
+  y mini chuleta. El HTML es interactivo; el DOCX se regenera desde una
+  versión lineal con LibreOffice.
 - `app_pipeline/app.py`: app Streamlit del pipeline (puerto 8502).
   Cabecera de estado, botón "Procesar", tarjetas de resultado y
   botones "Abrir dashboard" y "Abrir Claude.ai".
@@ -888,11 +932,16 @@
 
 ## Handoff
 
-**Estado a 2026-06-11 (cierre)**: histórico 2025 importado en Supabase
+**Estado a 2026-06-12 (cierre)**: histórico 2025 importado en Supabase
 BirdLog, dashboard verificado con datos reales, pipeline revisado y
 robustecido (decisión #47), campos v3 insertándose en BD (decisión
-#48) y plan de pruebas de campo listo
-(`docs/Pruebas_pipeline_junio.md`). 142 tests pasan.
+#48), plan de pruebas de campo listo (`docs/Pruebas_pipeline_junio.md`)
+y guías de campo v1.1 publicadas. Primer intento real de P-01 hecho con
+2 hallazgos (especie en plural, título del archivo): prompts/docs ya
+corregidos, falta aplicarlos en el Plaud físico y repetir P-01. La app
+pipeline muestra los resultados solo con tabla + tarjetas (decisión
+#49) y la página Edición/Catálogos ya muestra todas las filas.
+142 tests pasan.
 
 **Supabase BirdLog** (`mbphfgmjryyxzjgcwqxo`, EU-West-3):
 - Esquema v3 activo (15 tablas, con `nidos_rapaces.observaciones`
@@ -918,11 +967,13 @@ dashboard/app.py --server.port 8999`):
 - Pendiente: prueba real con `.txt` en `01_entrada` de Drive.
 
 **Próximas tareas (en orden)**:
-1. Ejecutar `docs/Pruebas_pipeline_junio.md` — Fase 0: clave
+1. Actualizar en el Plaud el prompt `Observaciones_Lindus` y el
+   vocabulario (plurales de especies) y repetir P-01.
+2. Ejecutar `docs/Pruebas_pipeline_junio.md` — Fase 0 si falta: clave
    `service_role` en `.env` + altas de catálogo (4 lugares; especies
-   nutria/visón/garduña/castor).
-2. Pruebas P-01 a P-10 del plan con Plaud real (Lindus completo, caja,
-   cebo, nido, puente, errores deliberados, backup, entorno).
+   nutria/visón/garduña/castor). Después pruebas P-02 a P-10 con Plaud
+   real (caja, cebo, nido, puente, errores deliberados, backup,
+   entorno).
 3. Recoger del cliente: observador de las 98 visitas, `id_lugar` de V0001,
    UTM/municipio de Lindus y Trona, vocabularios de tablas nuevas, quinto
    ecosistema de cajas_nido.
