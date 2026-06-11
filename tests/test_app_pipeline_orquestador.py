@@ -236,6 +236,84 @@ def test_procesar_lote_lote_vacio(monkeypatch):
     assert resultados == []
 
 
+def test_procesar_lote_excepcion_inesperada_no_propaga_traceback(monkeypatch):
+    """Un fallo no controlado devuelve un resultado claro, no una excepción."""
+    import src.pipeline as _pipeline
+
+    def procesar_drive_roto():
+        raise OSError("fallo de red al listar Drive")
+
+    monkeypatch.setattr(_pipeline, "procesar_drive", procesar_drive_roto)
+    resultados = procesar_lote()
+    assert len(resultados) == 1
+    assert resultados[0].estado == ESTADO_ERROR
+    assert "inesperado" in resultados[0].mensaje
+    assert "fallo de red al listar Drive" in resultados[0].mensaje
+
+
+def test_procesar_lote_pausa_detectada_en_excepcion_generica(monkeypatch):
+    """Errores de conexión típicos de pausa muestran el mensaje de pausa."""
+    import src.pipeline as _pipeline
+
+    def procesar_drive_pausado():
+        raise OSError("connection refused")
+
+    monkeypatch.setattr(_pipeline, "procesar_drive", procesar_drive_pausado)
+    resultados = procesar_lote()
+    assert resultados[0].estado == ESTADO_ERROR
+    assert "pausado" in resultados[0].mensaje.lower()
+
+
+def test_procesar_lote_invoca_callback_de_progreso(monkeypatch):
+    """El callback recibe cada resultado traducido según se procesa."""
+    import src.pipeline as _pipeline
+
+    raw = {
+        "archivo": "visita.txt",
+        "estado": "procesado",
+        "resumen": {"backup": "/backups/x", "id_visita": 9},
+    }
+    def procesar_drive_falso(al_procesar=None):
+        if al_procesar:
+            al_procesar(raw)
+        return [raw]
+
+    monkeypatch.setattr(_pipeline, "procesar_drive", procesar_drive_falso)
+    progresos = []
+    resultados = procesar_lote(progresos.append)
+    assert len(progresos) == 1
+    assert progresos[0].estado == ESTADO_OK
+    assert resultados[0].id_visita == 9
+
+
+def test_traducir_resultado_ok_expone_id_visita():
+    raw = {
+        "archivo": "visita.txt",
+        "estado": "procesado",
+        "resumen": {"backup": "/backups/x", "id_visita": 12, "tipo_registro": "VISITA_CAJA_NIDO"},
+    }
+    resultado = _traducir_resultado(raw)
+    assert resultado.id_visita == 12
+
+
+def test_traducir_resultado_no_movido_avisa_y_marca_entrada():
+    """Si Drive no movió el archivo, el usuario ve el aviso y la carpeta real."""
+    raw = {
+        "archivo": "visita.txt",
+        "estado": "procesado",
+        "movido": False,
+        "resumen": {
+            "backup": "/backups/x",
+            "id_visita": 3,
+            "aviso": "Los datos SÍ se insertaron, pero el archivo sigue en 01_entrada.",
+        },
+    }
+    resultado = _traducir_resultado(raw)
+    assert resultado.estado == ESTADO_OK
+    assert resultado.txt_movido_a == "entrada"
+    assert "01_entrada" in resultado.mensaje
+
+
 # ---------------------------------------------------------------------------
 # comprobar_entorno con monkeypatch
 # ---------------------------------------------------------------------------

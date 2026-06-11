@@ -21,7 +21,7 @@ ICONO: dict[str, str] = {
 ETIQUETA: dict[str, str] = {
     ESTADO_OK: "Procesado correctamente",
     ESTADO_ERROR: "Error",
-    ESTADO_INCOMPLETO: "Catálogo no encontrado",
+    ESTADO_INCOMPLETO: "Falta un dato de catálogo",
     ESTADO_PENDIENTE: "Pendiente",
 }
 
@@ -34,10 +34,12 @@ class ResultadoArchivo:
     estado: Literal["OK", "ERROR", "INCOMPLETO", "PENDIENTE"]
     etapa: str
     mensaje: str
-    txt_movido_a: Literal["procesados", "errores", "-"]
+    # "entrada" señala que Drive no pudo mover el .txt y sigue en 01_entrada.
+    txt_movido_a: Literal["procesados", "errores", "entrada", "-"]
     insertado_supabase: bool
     backup_creado: bool
     diagnosticos: tuple[dict, ...] = ()
+    id_visita: int | None = None
 
 
 @dataclass(frozen=True)

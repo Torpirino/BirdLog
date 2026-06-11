@@ -54,13 +54,19 @@ def comprobar_entorno() -> EstadoEntorno:
             supabase_ok=False,
             mensaje=str(exc),
         )
-    except Exception:
+    except Exception as exc:
+        # La pausa de Supabase no falla al crear el cliente, sino en la
+        # primera consulta: hay que detectarla también aquí.
+        from src.conexion import MENSAJE_PAUSA, es_error_de_pausa
+        mensaje = MENSAJE_PAUSA if es_error_de_pausa(exc) else (
+            "No se pudo conectar con Supabase. Revisa la configuración local."
+        )
         return EstadoEntorno(
             ok=False,
             entorno=entorno,
             drive_ok=True,
             supabase_ok=False,
-            mensaje="No se pudo conectar con Supabase. Revisa la configuración local.",
+            mensaje=mensaje,
         )
 
     return EstadoEntorno(
@@ -72,42 +78,71 @@ def comprobar_entorno() -> EstadoEntorno:
     )
 
 
-def procesar_lote() -> list[ResultadoArchivo]:
-    """Lanza el pipeline completo y traduce resultados a objetos con estado de color."""
+def procesar_lote(al_procesar=None) -> list[ResultadoArchivo]:
+    """Lanza el pipeline completo y traduce resultados a objetos con estado de color.
+
+    `al_procesar(resultado)` recibe cada ResultadoArchivo según termina,
+    para mostrar el progreso en la app sin esperar al lote entero.
+    """
     from src.pipeline import procesar_drive
 
+    callback = None
+    if al_procesar is not None:
+        def callback(raw: dict) -> None:
+            al_procesar(_traducir_resultado(raw))
+
     try:
-        resultados_raw = procesar_drive()
+        resultados_raw = procesar_drive(callback) if callback else procesar_drive()
     except RuntimeError as exc:
+        return [_error_lote(str(exc), etapa="Conexión")]
+    except Exception as exc:
+        from src.conexion import MENSAJE_PAUSA, es_error_de_pausa
+        if es_error_de_pausa(exc):
+            return [_error_lote(MENSAJE_PAUSA, etapa="Conexión")]
         return [
-            ResultadoArchivo(
-                nombre="— lote completo —",
-                estado=ESTADO_ERROR,
-                etapa="Conexión",
-                mensaje=str(exc),
-                txt_movido_a="-",
-                insertado_supabase=False,
-                backup_creado=False,
+            _error_lote(
+                "El procesado se detuvo por un error inesperado y puede haber "
+                "quedado a medias. Revisa las carpetas de Drive antes de "
+                f"reintentar.\nDetalle técnico: {exc}",
+                etapa="Procesamiento",
             )
         ]
 
     return [_traducir_resultado(r) for r in resultados_raw]
 
 
+def _error_lote(mensaje: str, etapa: str) -> ResultadoArchivo:
+    """Crea el resultado único que representa un fallo de todo el lote."""
+    return ResultadoArchivo(
+        nombre="— lote completo —",
+        estado=ESTADO_ERROR,
+        etapa=etapa,
+        mensaje=mensaje,
+        txt_movido_a="-",
+        insertado_supabase=False,
+        backup_creado=False,
+    )
+
+
 def _traducir_resultado(raw: dict) -> ResultadoArchivo:
     """Convierte el dict del pipeline a un ResultadoArchivo con estado de color."""
     nombre = raw.get("archivo", "desconocido")
+    movido = raw.get("movido", True)
 
     if raw.get("estado") == "procesado":
         resumen = raw.get("resumen", {})
+        mensaje = _resumen_legible(resumen)
+        if resumen.get("aviso"):
+            mensaje = f"{mensaje} ⚠️ {resumen['aviso']}"
         return ResultadoArchivo(
             nombre=nombre,
             estado=ESTADO_OK,
             etapa="Backup",
-            mensaje=_resumen_legible(resumen),
-            txt_movido_a="procesados",
+            mensaje=mensaje,
+            txt_movido_a="procesados" if movido else "entrada",
             insertado_supabase=True,
             backup_creado=bool(resumen.get("backup")),
+            id_visita=resumen.get("id_visita"),
         )
 
     mensaje = raw.get("mensaje", "Error desconocido.")
@@ -121,7 +156,7 @@ def _traducir_resultado(raw: dict) -> ResultadoArchivo:
         estado=estado,
         etapa=etapa,
         mensaje=mensaje,
-        txt_movido_a="errores",
+        txt_movido_a="errores" if movido else "entrada",
         insertado_supabase=False,
         backup_creado=False,
         diagnosticos=tuple(raw.get("errores", ())),

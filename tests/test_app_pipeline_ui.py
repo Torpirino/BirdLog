@@ -49,7 +49,7 @@ def test_render_resumen_global_muestra_error_en_rojo(monkeypatch):
 
     ui.render_resumen_global([_resultado(ESTADO_ERROR)])
 
-    assert llamadas == [("error", "1 error.")]
+    assert llamadas == [("error", "1 con error.")]
 
 
 def test_render_resumen_global_muestra_incompleto_en_amarillo(monkeypatch):
@@ -59,7 +59,7 @@ def test_render_resumen_global_muestra_incompleto_en_amarillo(monkeypatch):
 
     ui.render_resumen_global([_resultado(ESTADO_INCOMPLETO)])
 
-    assert llamadas == [("warning", "1 incompleto.")]
+    assert llamadas == [("warning", "1 con un dato de catálogo pendiente.")]
 
 
 def test_render_resumen_global_muestra_pendiente_en_info(monkeypatch):
@@ -69,7 +69,7 @@ def test_render_resumen_global_muestra_pendiente_en_info(monkeypatch):
 
     ui.render_resumen_global([_resultado(ESTADO_PENDIENTE)])
 
-    assert llamadas == [("info", "1 pendiente.")]
+    assert llamadas == [("info", "1 sin procesar.")]
 
 
 def test_mensajes_registro_incluye_mensaje_de_error_y_movimiento():

@@ -138,14 +138,17 @@ def _texto_resumen(n_ok: int, n_error: int, n_incompleto: int, n_pendiente: int 
         )
         partes.append(f"{n_ok} {etiqueta}")
     if n_error:
-        etiqueta = "error" if n_error == 1 else "errores"
+        etiqueta = "con error" if n_error == 1 else "con errores"
         partes.append(f"{n_error} {etiqueta}")
     if n_incompleto:
-        etiqueta = "incompleto" if n_incompleto == 1 else "incompletos"
+        etiqueta = (
+            "con un dato de catálogo pendiente"
+            if n_incompleto == 1
+            else "con datos de catálogo pendientes"
+        )
         partes.append(f"{n_incompleto} {etiqueta}")
     if n_pendiente:
-        etiqueta = "pendiente" if n_pendiente == 1 else "pendientes"
-        partes.append(f"{n_pendiente} {etiqueta}")
+        partes.append(f"{n_pendiente} sin procesar")
     return ". ".join(partes) + "."
 
 
@@ -214,9 +217,9 @@ def _tabla_resumen(resultados: list[ResultadoArchivo]) -> None:
         {
             "archivo": r.nombre,
             "estado": f"{ICONO.get(r.estado, '?')} {ETIQUETA.get(r.estado, r.estado)}",
-            "id_visita": "-",
+            "id_visita": str(r.id_visita) if r.id_visita is not None else "-",
             "backup": "sí" if r.backup_creado else "no",
-            "movimiento_drive": r.txt_movido_a,
+            "movimiento_drive": _texto_movimiento(r.txt_movido_a),
             "mensaje": r.mensaje,
         }
         for r in resultados
@@ -224,22 +227,41 @@ def _tabla_resumen(resultados: list[ResultadoArchivo]) -> None:
     st.dataframe(pd.DataFrame(filas), hide_index=True, use_container_width=True)
 
 
+def _texto_movimiento(destino: str) -> str:
+    """Describe el movimiento del .txt en Drive de forma legible."""
+    if destino == "entrada":
+        return "⚠️ sigue en 01_entrada"
+    return destino
+
+
 def _tarjeta_resultado(r: ResultadoArchivo) -> None:
     """Renderiza una tarjeta detallada expandible por archivo."""
     icono = ICONO.get(r.estado, "?")
     etiqueta = ETIQUETA.get(r.estado, r.estado)
 
-    with st.expander(f"{icono}  {r.nombre}", expanded=(r.estado != ESTADO_OK)):
+    sin_mover = r.txt_movido_a == "entrada"
+    with st.expander(f"{icono}  {r.nombre}", expanded=(r.estado != ESTADO_OK or sin_mover)):
         col1, col2 = st.columns(2)
         with col1:
             st.markdown(f"**Estado:** {etiqueta}")
             st.markdown(f"**Etapa final:** {r.etapa}")
-            st.markdown(f"**📁 .txt movido a:** `{r.txt_movido_a}`")
+            st.markdown(f"**📁 .txt movido a:** `{_texto_movimiento(r.txt_movido_a)}`")
         with col2:
             _badge("✅ Insertado en Supabase", "❌ No insertado en Supabase", r.insertado_supabase)
             _badge("✅ Backup creado", "❌ Sin backup", r.backup_creado)
             if r.insertado_supabase and not r.backup_creado:
                 st.warning("Backup pendiente. El registro sí está en Supabase.", icon="⚠️")
+        if sin_mover:
+            st.warning(
+                "El archivo no se pudo mover en Drive y **sigue en `01_entrada`**. "
+                + (
+                    "Muévelo a mano a `02_procesados` antes de volver a procesar, "
+                    "o los datos se duplicarán."
+                    if r.insertado_supabase
+                    else "Muévelo a mano a `03_errores` para que no se reintente sin corregirlo."
+                ),
+                icon="⚠️",
+            )
 
         if r.estado != ESTADO_OK:
             st.markdown("---")
@@ -310,8 +332,10 @@ def _mensajes_registro(resultados: list[ResultadoArchivo]) -> list[str]:
         mensajes.extend(_mensajes_archivo(resultado))
 
     n_ok = sum(1 for resultado in resultados if resultado.estado == ESTADO_OK)
-    n_error = len(resultados) - n_ok
-    mensajes.append(f"Resumen final: {n_ok} correcto(s), {n_error} con error o incompleto(s).")
+    n_incompleto = sum(1 for resultado in resultados if resultado.estado == ESTADO_INCOMPLETO)
+    n_error = len(resultados) - n_ok - n_incompleto
+    mensajes.append("")
+    mensajes.append(f"Resumen final: {_texto_resumen(n_ok, n_error, n_incompleto)}")
     return mensajes
 
 
@@ -320,7 +344,12 @@ def _mensajes_archivo(resultado: ResultadoArchivo) -> list[str]:
     estado = ETIQUETA.get(resultado.estado, resultado.estado)
     insertado = "insertado en Supabase" if resultado.insertado_supabase else "no insertado en Supabase"
     backup = "backup creado" if resultado.backup_creado else "sin backup"
-    movido = f"movido a {resultado.txt_movido_a}" if resultado.txt_movido_a != "-" else "sin movimiento de carpeta"
+    if resultado.txt_movido_a == "-":
+        movido = "sin movimiento de carpeta"
+    elif resultado.txt_movido_a == "entrada":
+        movido = "⚠️ no se pudo mover: sigue en 01_entrada (muévelo a mano)"
+    else:
+        movido = f"movido a {resultado.txt_movido_a}"
     mensajes = [
         "",
         f"Archivo: {resultado.nombre}",

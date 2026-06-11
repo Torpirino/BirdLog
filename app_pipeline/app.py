@@ -23,6 +23,12 @@ from app_pipeline.lib.enlaces import (
     URL_CLAUDE_AI,
     URL_DASHBOARD,
 )
+from app_pipeline.lib.estados import (
+    ESTADO_INCOMPLETO,
+    ESTADO_OK,
+    ETIQUETA,
+    ICONO,
+)
 from app_pipeline.lib.orquestador import comprobar_entorno, procesar_lote
 from app_pipeline.lib.ui import (
     render_ayuda_acciones,
@@ -111,6 +117,30 @@ def abrir_dashboard_desde_pipeline() -> tuple[bool, str]:
     )
 
 
+def _etiqueta_final(resultados: list) -> str:
+    """Resume el procesado en una línea para el cierre del status."""
+    if not resultados:
+        return "No había grabaciones nuevas en Drive."
+    n_ok = sum(1 for r in resultados if r.estado == ESTADO_OK)
+    n_incompleto = sum(1 for r in resultados if r.estado == ESTADO_INCOMPLETO)
+    n_error = len(resultados) - n_ok - n_incompleto
+    partes = []
+    if n_ok:
+        partes.append(f"✅ {n_ok} OK")
+    if n_incompleto:
+        partes.append(f"🟡 {n_incompleto} con dato de catálogo pendiente")
+    if n_error:
+        partes.append(f"🔴 {n_error} con error")
+    return " · ".join(partes)
+
+
+def _estado_final(resultados: list) -> str:
+    """Decide el color de cierre del status: verde si todo fue OK."""
+    if all(r.estado == ESTADO_OK for r in resultados):
+        return "complete"
+    return "error"
+
+
 def _estado_entorno_cacheado() -> object:
     """Devuelve el estado del entorno con caché de 30 s en session_state."""
     ahora = time.time()
@@ -168,27 +198,16 @@ def main() -> None:
         if procesar:
             st.session_state["_entorno_cache"] = None
             with st.status("Procesando grabaciones de Plaud…", expanded=True) as status:
-                st.write("Buscando archivos .txt en Drive...")
-                resultados = procesar_lote()
+                st.write("Buscando grabaciones nuevas en Drive (carpeta 01_entrada)...")
+
+                def mostrar_progreso(resultado) -> None:
+                    icono = ICONO.get(resultado.estado, "•")
+                    etiqueta = ETIQUETA.get(resultado.estado, resultado.estado)
+                    st.write(f"{icono} `{resultado.nombre}` — {etiqueta}")
+
+                resultados = procesar_lote(mostrar_progreso)
                 st.session_state["resultados"] = resultados
-                n_ok = sum(1 for r in resultados if r.estado == "OK")
-                n_err = len(resultados) - n_ok
-                st.write(f"Archivos encontrados: {len(resultados)}")
-                if not resultados:
-                    status.update(
-                        label="No había grabaciones nuevas en Drive.",
-                        state="complete",
-                    )
-                elif n_err == 0:
-                    status.update(
-                        label=f"✅ {n_ok} grabación(es) procesada(s) correctamente.",
-                        state="complete",
-                    )
-                else:
-                    status.update(
-                        label=f"⚠️ {n_ok} OK · {n_err} con error o incompleto.",
-                        state="error",
-                    )
+                status.update(label=_etiqueta_final(resultados), state=_estado_final(resultados))
 
         render_resumen_global(st.session_state["resultados"])
         render_registro_pipeline(st.session_state["resultados"])
