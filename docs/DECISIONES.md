@@ -831,3 +831,36 @@ mensajes antes de las pruebas reales con Plaud.
 **Tests**: 135 pasan (126 previos + 9 nuevos: backup v3 y retención,
 excepciones del lote, pausa, callback, `id_visita`, movimiento
 fallido).
+
+---
+
+## #48 — Inserción de los campos v3 nuevos y columna observaciones en nidos_rapaces
+**Fecha**: 2026-06-11
+**Contexto**: Al preparar el plan de pruebas de campo
+(`docs/Pruebas_pipeline_junio.md`) se confirmó que los campos nuevos
+del esquema v3 (decisiones #41/#42) se parseaban y validaban pero la
+inserción los descartaba en silencio: el `.txt` los traía y la BD los
+perdía (contra el principio "los datos son sagrados").
+**Decisión**: la inserción escribe ya todos los campos v3 dictables:
+- `meteorologia`: `presentes`, `observando`, `visitantes` y
+  `observaciones` (desde `OBSERVACIONES_METEO`, que tampoco se
+  guardaba) en `_fila_meteo`.
+- `cebos_avispones`: `numero_trampa` (TEXT en BD), `fecha_colocacion`,
+  `utm_x_nido`, `utm_y_nido` en `_insertar_cebo`.
+- `nidos_rapaces`: `descripcion_nido`, `incuba`, `numero_pollos`,
+  `pollos_volados` y `observaciones` en `_insertar_nido`.
+**Columna nueva**: `nidos_rapaces` era la única tabla específica sin
+`observaciones`, pero la plantilla Plaud dicta `OBSERVACIONES_NIDO`.
+Se añadió `observaciones TEXT` con migración aditiva
+(`sql/004_observaciones_nidos_rapaces.sql`), aplicada al proyecto
+BirdLog el 2026-06-11; `sql/003_esquema_v3.sql` actualizado para
+entornos nuevos.
+**Soporte en el parser**:
+- `CAMPOS_ENTEROS` añade `presentes`, `observando`, `visitantes`,
+  `pollos_volados`, `utm_x_nido`, `utm_y_nido`.
+- `incuba` se convierte a booleano como `ocupada` (parser y
+  normalización de variantes sí/no).
+- `fecha_colocacion` se normaliza como `fecha` (acepta `DD/MM/YYYY` →
+  ISO) y se valida su formato con diagnóstico claro.
+**Tests**: 142 pasan (135 previos + 7 nuevos de parser, normalización,
+validación e inserción de los campos v3).

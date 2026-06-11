@@ -12,11 +12,13 @@ Este documento define las plantillas Plaud que se usarán para generar `.txt` es
 > en nidos de rapaz (`DESCRIPCION_NIDO`, `INCUBA`, `NUMERO_POLLOS`,
 > `POLLOS_VOLADOS`).
 >
-> **Nota de compatibilidad**: Supabase dev sigue en esquema v2. El
-> parser actual tolera claves desconocidas (decisión #22), por lo que
-> estos campos nuevos ya pueden dictarse hoy: quedan guardados en el
-> `.txt` y se insertarán en BD cuando se aplique
-> `sql/003_esquema_v3.sql`. Hasta entonces la inserción los ignora.
+> **Nota de compatibilidad (actualizada 2026-06-11)**: el esquema v3
+> está aplicado en el proyecto Supabase BirdLog y la inserción ya
+> escribe estos campos en BD (decisión #48): conteos de personas en
+> `meteorologia`, trampa/fecha/UTM en `cebos_avispones` y
+> descripción/incuba/pollos en `nidos_rapaces`. `OBSERVACIONES_NIDO`
+> se guarda en la columna `observaciones` de `nidos_rapaces`
+> (añadida en `sql/004_observaciones_nidos_rapaces.sql`).
 
 ## Ubicación recomendada
 

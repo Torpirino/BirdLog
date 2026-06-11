@@ -4,8 +4,9 @@ from datetime import datetime
 
 from src.diagnosticos import ErrorDetalle
 
-# Tupla (no set) para que el orden de los diagnósticos sea determinista.
+# Tuplas (no sets) para que el orden de los diagnósticos sea determinista.
 FORMATOS_HORA = ("hora_inicio", "hora_fin", "hora_meteo", "hora")
+FORMATOS_FECHA = ("fecha", "fecha_colocacion")
 COMPORTAMIENTOS = {"MIGRADOR", "NORTE", "LOCAL"}
 PRESENCIAS = {"PRESENTE", "AUSENTE", "POSIBLE"}
 TIPOS_EVIDENCIA = {"HUELLA", "EXCREMENTO", "MADRIGUERA", "AVISTAMIENTO"}
@@ -170,18 +171,19 @@ def _iter_bloques(registro: dict):
 
 
 def _validar_fecha_horas(contexto: str, bloque: dict, errores: list[ErrorDetalle]) -> None:
-    """Valida formato ISO de fecha y HH:MM de horas."""
-    if "fecha" in bloque and not _fecha_valida(bloque["fecha"]):
-        errores.append(
-            ErrorDetalle(
-                fase="validación",
-                campo="fecha",
-                contexto=contexto,
-                valor=bloque["fecha"],
-                motivo="fecha no válida",
-                sugerencia="usa formato YYYY-MM-DD o DD/MM/YYYY",
+    """Valida formato ISO de fechas y HH:MM de horas."""
+    for campo in FORMATOS_FECHA:
+        if campo in bloque and not _fecha_valida(bloque[campo]):
+            errores.append(
+                ErrorDetalle(
+                    fase="validación",
+                    campo=campo,
+                    contexto=contexto,
+                    valor=bloque[campo],
+                    motivo="fecha no válida",
+                    sugerencia="usa formato YYYY-MM-DD o DD/MM/YYYY",
+                )
             )
-        )
     for campo in FORMATOS_HORA:
         if campo in bloque and not _hora_valida(bloque[campo]):
             errores.append(

@@ -371,3 +371,111 @@ def test_insertar_mamiferos_puente_usa_fecha_normalizada_e_id_lugar():
     assert "lugar_puente" not in visita_insertada
     assert all(fila["id_lugar"] == 9 for fila in mamiferos_insertados)
     assert "puente de aranzadi" not in repr(visita_insertada)
+
+
+def test_insertar_nido_rapaz_guarda_campos_v3_y_observaciones():
+    """Los campos de cría del esquema v3 y OBSERVACIONES_NIDO llegan a la fila."""
+    cliente = ClienteFalso()
+    cliente.datos["lugares"].append({"id_lugar": 3, "nombre_lugar": "Nido Milano 01"})
+    registro = {
+        "tipo_registro": "VISITA_NIDO_RAPAZ",
+        "visita": {
+            "tipo_visita": "NIDO_RAPAZ",
+            "fecha": "2026-06-15",
+            "hora_inicio": "18:00",
+            "hora_fin": "18:20",
+            "lugar_nido": "Nido Milano 01",
+            "observador": "Gabi",
+        },
+        "meteorologia": [],
+        "datos": [
+            {
+                "especie": "Milano real",
+                "texto_revision": "adulto echado en el nido",
+                "descripcion_nido": "plataforma grande sobre chopo",
+                "incuba": True,
+                "numero_pollos": 2,
+                "pollos_volados": 1,
+                "comunicacion_personal": "Ander",
+                "observaciones_nido": "nota adicional del nido",
+            }
+        ],
+    }
+
+    insertar_registro(registro, cliente)
+
+    nido = cliente.datos["nidos_rapaces"][0]
+    assert nido["descripcion_nido"] == "plataforma grande sobre chopo"
+    assert nido["incuba"] is True
+    assert nido["numero_pollos"] == 2
+    assert nido["pollos_volados"] == 1
+    assert nido["observaciones"] == "nota adicional del nido"
+    assert "observaciones_nido" not in nido
+
+
+def test_insertar_cebo_guarda_trampa_fecha_y_utm_del_nido():
+    """numero_trampa, fecha_colocacion y UTM del nido llegan a la fila."""
+    cliente = ClienteFalso()
+    cliente.datos["lugares"].append({"id_lugar": 4, "nombre_lugar": "Cebo avispón 1"})
+    registro = {
+        "tipo_registro": "VISITA_CEBO_AVISPON",
+        "visita": {
+            "tipo_visita": "CEBO_AVISPON",
+            "fecha": "2026-06-15",
+            "hora_inicio": "11:00",
+            "hora_fin": "11:10",
+            "lugar_cebo": "Cebo avispón 1",
+            "observador": "Gabi",
+        },
+        "meteorologia": [],
+        "datos": [
+            {
+                "vv": 12,
+                "crabro": 2,
+                "numero_trampa": "1",
+                "fecha_colocacion": "2026-06-01",
+                "utm_x_nido": 612340,
+                "utm_y_nido": 4702100,
+                "observaciones_cebo": "líquido bajo",
+            }
+        ],
+    }
+
+    insertar_registro(registro, cliente)
+
+    cebo = cliente.datos["cebos_avispones"][0]
+    assert cebo["numero_trampa"] == "1"
+    assert cebo["fecha_colocacion"] == "2026-06-01"
+    assert cebo["utm_x_nido"] == 612340
+    assert cebo["utm_y_nido"] == 4702100
+    assert cebo["observaciones"] == "líquido bajo"
+
+
+def test_insertar_fin_lindus_guarda_conteos_de_personas_y_notas_meteo():
+    """presentes/observando/visitantes y OBSERVACIONES_METEO llegan a meteorologia."""
+    cliente = ClienteFalso()
+    registro = {
+        "tipo_registro": "FIN_VISITA_LINDUS",
+        "visita": {"tipo_visita": "LINDUS", "fecha": "2026-05-01", "hora_fin": "13:30"},
+        "meteorologia": [
+            {
+                "hora_meteo": "10:00",
+                "temperatura": 18.0,
+                "nubosidad": 3,
+                "presentes": 3,
+                "observando": 2,
+                "visitantes": 5,
+                "observaciones_meteo": "primera hora fresca",
+            }
+        ],
+        "datos": [],
+    }
+
+    insertar_registro(registro, cliente)
+
+    meteo = cliente.datos["meteorologia"][0]
+    assert meteo["presentes"] == 3
+    assert meteo["observando"] == 2
+    assert meteo["visitantes"] == 5
+    assert meteo["observaciones"] == "primera hora fresca"
+    assert "observaciones_meteo" not in meteo

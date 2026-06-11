@@ -14,6 +14,7 @@ CAMPOS_ENTEROS = {
     "numero",
     "numero_huevos",
     "numero_pollos",
+    "pollos_volados",
     "nubosidad",
     "vv",
     "crabro",
@@ -21,6 +22,11 @@ CAMPOS_ENTEROS = {
     "polilla",
     "mariposa",
     "otros",
+    "presentes",
+    "observando",
+    "visitantes",
+    "utm_x_nido",
+    "utm_y_nido",
     "distancia_rio",
     "distancia_peatonal",
     "distancia_carretera",
@@ -30,6 +36,7 @@ CAMPOS_ENTEROS = {
     "cobertura_pastizal",
 }
 CAMPOS_FLOAT = {"temperatura", "peso_pollos", "longitud_tarso"}
+CAMPOS_BOOLEANOS = {"ocupada", "incuba"}
 PARSERS = {}
 
 
@@ -196,7 +203,7 @@ def _convertir_valor(clave: str, valor: str):
         return _convertir_numero(clave, valor, int, "un número entero")
     if clave in CAMPOS_FLOAT:
         return _convertir_numero(clave, valor, float, "un número")
-    if clave == "ocupada" and valor.lower() in {"true", "false"}:
+    if clave in CAMPOS_BOOLEANOS and valor.lower() in {"true", "false"}:
         return valor.lower() == "true"
     return valor
 

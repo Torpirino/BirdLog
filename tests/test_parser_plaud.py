@@ -251,3 +251,90 @@ def test_parsear_txt_ignora_titulo_antes_de_tipo_registro(tmp_path):
 
     assert registro["tipo_registro"] == "VISITA_NIDO_RAPAZ"
     assert registro["_advertencias"] == ["Se ignoró texto antes de TIPO_REGISTRO."]
+
+
+def test_parsear_campos_v3_convierte_tipos(tmp_path):
+    """Los campos v3 (personas, UTM de nido, incuba) salen con tipo correcto."""
+    ruta = tmp_path / "v3.txt"
+    ruta.write_text(
+        "TIPO_REGISTRO: VISITA_NIDO_RAPAZ\n"
+        "TIPO_VISITA: NIDO_RAPAZ\n"
+        "FECHA: 2026-06-15\n"
+        "---METEOROLOGIA---\n"
+        "HORA_METEO: 10:00\n"
+        "PRESENTES: 3\n"
+        "OBSERVANDO: 2\n"
+        "VISITANTES: 5\n"
+        "---NIDO_RAPAZ---\n"
+        "TEXTO_REVISION: revisión de prueba\n"
+        "INCUBA: true\n"
+        "POLLOS_VOLADOS: 1\n",
+        encoding="utf-8",
+    )
+
+    registro = parsear_txt_plaud(str(ruta))
+
+    meteo = registro["meteorologia"][0]
+    assert meteo["presentes"] == 3
+    assert meteo["observando"] == 2
+    assert meteo["visitantes"] == 5
+    nido = registro["datos"][0]
+    assert nido["incuba"] is True
+    assert nido["pollos_volados"] == 1
+
+
+def test_parsear_utm_nido_como_enteros(tmp_path):
+    """Las UTM del nido de velutina se convierten a enteros."""
+    ruta = tmp_path / "cebo_v3.txt"
+    ruta.write_text(
+        "TIPO_REGISTRO: VISITA_CEBO_AVISPON\n"
+        "TIPO_VISITA: CEBO_AVISPON\n"
+        "FECHA: 2026-06-15\n"
+        "---CEBO_AVISPON---\n"
+        "VV: 12\n"
+        "UTM_X_NIDO: 612340\n"
+        "UTM_Y_NIDO: 4702100\n",
+        encoding="utf-8",
+    )
+
+    registro = parsear_txt_plaud(str(ruta))
+
+    cebo = registro["datos"][0]
+    assert cebo["utm_x_nido"] == 612340
+    assert cebo["utm_y_nido"] == 4702100
+
+
+def test_normalizar_incuba_y_fecha_colocacion():
+    """incuba acepta variantes sí/no y fecha_colocacion acepta DD/MM/YYYY."""
+    registro = {
+        "tipo_registro": "VISITA_NIDO_RAPAZ",
+        "visita": {},
+        "meteorologia": [],
+        "datos": [{"incuba": "sí", "fecha_colocacion": "01/06/2026"}],
+    }
+
+    normalizado = normalizar_registro(registro)
+
+    assert normalizado["datos"][0]["incuba"] is True
+    assert normalizado["datos"][0]["fecha_colocacion"] == "2026-06-01"
+
+
+def test_validar_fecha_colocacion_invalida_da_diagnostico():
+    """Una fecha_colocacion mal formada produce un error claro."""
+    registro = {
+        "tipo_registro": "VISITA_CEBO_AVISPON",
+        "visita": {
+            "tipo_visita": "CEBO_AVISPON",
+            "fecha": "2026-06-15",
+            "hora_inicio": "11:00",
+            "hora_fin": "11:10",
+            "lugar_cebo": "Cebo avispón 1",
+            "observador": "Gabi",
+        },
+        "meteorologia": [],
+        "datos": [{"vv": 1, "fecha_colocacion": "1 de junio"}],
+    }
+
+    errores = validar_registro(registro)
+
+    assert any("fecha_colocacion" in error.lower() for error in errores)

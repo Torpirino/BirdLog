@@ -227,6 +227,7 @@ tal como lo anota el observador en campo.
 | incuba | Booleano | No |
 | numero_pollos | Entero | No |
 | pollos_volados | Entero | No |
+| observaciones | Texto | No |
 
 ---
 

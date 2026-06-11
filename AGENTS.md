@@ -77,7 +77,8 @@ Detalle completo en `docs/modelo_datos.md`.
   ocupada, huevos, pollos + 12 campos IB+ opcionales
 - `nidos_rapaces` — id_nido_rapaz, id_visita(FK), id_lugar(FK),
   id_especie(FK), texto_revision, comunicacion_personal,
-  descripcion_nido, incuba, numero_pollos, pollos_volados
+  descripcion_nido, incuba, numero_pollos, pollos_volados,
+  observaciones
 - `cebos_avispones` — id_cebo, id_visita(FK), id_lugar(FK),
   vv, crabro, avispa_europea, polilla, mariposa, otros,
   observaciones, numero_trampa, fecha_colocacion, utm_x_nido,

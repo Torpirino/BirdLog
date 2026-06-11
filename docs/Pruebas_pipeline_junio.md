@@ -59,14 +59,13 @@ Grabación de voz en Plaud (plantilla + vocabulario cerrado)
 **Huecos conocidos antes de empezar** (no son fallos de tus pruebas;
 si aparecen, son esto):
 
-1. **Campos v3 nuevos que el parser acepta pero la inserción aún no
-   escribe en BD**: `PRESENTES`/`OBSERVANDO`/`VISITANTES` (meteo Lindus),
+1. ~~Campos v3 nuevos sin insertar~~ **Resuelto el 2026-06-11**
+   (decisión #48): la inserción ya escribe
+   `PRESENTES`/`OBSERVANDO`/`VISITANTES` (meteo Lindus),
    `NUMERO_TRAMPA`/`FECHA_COLOCACION`/`UTM_X_NIDO`/`UTM_Y_NIDO` (cebos)
-   y `DESCRIPCION_NIDO`/`INCUBA`/`NUMERO_POLLOS`/`POLLOS_VOLADOS`
-   (nidos rapaces). Se dictan y quedan en el `.txt`, pero hoy
-   `src/insercion/escritura.py` no los incluye en las filas
-   (`_fila_meteo`, `_insertar_cebo`, `_insertar_nido`). **Pendiente de
-   implementar**; la prueba P-08 lo verifica.
+   y `DESCRIPCION_NIDO`/`INCUBA`/`NUMERO_POLLOS`/`POLLOS_VOLADOS` +
+   `OBSERVACIONES_NIDO` (nidos rapaces). La prueba P-08 lo confirma
+   con datos reales.
 2. Si `.env` aún usa la clave **anon** en lugar de `service_role`,
    alguna operación puede fallar por permisos (ver Fase 0).
 3. No hay deduplicación: reprocesar un `.txt` ya insertado **duplica
@@ -330,9 +329,8 @@ OBSERVACIONES_CEBO: líquido bajo, lo he rellenado
 ```
 
 **Resultado esperado**: 🟢. Visita CEBO_AVISPON + 1 fila en
-`cebos_avispones` con las capturas. **Atención (hueco conocido #1)**:
-`numero_trampa`, `fecha_colocacion` y las UTM del nido probablemente
-NO lleguen a la BD aunque estén en el `.txt`. Verificarlo en P-08.
+`cebos_avispones` con las capturas, `numero_trampa`,
+`fecha_colocacion` y las UTM del nido de velutina (verificar en P-08).
 
 ### P-04 — Nido de rapaz (plantilla `Visita_Nido_Rapaz`)
 
@@ -366,9 +364,8 @@ COMUNICACION_PERSONAL: Ander
 ```
 
 **Resultado esperado**: 🟢. Visita NIDO_RAPAZ + 1 fila en
-`nidos_rapaces` con `texto_revision` literal y `comunicacion_personal`.
-**Hueco conocido #1**: `incuba` y `numero_pollos` probablemente no
-lleguen a la BD. Verificarlo en P-08.
+`nidos_rapaces` con `texto_revision` literal, `comunicacion_personal`,
+`incuba=true` y `numero_pollos=2` (verificar en P-08).
 
 ### P-05 — Mamíferos en puente (plantilla `Visita_Mamiferos_Puente`)
 
@@ -500,15 +497,17 @@ añadidas a la visita existente (decisión #38), sin crear visita nueva.
 
 ### P-08 — Verificación en BD de los campos v3 nuevos
 
-Tras P-01, P-03 y P-04, comprobar en la BD (sección 7) si llegaron:
+Tras P-01, P-03 y P-04, comprobar en la BD (sección 7) que llegaron
+con su valor (implementado 2026-06-11, decisión #48):
 
-- `meteorologia.presentes/observando/visitantes` de la meteo Lindus;
+- `meteorologia.presentes/observando/visitantes` y `observaciones`
+  de la meteo Lindus;
 - `cebos_avispones.numero_trampa/fecha_colocacion/utm_x_nido/utm_y_nido`;
-- `nidos_rapaces.descripcion_nido/incuba/numero_pollos/pollos_volados`.
+- `nidos_rapaces.descripcion_nido/incuba/numero_pollos/pollos_volados`
+  y `observaciones` (de `OBSERVACIONES_NIDO`).
 
-**Resultado previsto hoy**: NULL (hueco conocido #1). Cuando se
-confirme, reportarlo al agente para implementar el mapeo en
-`src/insercion/escritura.py` (con tests) y repetir esta prueba.
+**Resultado esperado**: cada campo dictado aparece con su valor; los
+no dictados quedan NULL.
 
 ### P-09 — Backup y retención
 
@@ -604,7 +603,7 @@ de la sección 7.
 | P-05 | Mamíferos puente (2 especies) | | ☐ OK ☐ FALLO | |
 | P-06 | Errores de validación múltiples (🔴 con diagnóstico claro) | | ☐ OK ☐ FALLO | |
 | P-07 | Catálogo faltante (🟡) + reproceso + Lindus tardío | | ☐ OK ☐ FALLO | |
-| P-08 | Campos v3 nuevos en BD | | ☐ OK ☐ FALLO | (se espera FALLO hoy) |
+| P-08 | Campos v3 nuevos en BD | | ☐ OK ☐ FALLO | |
 | P-09 | Backup 15 tablas + retención | | ☐ OK ☐ FALLO | |
 | P-10 | Mensajes de entorno (pausa, Drive, credenciales) | | ☐ OK ☐ FALLO | |
 
@@ -651,7 +650,7 @@ DÓNDE ESTÁ EL ARCHIVO AHORA: (01_entrada / 02_procesados / 03_errores)
 
 El proyecto queda cerrado cuando:
 
-- [ ] P-01 a P-10 en OK (incluida P-08 tras implementar los campos v3).
+- [ ] P-01 a P-10 en OK.
 - [ ] `.env` con clave `service_role`.
 - [ ] Datos de prueba limpiados (sección 8) y sanidad del histórico OK.
 - [ ] Catálogo definitivo cargado: lugares reales del cliente (cajas,

@@ -48,11 +48,11 @@ def _normalizar_bloque(bloque: dict) -> None:
             bloque[campo] = _normalizar_caja(valor)
         elif campo == "lugar_cebo":
             bloque[campo] = _normalizar_cebo(valor)
-        elif campo == "ocupada":
+        elif campo in {"ocupada", "incuba"}:
             bloque[campo] = _normalizar_booleano(valor)
         elif campo == "comportamiento":
             bloque[campo] = _normalizar_comportamiento(valor)
-        elif campo == "fecha":
+        elif campo in {"fecha", "fecha_colocacion"}:
             bloque[campo] = normalizar_fecha(valor)
 
 

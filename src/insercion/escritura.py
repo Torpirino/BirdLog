@@ -211,7 +211,20 @@ def _insertar_datos_especificos(registro: dict, referencias: dict, id_visita: in
 
 def _fila_meteo(bloque: dict, id_visita: int) -> dict:
     """Mapea meteorología Plaud a columnas SQL."""
-    return {"id_visita": id_visita, "hora": bloque["hora_meteo"], "temperatura": bloque.get("temperatura"), "nubosidad": bloque.get("nubosidad"), "viento_direccion": bloque.get("viento_direccion"), "viento_intensidad": bloque.get("viento_intensidad"), "precipitacion": bloque.get("precipitacion"), "visibilidad": bloque.get("visibilidad")}
+    return {
+        "id_visita": id_visita,
+        "hora": bloque["hora_meteo"],
+        "temperatura": bloque.get("temperatura"),
+        "nubosidad": bloque.get("nubosidad"),
+        "viento_direccion": bloque.get("viento_direccion"),
+        "viento_intensidad": bloque.get("viento_intensidad"),
+        "precipitacion": bloque.get("precipitacion"),
+        "visibilidad": bloque.get("visibilidad"),
+        "presentes": bloque.get("presentes"),
+        "observando": bloque.get("observando"),
+        "visitantes": bloque.get("visitantes"),
+        "observaciones": bloque.get("observaciones_meteo"),
+    }
 
 
 def _fila_lindus(dato: dict, id_visita: int, id_especie: int) -> dict:
@@ -230,14 +243,39 @@ def _insertar_caja(dato: dict, id_especie: int | None, id_visita: int, id_lugar:
 
 def _insertar_cebo(dato: dict, id_visita: int, id_lugar: int, cliente) -> dict:
     """Inserta una revisión de cebo de avispón."""
-    fila = {"id_visita": id_visita, "id_lugar": id_lugar, "vv": dato.get("vv", 0), "crabro": dato.get("crabro"), "avispa_europea": dato.get("avispa_europea"), "polilla": dato.get("polilla"), "mariposa": dato.get("mariposa"), "otros": dato.get("otros"), "observaciones": dato.get("observaciones_cebo")}
+    fila = {
+        "id_visita": id_visita,
+        "id_lugar": id_lugar,
+        "vv": dato.get("vv", 0),
+        "crabro": dato.get("crabro"),
+        "avispa_europea": dato.get("avispa_europea"),
+        "polilla": dato.get("polilla"),
+        "mariposa": dato.get("mariposa"),
+        "otros": dato.get("otros"),
+        "observaciones": dato.get("observaciones_cebo"),
+        "numero_trampa": dato.get("numero_trampa"),
+        "fecha_colocacion": dato.get("fecha_colocacion"),
+        "utm_x_nido": dato.get("utm_x_nido"),
+        "utm_y_nido": dato.get("utm_y_nido"),
+    }
     cliente.table("cebos_avispones").insert(fila).execute()
     return {"cebos_avispones": 1}
 
 
 def _insertar_nido(dato: dict, id_especie: int | None, id_visita: int, id_lugar: int, cliente) -> dict:
     """Inserta una revisión de nido de rapaz."""
-    fila = {"id_visita": id_visita, "id_lugar": id_lugar, "id_especie": id_especie, "texto_revision": dato["texto_revision"], "comunicacion_personal": dato.get("comunicacion_personal")}
+    fila = {
+        "id_visita": id_visita,
+        "id_lugar": id_lugar,
+        "id_especie": id_especie,
+        "texto_revision": dato["texto_revision"],
+        "comunicacion_personal": dato.get("comunicacion_personal"),
+        "descripcion_nido": dato.get("descripcion_nido"),
+        "incuba": dato.get("incuba"),
+        "numero_pollos": dato.get("numero_pollos"),
+        "pollos_volados": dato.get("pollos_volados"),
+        "observaciones": dato.get("observaciones_nido"),
+    }
     cliente.table("nidos_rapaces").insert(fila).execute()
     return {"nidos_rapaces": 1}
 

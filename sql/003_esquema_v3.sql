@@ -265,7 +265,8 @@ CREATE TABLE nidos_rapaces (
     descripcion_nido        TEXT,
     incuba                  BOOLEAN,
     numero_pollos           INTEGER,
-    pollos_volados          INTEGER
+    pollos_volados          INTEGER,
+    observaciones           TEXT
 );
 
 CREATE INDEX idx_nidos_visita ON nidos_rapaces(id_visita);
