@@ -8,52 +8,21 @@
 
 ## Estado actual
 
-- **Fase activa**: Fase 8 — App local de pipeline (histórico 2025 ya
-  importado en Supabase BirdLog)
+- **Fase activa**: Fase 8 — App local de pipeline (histórico 2025
+  importado y dashboard verificado con datos reales)
 - **Última sesión**: 2026-06-10
 - **Próxima tarea**: (a) Sustituir clave anon del `.env` por la clave
   `service_role` del proyecto BirdLog (dashboard → Settings → API);
   (b) continuar pruebas reales con Nidos rapaces, Cebos avispones,
-  Cajas nido y Lindus; (c) recoger del cliente lo pendiente: observador
-  de las 98 visitas, `id_lugar` de V0001, UTM/municipio de Lindus y
-  Trona, vocabularios de las tablas nuevas y quinto ecosistema.
+  Cajas nido y Lindus vía Plaud; (c) recoger del cliente lo pendiente:
+  observador de las 98 visitas, `id_lugar` de V0001, UTM/municipio de
+  Lindus y Trona, vocabularios de las tablas nuevas y quinto ecosistema.
 
 ---
 
 ## Tareas en curso
 
 - [ ] (sin tareas en curso)
-
----
-
-## Sesión 2026-06-10: Importación histórico 2025 en Supabase BirdLog (completado)
-
----
-
-### Sesión 2026-06-10: Importación histórico 2025 en Supabase BirdLog (completado)
-- [x] **Esquema v3 aplicado** en proyecto Supabase BirdLog
-      (`mbphfgmjryyxzjgcwqxo`): 14 tablas con `utm_x`/`utm_y` nullable
-      (coords de Lindus/Trona pendientes del cliente — decisión #45).
-- [x] **Importación del histórico 2025**:
-      - 135 especies (con `grupo` y `nombre_comun` deducidos — decisión #45)
-      - 2 observadores: Gabi y Ander
-      - 2 lugares: Lindus (LUG01) y Trona (LUG02), sin UTM por ahora
-      - 97 visitas (V0001 omitida — sin `id_lugar`, pendiente del cliente)
-      - 1.048 registros de meteorología (12 vientos compuestos → NULL
-        con literal en `observaciones`)
-      - 10.870 observaciones Lindus (34 de V0001 omitidas; fila mixta
-        L002724 dividida en L002724_1 y L002724_2)
-- [x] **`.env` actualizado** al nuevo proyecto BirdLog: URL
-      `mbphfgmjryyxzjgcwqxo.supabase.co`. Clave anon temporal (JWT);
-      **pendiente**: sustituir por clave `service_role` desde el dashboard
-      de Supabase (Settings → API → service_role key).
-- [x] **Scripts creados**:
-      - `scripts/importar_historico.py`: genera SQL desde el Excel (útil
-        para reimportaciones o auditoría).
-      - `scripts/insertar_historico.py`: inserta meteo y lindus via
-        `supabase-py` por lotes de 200.
-- [x] **`sql/003_esquema_v3.sql`** actualizado: `utm_x`/`utm_y` nullable.
-- [x] 126 tests pasan.
 
 ---
 
@@ -124,6 +93,33 @@
 ---
 
 ## Tareas completadas
+
+### Sesión 2026-06-10: Importación histórico 2025 + verificación dashboard (completado)
+- [x] **Dashboard verificado con datos reales** (Supabase BirdLog):
+      - Inicio: 97 visitas, 134 especies, 10.870 observaciones Lindus,
+        "Sin datos" para tablas vacías (correcto), última visita
+        11/11/2025, 2 lugares activos, gráfico de actividad jul-nov 2025.
+      - Lindus: 10.870 obs, 151.325 individuos, gráfico temporal y
+        distribución MIGRADOR/NORTE/LOCAL correctos.
+      - Mapa general: Lindus y Trona listados con utm_x/utm_y = None
+        (sin mapa dibujado hasta que el cliente aporte UTM — correcto).
+      - Cajas nido / Nidos rapaces / Cebos avispones / Mamíferos:
+        "Sin datos todavía" (tablas vacías — correcto).
+      - Edición / Catálogos: 135 especies cargadas con nombre científico,
+        nombre común y grupo. Sin errores en ninguna página.
+- [x] **Esquema v3 aplicado** en proyecto Supabase BirdLog
+      (`mbphfgmjryyxzjgcwqxo`): 14 tablas con `utm_x`/`utm_y` nullable
+      (coords de Lindus/Trona pendientes del cliente — decisión #45).
+- [x] **Importación del histórico 2025**: 135 especies, 2 observadores
+      (Gabi/Ander), 2 lugares (Lindus LUG01 / Trona LUG02), 97 visitas
+      (V0001 omitida), 1.048 meteo, 10.870 lindus.
+- [x] **`.env` apuntado** al nuevo proyecto BirdLog
+      (`mbphfgmjryyxzjgcwqxo.supabase.co`). Clave anon temporal — sustituir
+      por `service_role` (Supabase dashboard → Settings → API).
+- [x] **Scripts creados**: `scripts/importar_historico.py` (genera SQL)
+      y `scripts/insertar_historico.py` (inserta vía supabase-py, lotes 200).
+- [x] **`sql/003_esquema_v3.sql`** actualizado: `utm_x`/`utm_y` nullable.
+- [x] 126 tests pasan. Decisión #46 añadida a `docs/DECISIONES.md`.
 
 ### Sesión 2026-06-10: Respuestas del cliente aplicadas al Excel (completado)
 - [x] **Lectura de `docs/Informe_revision.docx`**: extraídas las
@@ -814,46 +810,37 @@
 
 ## Handoff
 
-App pipeline implementada con icono de escritorio. 80 tests pasan.
-Commits: `feat(pipeline): añadir app local de procesamiento Plaud`,
-`chore(app): añadir lanzador de escritorio`.
+**Estado a 2026-06-10**: histórico 2025 importado en Supabase BirdLog y
+dashboard verificado con datos reales. 126 tests pasan.
 
-**Estado de la app pipeline (2026-05-03)**:
-- `app_pipeline/app.py` arranca en `localhost:8502` sin errores.
-- `comprobar_entorno()` valida `.env`, Drive y Supabase antes de procesar.
-- `procesar_lote()` envuelve `src.pipeline.procesar_drive()` y clasifica
-  cada resultado en OK/INCOMPLETO/ERROR con tarjeta visual.
-- Botones: "Procesar grabaciones de Plaud", "Abrir dashboard" (8999),
-  "Abrir Claude.ai".
-- 19 tests nuevos en `tests/test_app_pipeline_orquestador.py`.
-- Guía de uso en `docs/USO_APP_PIPELINE.md`.
-- Pendiente: prueba real con un `.txt` subido a `01_entrada` de Drive.
-- Pendiente: sección de arranque en `README.md`.
+**Supabase BirdLog** (`mbphfgmjryyxzjgcwqxo`, EU-West-3):
+- Esquema v3 activo (14 tablas). `.env` apunta a este proyecto.
+- Datos: 135 especies, 2 observadores, 2 lugares, 97 visitas, 1.048 meteo,
+  10.870 lindus. Tablas vacías: cajas_nido, nidos_rapaces, cebos_avispones,
+  mamiferos_puentes, fototrampeo, cuaderno_campo, estudio_campo,
+  castor_rastros, fotos.
+- **CRÍTICO**: `.env` usa clave **anon** JWT (INSERT/UPDATE/DELETE
+  concedidos a `anon`). Sustituir por `service_role` antes de procesar
+  datos reales con el pipeline.
 
-**Estado del pipeline (2026-05-03)**:
-- `demo.py` y `demo/` eliminados del repositorio.
+**Dashboard** (`localhost:8999`, `.venv/bin/python3 -m streamlit run
+dashboard/app.py --server.port 8999`):
+- Todas las páginas verificadas con datos reales el 2026-06-10.
+- Mapa sin puntos: utm_x/utm_y de Lindus y Trona son NULL (pendiente del
+  cliente).
 
-**Estado del pipeline (2026-05-03)**:
-- `demo.py` y `demo/` eliminados del repositorio.
-- Bug corregido y cubierto con test: `resolver_especie` insensible a
-  mayúsculas (`src/insercion/catalogos.py` — prueba exacto y `.capitalize()`).
-- Bug corregido y cubierto con test: `observaciones_puente` ya no se descarta
-  (`src/insercion/escritura.py` — se combina con `observaciones_visita`).
-- 61 tests pasando.
+**App pipeline** (`localhost:8502`, scripts/abrir_app_pipeline.sh):
+- Funcional. Pendiente: prueba real con `.txt` en `01_entrada` de Drive.
 
-**Estado del dashboard (2026-05-03)**:
-- 9 páginas navegables; patrón maestro-detalle en las 5 páginas de consulta.
-- Datos sintéticos en Supabase dev sin tocar.
+**Próximas tareas (en orden)**:
+1. Sustituir clave anon en `.env` por `service_role` (Supabase →
+   Settings → API → service_role key).
+2. Prueba real del pipeline con Nidos rapaces, Cebos, Cajas nido y Lindus.
+3. Recoger del cliente: observador de las 98 visitas, `id_lugar` de V0001,
+   UTM/municipio de Lindus y Trona, vocabularios de tablas nuevas, quinto
+   ecosistema de cajas_nido.
 
-**Próxima tarea**: implementar Fase A del plan de app local de pipeline
-(esqueleto `app_pipeline/` + `comprobar_entorno()` + botones secundarios).
-Diseño cerrado en `docs/PLAN_APP_PIPELINE.md` (decisiones #31, #32, #33).
-
-**Pendientes técnicos**:
-- Limpiar visitas de demo en Supabase dev (2026-05-03 con observaciones
-  "demo del pipeline") si se llegaron a insertar.
-- Limpiar visitas de prueba duplicadas en Supabase dev (`id_visita` 3, 4, 5, 6
-  y cebos asociados).
-- Aplicar esquema v2 en prod cuando se decida activar el entorno de producción.
-- `DRIVE_FOTOS_ID` no está en `.env` — añadir cuando se reactive el módulo
-  de fotos (no bloquea nada en la fase actual).
+**Pendientes técnicos menores**:
+- Añadir sección de arranque de `app_pipeline` en `README.md`.
+- Limpiar visitas de demo en Supabase dev (2026-05-03) si existen.
+- `DRIVE_FOTOS_ID` no está en `.env` — añadir cuando se reactive fotos.
