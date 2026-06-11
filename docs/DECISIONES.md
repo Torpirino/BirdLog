@@ -789,3 +789,45 @@ de Supabase (`mbphfgmjryyxzjgcwqxo`) se ejecutó con estas reglas:
 y `scripts/importar_historico.py` (genera SQL de auditoría).
 **Resultado**: 135 especies, 2 observadores, 2 lugares, 97 visitas,
 1.048 meteo, 10.870 lindus.
+
+---
+
+## #47 — Revisión del pipeline: robustez y mensajes claros
+**Fecha**: 2026-06-11
+**Contexto**: Revisión completa del código del pipeline (parser,
+inserción, backup, orquestador y app) buscando fluidez y claridad de
+mensajes antes de las pruebas reales con Plaud.
+**Problemas detectados y decisiones**:
+- **Backup desactualizado**: `TABLAS_BACKUP` seguía con las tablas
+  v2 y omitía en silencio `fototrampeo`, `cuaderno_campo`,
+  `estudio_campo` y `castor_rastros`. Se exportan ahora las 15
+  tablas del esquema v3. Además se implementa la **retención de 30
+  backups** (sección 6 de AGENTS.md), que estaba especificada pero
+  sin programar: tras cada backup se eliminan las carpetas
+  `backup_*` más antiguas que excedan 30.
+- **Pausa de Supabase invisible**: `create_client` no conecta de
+  verdad, así que la pausa solo aflora en la primera consulta. La
+  comprobación de entorno y `procesar_lote` detectan ahora errores
+  de pausa también en la consulta (`es_error_de_pausa`, público en
+  `src/conexion.py`) y muestran el mensaje de reactivación en vez
+  de "revisa la configuración local".
+- **Fallo al mover en Drive ya no aborta el lote**: si la inserción
+  fue bien pero `mover_archivo` falla, el resultado sigue siendo OK
+  con aviso visible: el `.txt` **sigue en `01_entrada`** y hay que
+  moverlo a mano para no duplicar datos al reprocesar
+  (`txt_movido_a="entrada"`). Antes la excepción tumbaba el lote
+  con traceback y el usuario no sabía que los datos sí entraron.
+- **Sin tracebacks en la app**: `procesar_lote` captura cualquier
+  excepción (no solo `RuntimeError`) y devuelve un resultado de
+  lote con mensaje claro + detalle técnico.
+- **Progreso archivo a archivo**: `procesar_drive(al_procesar=...)`
+  acepta un callback opcional; la app muestra cada archivo con su
+  icono/estado según se procesa, en vez de quedarse muda durante
+  todo el lote.
+- **Mensajes más claros**: la tabla resumen muestra el `id_visita`
+  real (antes siempre "-"); INCOMPLETO pasa de "incompleto" a
+  "falta un dato de catálogo"; el cierre Lindus sin visita abierta
+  indica el paso siguiente (procesar `INICIO_VISITA_LINDUS`).
+**Tests**: 135 pasan (126 previos + 9 nuevos: backup v3 y retención,
+excepciones del lote, pausa, callback, `id_visita`, movimiento
+fallido).
