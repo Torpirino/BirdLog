@@ -72,47 +72,41 @@ def test_render_resumen_global_muestra_pendiente_en_info(monkeypatch):
     assert llamadas == [("info", "1 sin procesar.")]
 
 
-def test_mensajes_registro_incluye_mensaje_de_error_y_movimiento():
-    """El log incluye el mensaje real del error y el movimiento a errores."""
+def test_tabla_resumen_incluye_mensaje_de_error_y_movimiento(monkeypatch):
+    """El resumen por archivo muestra el mensaje real del error y el movimiento a errores."""
     resultado = _resultado(
         ESTADO_ERROR,
         "El archivo mamiferos.txt no es válido:\n- FECHA inválida en visita: 03/05/2026",
     )
+    capturadas = []
+    monkeypatch.setattr(ui.st, "dataframe", lambda df, **_: capturadas.append(df))
 
-    mensajes = "\n".join(ui._mensajes_registro([resultado]))
+    ui._tabla_resumen([resultado])
 
-    assert "Archivo: error.txt" in mensajes
-    assert "- Estado: Error" in mensajes
-    assert "- Drive: movido a errores" in mensajes
-    assert "FECHA inválida" in mensajes
+    fila = capturadas[0].iloc[0]
+    assert fila["archivo"] == "error.txt"
+    assert "Error" in fila["estado"]
+    assert fila["movimiento_drive"] == "errores"
+    assert "FECHA inválida" in fila["mensaje"]
 
 
-def test_mensajes_registro_muestra_diagnosticos_multiples():
-    """El log desglosa fase, campo, valor, motivo y acción."""
-    resultado = ResultadoArchivo(
-        nombre="nido.txt",
-        estado=ESTADO_ERROR,
-        etapa="Validación",
-        mensaje="mensaje técnico oculto",
-        txt_movido_a="errores",
-        insertado_supabase=False,
-        backup_creado=False,
-        diagnosticos=(
-            {
-                "fase": "validación",
-                "campo": "viento_direccion",
-                "valor": "OESTE",
-                "motivo": "valor cerrado no válido",
-                "accion": "no insertado; movido a errores; sin backup",
-                "valores_aceptados": ["N", "W"],
-                "sugerencia": "usar W para oeste",
-            },
-        ),
-    )
+def test_lineas_diagnostico_desglosan_fase_campo_valor_y_accion():
+    """El detalle por archivo desglosa fase, campo, valor, motivo y acción."""
+    diagnostico = {
+        "fase": "validación",
+        "campo": "viento_direccion",
+        "valor": "OESTE",
+        "motivo": "valor cerrado no válido",
+        "accion": "no insertado; movido a errores; sin backup",
+        "valores_aceptados": ["N", "W"],
+        "sugerencia": "usar W para oeste",
+    }
 
-    mensajes = "\n".join(ui._mensajes_registro([resultado]))
+    lineas = "\n".join(ui._lineas_diagnostico(diagnostico))
 
-    assert "Fase: validación" in mensajes
-    assert "Campo: viento_direccion" in mensajes
-    assert "Valor recibido: 'OESTE'" in mensajes
-    assert "Acción realizada: no insertado; movido a errores; sin backup" in mensajes
+    assert "Fase: validación" in lineas
+    assert "Campo: viento_direccion" in lineas
+    assert "Valor recibido: 'OESTE'" in lineas
+    assert "Acción realizada: no insertado; movido a errores; sin backup" in lineas
+    assert "Valores aceptados: N, W" in lineas
+    assert "Sugerencia: usar W para oeste" in lineas

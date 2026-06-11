@@ -47,13 +47,6 @@ def render_estilos_pipeline() -> None:
                 padding-top: 1.25rem;
                 padding-bottom: 2rem;
             }
-            .stTextArea textarea {
-                background: #101815;
-                border: 1px solid rgba(112, 175, 132, 0.35);
-                font-family: "Ubuntu Mono", "SFMono-Regular", Consolas, monospace;
-                font-size: 0.92rem;
-                line-height: 1.45;
-            }
         </style>
         """,
         unsafe_allow_html=True,
@@ -198,15 +191,13 @@ def _ayuda_entorno(estado: EstadoEntorno) -> None:
             )
 
 
-def render_resultados(resultados: list[ResultadoArchivo]) -> None:
-    """Muestra tabla resumen y tarjetas detalladas de cada resultado."""
+def render_resultados_archivos(resultados: list[ResultadoArchivo] | None) -> None:
+    """Muestra el resumen y el detalle por archivo del último procesado."""
     if not resultados:
-        st.info("No había grabaciones nuevas en Drive (carpeta 01_entrada vacía).", icon="📭")
         return
-
-    st.subheader("Resultados del procesado")
+    st.markdown("**Resumen por archivo**")
     _tabla_resumen(resultados)
-    st.divider()
+    st.markdown("**Detalle por archivo**")
     for resultado in resultados:
         _tarjeta_resultado(resultado)
 
@@ -285,92 +276,6 @@ def _tarjeta_resultado(r: ResultadoArchivo) -> None:
             st.success(r.mensaje)
 
 
-def render_registro_pipeline(resultados: list[ResultadoArchivo] | None) -> None:
-    """Muestra un registro amplio y legible del último procesado."""
-    st.subheader("Registro de procesamiento")
-
-    if resultados is None:
-        st.text_area(
-            "Mensajes del pipeline",
-            value="Aún no has procesado ninguna grabación en esta sesión.",
-            height=500,
-            disabled=True,
-            label_visibility="collapsed",
-        )
-        return
-
-    mensajes = _mensajes_registro(resultados)
-    st.text_area(
-        "Mensajes del pipeline",
-        value="\n".join(mensajes),
-        height=500,
-        disabled=True,
-        label_visibility="collapsed",
-    )
-
-    if resultados:
-        st.markdown("**Resumen por archivo**")
-        _tabla_resumen(resultados)
-        st.markdown("**Detalle por archivo**")
-        for resultado in resultados:
-            _tarjeta_resultado(resultado)
-
-
-def _mensajes_registro(resultados: list[ResultadoArchivo]) -> list[str]:
-    """Construye mensajes de usuario a partir del resultado final."""
-    mensajes = ["Buscando archivos .txt en Drive..."]
-    if not resultados:
-        return [
-            *mensajes,
-            "Archivos encontrados: 0",
-            "No había grabaciones nuevas en la carpeta 01_entrada.",
-            "Resumen final: nada que procesar.",
-        ]
-
-    mensajes.append(f"Archivos encontrados: {len(resultados)}")
-    for resultado in resultados:
-        mensajes.extend(_mensajes_archivo(resultado))
-
-    n_ok = sum(1 for resultado in resultados if resultado.estado == ESTADO_OK)
-    n_incompleto = sum(1 for resultado in resultados if resultado.estado == ESTADO_INCOMPLETO)
-    n_error = len(resultados) - n_ok - n_incompleto
-    mensajes.append("")
-    mensajes.append(f"Resumen final: {_texto_resumen(n_ok, n_error, n_incompleto)}")
-    return mensajes
-
-
-def _mensajes_archivo(resultado: ResultadoArchivo) -> list[str]:
-    """Construye mensajes claros para un archivo."""
-    estado = ETIQUETA.get(resultado.estado, resultado.estado)
-    insertado = "insertado en Supabase" if resultado.insertado_supabase else "no insertado en Supabase"
-    backup = "backup creado" if resultado.backup_creado else "sin backup"
-    if resultado.txt_movido_a == "-":
-        movido = "sin movimiento de carpeta"
-    elif resultado.txt_movido_a == "entrada":
-        movido = "⚠️ no se pudo mover: sigue en 01_entrada (muévelo a mano)"
-    else:
-        movido = f"movido a {resultado.txt_movido_a}"
-    mensajes = [
-        "",
-        f"Archivo: {resultado.nombre}",
-        f"- Estado: {estado}",
-        f"- Etapa final: {resultado.etapa}",
-        f"- Supabase: {insertado}",
-        f"- Backup: {backup}",
-        f"- Drive: {movido}",
-    ]
-    if resultado.estado == ESTADO_OK:
-        mensajes.append(f"- Mensaje: {resultado.mensaje}")
-    else:
-        if resultado.diagnosticos:
-            mensajes.append("- Diagnóstico:")
-            for diagnostico in resultado.diagnosticos:
-                mensajes.extend(_lineas_diagnostico(diagnostico))
-        else:
-            mensajes.append(f"- Mensaje: {resultado.mensaje}")
-    return mensajes
-
-
 def _render_diagnostico(diagnostico: dict) -> None:
     """Muestra un diagnóstico estructurado de forma legible."""
     prefijo = "Advertencia" if diagnostico.get("advertencia") else "Error"
@@ -380,7 +285,7 @@ def _render_diagnostico(diagnostico: dict) -> None:
 
 
 def _lineas_diagnostico(diagnostico: dict) -> list[str]:
-    """Construye líneas de log para un diagnóstico."""
+    """Construye líneas legibles para un diagnóstico."""
     lineas = [
         f"Fase: {diagnostico.get('fase', '-')}",
         f"Campo: {diagnostico.get('campo', '-')}",

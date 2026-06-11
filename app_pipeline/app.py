@@ -34,7 +34,7 @@ from app_pipeline.lib.ui import (
     render_ayuda_acciones,
     render_estilos_pipeline,
     render_panel_lateral,
-    render_registro_pipeline,
+    render_resultados_archivos,
     render_resumen_global,
 )
 
@@ -210,7 +210,7 @@ def main() -> None:
                 status.update(label=_etiqueta_final(resultados), state=_estado_final(resultados))
 
         render_resumen_global(st.session_state["resultados"])
-        render_registro_pipeline(st.session_state["resultados"])
+        render_resultados_archivos(st.session_state["resultados"])
 
 
 if __name__ == "__main__":

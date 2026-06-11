@@ -9,7 +9,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app_pipeline.lib.estados import ESTADO_OK, ResultadoArchivo
-from app_pipeline.lib.ui import _mensajes_registro
+from app_pipeline.lib import ui
 from src.insercion.escritura import insertar_registro
 from src.pipeline import ordenar_descargas_lindus, procesar_drive, procesar_txt_local
 from src.parser.plaud import parsear_txt_plaud
@@ -176,18 +176,19 @@ def test_procesar_drive_no_aborta_si_drive_no_puede_mover(monkeypatch, tmp_path)
     assert "01_entrada" in resultados[0]["resumen"]["aviso"]
 
 
-def test_registro_pipeline_refleja_orden_recibido():
-    """El registro mantiene el orden de resultados ya ordenado por pipeline."""
+def test_resumen_por_archivo_refleja_orden_recibido(monkeypatch):
+    """El resumen por archivo mantiene el orden de resultados ya ordenado por pipeline."""
     resultados = [
         ResultadoArchivo("inicio.txt", ESTADO_OK, "Backup", "visita id=1", "procesados", True, True),
         ResultadoArchivo("obs.txt", ESTADO_OK, "Backup", "visita id=1", "procesados", True, True),
         ResultadoArchivo("fin.txt", ESTADO_OK, "Backup", "visita id=1", "procesados", True, True),
     ]
+    capturadas = []
+    monkeypatch.setattr(ui.st, "dataframe", lambda df, **_: capturadas.append(df))
 
-    mensajes = "\n".join(_mensajes_registro(resultados))
+    ui._tabla_resumen(resultados)
 
-    assert mensajes.index("Archivo: inicio.txt") < mensajes.index("Archivo: obs.txt")
-    assert mensajes.index("Archivo: obs.txt") < mensajes.index("Archivo: fin.txt")
+    assert list(capturadas[0]["archivo"]) == ["inicio.txt", "obs.txt", "fin.txt"]
 
 
 def test_lote_completo_lindus_inicio_observaciones_fin_sigue_funcionando(monkeypatch, tmp_path):

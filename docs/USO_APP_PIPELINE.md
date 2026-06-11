@@ -136,14 +136,13 @@ lee el mensaje del panel izquierdo.
 Es la zona principal de trabajo. Incluye:
 
 - Resumen global del último procesamiento.
-- **Registro de procesamiento**, con un bloque grande de mensajes y
-  scroll interno.
-- Resumen por archivo y detalles desplegables.
+- **Resumen por archivo**: tabla con archivo, estado, `id_visita`,
+  backup, movimiento en Drive y mensaje.
+- **Detalle por archivo**: una tarjeta desplegable por archivo con
+  etapa final, inserción, backup, movimiento y diagnóstico si falló.
 
-El registro muestra búsqueda en Drive, archivos encontrados, estado por
-archivo, inserción, backup, movimiento de carpeta y resumen final. Si hay
-varios archivos o errores largos, puedes leerlos dentro del bloque de log
-sin depender tanto del scroll de la página.
+Mientras se procesa, el progreso se muestra en vivo archivo a archivo
+dentro del bloque de estado del procesado.
 
 Si llegan varios archivos de **Lindus** juntos, la app los ordena
 automáticamente antes de procesarlos: primero el inicio de visita, después
@@ -160,9 +159,9 @@ Atención: de momento no hay deduplicación segura por archivo o hash. Si
 reprocesas dos veces el mismo archivo de observaciones Lindus, puedes crear
 observaciones duplicadas.
 
-Cuando un archivo falla, el resumen global se muestra en rojo o amarillo,
-el registro incluye un diagnóstico por problema y la tabla indica si el
-`.txt` se movió a `03_errores`. El desplegable del archivo muestra fase,
+Cuando un archivo falla, el resumen global se muestra en rojo o amarillo
+y la tabla indica si el `.txt` se movió a `03_errores`. El desplegable
+del archivo muestra un diagnóstico por problema, con fase,
 campo afectado, valor recibido si existe, motivo, sugerencia y acción
 realizada. El detalle técnico queda oculto en un desplegable aparte.
 
