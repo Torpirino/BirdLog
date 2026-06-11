@@ -8,9 +8,9 @@
 
 ## Estado actual
 
-- **Fase activa**: Fase 8 — App local de pipeline (histórico 2025
-  importado y dashboard verificado con datos reales)
-- **Última sesión**: 2026-06-10
+- **Fase activa**: Fase 8 — App local de pipeline (código del pipeline
+  revisado y robustecido; listo para pruebas reales con Plaud)
+- **Última sesión**: 2026-06-11
 - **Próxima tarea**: (a) Sustituir clave anon del `.env` por la clave
   `service_role` del proyecto BirdLog (dashboard → Settings → API);
   (b) continuar pruebas reales con Nidos rapaces, Cebos avispones,
@@ -93,6 +93,38 @@
 ---
 
 ## Tareas completadas
+
+### Sesión 2026-06-11: Revisión del pipeline — robustez y mensajes claros (completado)
+- [x] **Revisión completa del código del pipeline**: parser, inserción,
+      backup, orquestador de Drive y app Streamlit. Decisión #47.
+- [x] **Backup actualizado al esquema v3**: `TABLAS_BACKUP` exporta las
+      15 tablas (antes omitía en silencio `fototrampeo`, `cuaderno_campo`,
+      `estudio_campo` y `castor_rastros`). Implementada la **retención de
+      30 backups** que estaba especificada (AGENTS.md §6) sin programar.
+- [x] **Pausa de Supabase detectada donde ocurre**: la pausa solo aflora
+      en la primera consulta (no al crear el cliente); `comprobar_entorno`
+      y `procesar_lote` muestran ahora el mensaje de reactivación en vez
+      del genérico. `es_error_de_pausa` público en `src/conexion.py`.
+- [x] **Fallo al mover en Drive ya no aborta el lote**: si la inserción
+      fue bien pero el movimiento falla, resultado OK con aviso visible
+      de que el `.txt` sigue en `01_entrada` y hay que moverlo a mano
+      para no duplicar (`txt_movido_a="entrada"` en tarjeta, tabla y log).
+- [x] **Sin tracebacks en la app**: `procesar_lote` captura cualquier
+      excepción y devuelve mensaje claro + detalle técnico.
+- [x] **Progreso en vivo**: `procesar_drive(al_procesar=...)` acepta
+      callback; la app muestra cada archivo con icono/estado según se
+      procesa dentro de `st.status`.
+- [x] **Mensajes mejorados**: columna `id_visita` real en la tabla
+      resumen (antes siempre "-"); INCOMPLETO → "Falta un dato de
+      catálogo"; resumen global con lenguaje claro; cierre Lindus sin
+      visita abierta indica procesar antes `INICIO_VISITA_LINDUS`.
+- [x] **Tests**: 135 pasan (126 previos + 9 nuevos, incluido
+      `tests/test_backup_exportar.py` para un módulo de prioridad alta
+      que no tenía cobertura). Smoke test HTTP 200 de la app.
+- [x] **Commits**: `8cf605e` (backup v3 + retención), `c3b8f69`
+      (robustez pipeline), `7e8af66` (UX app pipeline), `763f458`
+      (decisión #47), `c2167dd` (cierre bitácora 2026-06-10 pendiente),
+      `d7d2bcf` (rutas de lanzadores a `/home/hermes`).
 
 ### Sesión 2026-06-10: Importación histórico 2025 + verificación dashboard (completado)
 - [x] **Dashboard verificado con datos reales** (Supabase BirdLog):
@@ -798,8 +830,12 @@
   `procesar_lote()` wrapeando `src.pipeline.procesar_drive`.
 - `app_pipeline/lib/ui.py`: componentes visuales Streamlit (cabecera,
   tabla resumen, tarjetas expandibles).
-- `tests/test_app_pipeline_orquestador.py`: 19 tests del orquestador
-  (clasificación de errores, traducción de resultados, monkeypatch).
+- `tests/test_app_pipeline_orquestador.py`: tests del orquestador
+  (clasificación de errores, traducción de resultados, excepciones del
+  lote, pausa, callback de progreso, monkeypatch).
+- `tests/test_backup_exportar.py`: tests del backup CSV (tablas del
+  esquema v3 incluidas y retención de 30 carpetas sin tocar otros
+  archivos).
 - `scripts/abrir_app_pipeline.sh`: script de arranque de la app pipeline
   (activa venv, comprueba Streamlit, arranca en puerto 8502).
 - `scripts/BirdLog_Pipeline.desktop`: lanzador de escritorio para Ubuntu/
@@ -810,8 +846,9 @@
 
 ## Handoff
 
-**Estado a 2026-06-10**: histórico 2025 importado en Supabase BirdLog y
-dashboard verificado con datos reales. 126 tests pasan.
+**Estado a 2026-06-11**: histórico 2025 importado en Supabase BirdLog,
+dashboard verificado con datos reales y código del pipeline revisado y
+robustecido (decisión #47). 135 tests pasan.
 
 **Supabase BirdLog** (`mbphfgmjryyxzjgcwqxo`, EU-West-3):
 - Esquema v3 activo (14 tablas). `.env` apunta a este proyecto.
@@ -830,7 +867,10 @@ dashboard/app.py --server.port 8999`):
   cliente).
 
 **App pipeline** (`localhost:8502`, scripts/abrir_app_pipeline.sh):
-- Funcional. Pendiente: prueba real con `.txt` en `01_entrada` de Drive.
+- Funcional y revisada (2026-06-11): progreso en vivo por archivo, sin
+  tracebacks, pausa de Supabase detectada en consulta, aviso claro si
+  Drive no mueve un `.txt`, backup de las 15 tablas v3 con retención 30.
+- Pendiente: prueba real con `.txt` en `01_entrada` de Drive.
 
 **Próximas tareas (en orden)**:
 1. Sustituir clave anon en `.env` por `service_role` (Supabase →
