@@ -515,6 +515,7 @@ NORMALIZACIÓN DE VALORES CERRADOS:
 - Si el observador dice "moderado", usa VIENTO_INTENSIDAD: MODERADO.
 - Si el observador dice "fuerte", usa VIENTO_INTENSIDAD: FUERTE.
 - Si el observador dice "sin lluvia", "no llueve", "precipitación nula" o "sin precipitación", usa PRECIPITACION: NULA.
+- No escribas nunca `PRECIPITACION: SIN LLUVIA`; el valor cerrado correcto es `NULA`.
 - Si el observador dice "lluvia débil", "llovizna" o "precipitación leve", usa PRECIPITACION: LEVE.
 - Si el observador dice "lluvia moderada", usa PRECIPITACION: MODERADA.
 - Si el observador dice "lluvia fuerte", usa PRECIPITACION: FUERTE.
@@ -1003,6 +1004,7 @@ REGLAS PARA METEOROLOGIA:
 - Si el observador dice "moderado", usa VIENTO_INTENSIDAD: MODERADO.
 - Si el observador dice "fuerte", usa VIENTO_INTENSIDAD: FUERTE.
 - Si el observador dice "sin lluvia", "no llueve", "precipitación nula" o "sin precipitación", usa PRECIPITACION: NULA.
+- No escribas nunca `PRECIPITACION: SIN LLUVIA`; el valor cerrado correcto es `NULA`.
 - Si el observador dice "lluvia débil", "llovizna" o "precipitación leve", usa PRECIPITACION: LEVE.
 - Si el observador dice "lluvia moderada", usa PRECIPITACION: MODERADA.
 - Si el observador dice "lluvia fuerte", usa PRECIPITACION: FUERTE.
@@ -1179,6 +1181,7 @@ REGLAS PARA METEOROLOGIA:
 - Si el observador dice "moderado", usa VIENTO_INTENSIDAD: MODERADO.
 - Si el observador dice "fuerte", usa VIENTO_INTENSIDAD: FUERTE.
 - Si el observador dice "sin lluvia", "no llueve", "precipitación nula" o "sin precipitación", usa PRECIPITACION: NULA.
+- No escribas nunca `PRECIPITACION: SIN LLUVIA`; el valor cerrado correcto es `NULA`.
 - Si el observador dice "lluvia débil", "llovizna" o "precipitación leve", usa PRECIPITACION: LEVE.
 - Si el observador dice "lluvia moderada", usa PRECIPITACION: MODERADA.
 - Si el observador dice "lluvia fuerte", usa PRECIPITACION: FUERTE.
@@ -1373,6 +1376,7 @@ REGLAS PARA METEOROLOGIA:
 - Si el observador dice "moderado", usa VIENTO_INTENSIDAD: MODERADO.
 - Si el observador dice "fuerte", usa VIENTO_INTENSIDAD: FUERTE.
 - Si el observador dice "sin lluvia", "no llueve", "precipitación nula" o "sin precipitación", usa PRECIPITACION: NULA.
+- No escribas nunca `PRECIPITACION: SIN LLUVIA`; el valor cerrado correcto es `NULA`.
 - Si el observador dice "lluvia débil", "llovizna" o "precipitación leve", usa PRECIPITACION: LEVE.
 - Si el observador dice "lluvia moderada", usa PRECIPITACION: MODERADA.
 - Si el observador dice "lluvia fuerte", usa PRECIPITACION: FUERTE.

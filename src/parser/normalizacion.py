@@ -52,6 +52,8 @@ def _normalizar_bloque(bloque: dict) -> None:
             bloque[campo] = _normalizar_booleano(valor)
         elif campo == "comportamiento":
             bloque[campo] = _normalizar_comportamiento(valor)
+        elif campo == "precipitacion":
+            bloque[campo] = _normalizar_precipitacion(valor)
         elif campo in {"fecha", "fecha_colocacion"}:
             bloque[campo] = normalizar_fecha(valor)
 
@@ -113,6 +115,36 @@ def _normalizar_comportamiento(valor: str) -> str:
     limpio = valor.strip().lower()
     variantes = {"migrador": "MIGRADOR", "migradores": "MIGRADOR", "norte": "NORTE", "local": "LOCAL", "locales": "LOCAL"}
     if valor in {"MIGRADOR", "NORTE", "LOCAL"}:
+        return valor
+    return variantes.get(limpio, valor)
+
+
+def _normalizar_precipitacion(valor: str) -> str:
+    """Normaliza variantes de precipitación que Plaud devuelve pese al prompt."""
+    limpio = valor.strip().lower()
+    variantes = {
+        "sin lluvia": "NULA",
+        "no llueve": "NULA",
+        "sin precipitacion": "NULA",
+        "sin precipitación": "NULA",
+        "precipitacion nula": "NULA",
+        "precipitación nula": "NULA",
+        "nula": "NULA",
+        "lluvia debil": "LEVE",
+        "lluvia débil": "LEVE",
+        "llovizna": "LEVE",
+        "precipitacion leve": "LEVE",
+        "precipitación leve": "LEVE",
+        "lluvia moderada": "MODERADA",
+        "precipitacion moderada": "MODERADA",
+        "precipitación moderada": "MODERADA",
+        "lluvia fuerte": "FUERTE",
+        "precipitacion fuerte": "FUERTE",
+        "precipitación fuerte": "FUERTE",
+        "nieve": "NIEVE",
+        "niebla": "NIEBLA",
+    }
+    if valor in {"NULA", "LEVE", "MODERADA", "FUERTE", "NIEVE", "NIEBLA"}:
         return valor
     return variantes.get(limpio, valor)
 

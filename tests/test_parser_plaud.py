@@ -139,6 +139,12 @@ def test_normalizar_registro_ocupada_si():
     assert normalizar_registro(registro)["datos"][0]["ocupada"] is True
 
 
+def test_normalizar_registro_precipitacion_sin_lluvia_a_nula():
+    """Normaliza la salida real de Plaud 'SIN LLUVIA' al valor cerrado NULA."""
+    registro = {"visita": {}, "meteorologia": [{"precipitacion": "SIN LLUVIA"}], "datos": []}
+    assert normalizar_registro(registro)["meteorologia"][0]["precipitacion"] == "NULA"
+
+
 def test_normalizar_fecha_acepta_iso():
     """Mantiene fechas que ya vienen en formato interno."""
     assert normalizar_fecha("2026-05-03") == "2026-05-03"

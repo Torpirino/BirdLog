@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0%" stop-color="#1a3f17"/>
+      <stop offset="100%" stop-color="#275c22"/>
+    </linearGradient>
+    <linearGradient id="wingL" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6b2a0a"/>
+      <stop offset="60%" stop-color="#a84020"/>
+      <stop offset="100%" stop-color="#c05828"/>
+    </linearGradient>
+    <linearGradient id="wingR" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6b2a0a"/>
+      <stop offset="60%" stop-color="#a84020"/>
+      <stop offset="100%" stop-color="#c05828"/>
+    </linearGradient>
+    <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c05020"/>
+      <stop offset="100%" stop-color="#a03818"/>
+    </linearGradient>
+    <linearGradient id="tailGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#b84820"/>
+      <stop offset="100%" stop-color="#903818"/>
+    </linearGradient>
+    <radialGradient id="sheen" cx="50%" cy="30%" r="55%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.07"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Fondo verde naturaleza con esquinas redondeadas -->
+  <rect width="256" height="256" rx="46" ry="46" fill="url(#bgGrad)"/>
+  <!-- Brillo suave -->
+  <rect width="256" height="256" rx="46" ry="46" fill="url(#sheen)"/>
+
+  <!-- === MILANO REAL (Milvus milvus) en vuelo, vista desde abajo/ligeramente frontal === -->
+
+  <!-- Ala izquierda — larga, angulada, característica del milano -->
+  <path d="M 123 116
+           C 108 109, 88 99, 66 90
+           C 48 82, 28 80, 10 88
+           C 24 91, 44 98, 62 106
+           C 78 113, 96 118, 112 122"
+        fill="url(#wingL)" stroke="#401008" stroke-width="0.8"/>
+  <!-- Punta ala izquierda — dedos negros abiertos del rapaz -->
+  <path d="M 10 88 C 14 81, 22 75, 30 73
+           C 27 79, 20 83, 10 88 Z"
+        fill="#180600"/>
+  <path d="M 18 83 C 23 76, 29 71, 36 70
+           C 32 76, 25 79, 18 83 Z"
+        fill="#180600" opacity="0.7"/>
+
+  <!-- Ala derecha — simétrica -->
+  <path d="M 133 116
+           C 148 109, 168 99, 190 90
+           C 208 82, 228 80, 246 88
+           C 232 91, 212 98, 194 106
+           C 178 113, 160 118, 144 122"
+        fill="url(#wingR)" stroke="#401008" stroke-width="0.8"/>
+  <!-- Punta ala derecha -->
+  <path d="M 246 88 C 242 81, 234 75, 226 73
+           C 229 79, 236 83, 246 88 Z"
+        fill="#180600"/>
+  <path d="M 238 83 C 233 76, 227 71, 220 70
+           C 224 76, 231 79, 238 83 Z"
+        fill="#180600" opacity="0.7"/>
+
+  <!-- Bandas de coberteras alares (rayas más claras) -->
+  <path d="M 66 90 C 78 94, 96 100, 112 106"
+        stroke="#d07838" stroke-width="2.5" fill="none" opacity="0.45" stroke-linecap="round"/>
+  <path d="M 190 90 C 178 94, 160 100, 144 106"
+        stroke="#d07838" stroke-width="2.5" fill="none" opacity="0.45" stroke-linecap="round"/>
+
+  <!-- Cuerpo central -->
+  <ellipse cx="128" cy="120" rx="22" ry="11" fill="url(#bodyGrad)"/>
+
+  <!-- Pecho/vientre más claro con rayas sutiles (plumaje real del milano) -->
+  <ellipse cx="128" cy="124" rx="13" ry="7" fill="#e8a060" opacity="0.55"/>
+  <path d="M 120 122 L 120 128 M 125 121 L 125 128 M 131 121 L 131 128 M 136 122 L 136 128"
+        stroke="#b05020" stroke-width="0.9" opacity="0.4"/>
+
+  <!-- COLA AHORQUILLADA — el rasgo más distintivo del milano real -->
+  <!-- Rama izquierda -->
+  <path d="M 122 128
+           C 116 137, 110 150, 104 166
+           C 109 162, 114 153, 119 143
+           L 128 132 Z"
+        fill="url(#tailGrad)"/>
+  <!-- Rama derecha -->
+  <path d="M 134 128
+           C 140 137, 146 150, 152 166
+           C 147 162, 142 153, 137 143
+           L 128 132 Z"
+        fill="url(#tailGrad)"/>
+  <!-- Centro cola -->
+  <path d="M 122 128 L 128 134 L 134 128 L 131 126 L 128 130 L 125 126 Z"
+        fill="#b84820"/>
+
+  <!-- Cabeza — más clara, amarillenta/grisácea en el milano real -->
+  <ellipse cx="128" cy="103" rx="12" ry="10" fill="#d8a868"/>
+  <!-- Máscara facial más oscura -->
+  <path d="M 118 102 C 120 98, 126 96, 132 98 C 130 101, 126 102, 118 102 Z"
+        fill="#c09048" opacity="0.7"/>
+
+  <!-- Pico ganchudo del rapaz -->
+  <path d="M 119 106 C 114 109, 113 114, 116 116 C 118 113, 119 110, 119 106 Z"
+        fill="#d4aa28"/>
+  <path d="M 119 106 C 116 104, 113 106, 113 109 C 115 108, 117 107, 119 106 Z"
+        fill="#b89018"/>
+
+  <!-- Ojo grande y expresivo -->
+  <circle cx="121" cy="102" r="4" fill="#c07820"/>
+  <circle cx="121" cy="102" r="2.6" fill="#160800"/>
+  <circle cx="121" cy="102" r="1.4" fill="#dda020"/>
+  <circle cx="121" cy="102" r="0.8" fill="#100400"/>
+  <!-- Reflejo del ojo -->
+  <circle cx="119.5" cy="100.8" r="0.7" fill="white" opacity="0.75"/>
+
+  <!-- Ceja del rapaz (arco superciliar oscuro) -->
+  <path d="M 117 99 C 119.5 96.5, 124 96, 127 98"
+        stroke="#3a1800" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+
+  <!-- Texto -->
+  <text x="128" y="209" text-anchor="middle"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="27" font-weight="bold"
+        fill="#b8e080" letter-spacing="1.5">BirdLog</text>
+  <text x="128" y="230" text-anchor="middle"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="12.5" fill="#7aaa58" letter-spacing="4">PIPELINE</text>
+</svg>
