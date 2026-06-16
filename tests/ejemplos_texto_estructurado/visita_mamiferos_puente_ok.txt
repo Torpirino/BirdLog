@@ -96,7 +96,7 @@ TIPO_EVIDENCIA:
 OBSERVACIONES_MAMIFERO:
 
 REGLA MUY IMPORTANTE SOBRE CATÁLOGOS:
-Algunos campos deben coincidir con nombres existentes en el vocabulario cerrado de Plaud, que corresponde a los catálogos del sistema.
+Algunos campos deben coincidir con nombres existentes en el vocabulario cerrado de hoja-guía, que corresponde a los catálogos del sistema.
 
 Campos de catálogo:
 - LUGAR_PUENTE
@@ -104,7 +104,7 @@ Campos de catálogo:
 - OBSERVADOR
 
 Para estos campos:
-- Revisa siempre el vocabulario cerrado disponible en Plaud.
+- Revisa siempre el vocabulario cerrado disponible en hoja-guía.
 - Si lo dictado por el observador se parece a un valor del vocabulario, usa el valor exacto del vocabulario.
 - No escribas una versión aproximada si existe una opción parecida en el vocabulario.
 - Respeta mayúsculas, minúsculas, tildes, espacios y números tal como aparezcan en el vocabulario.
@@ -119,8 +119,8 @@ VOCABULARIO CERRADO:
   MAMIFEROS_PUENTES
 
 - OBSERVADOR solo puede ser:
-  Gabi
-  Ander
+  OBSERVADOR_1
+  OBSERVADOR_2
 
 - PRESENCIA solo puede ser:
   PRESENTE
@@ -134,32 +134,32 @@ VOCABULARIO CERRADO:
   AVISTAMIENTO
 
 NORMALIZACIÓN DE OBSERVADOR:
-- Si el observador dice algo parecido a "Gabi", "Gaby", "Gabriel" o "Gaví", escribe exactamente:
-  OBSERVADOR: Gabi
-- Si el observador dice algo parecido a "Ander", escribe exactamente:
-  OBSERVADOR: Ander
+- Si el observador dice algo parecido a "OBSERVADOR_1", "Gaby", "Gabriel" o "Gaví", escribe exactamente:
+  OBSERVADOR: OBSERVADOR_1
+- Si el observador dice algo parecido a "OBSERVADOR_2", escribe exactamente:
+  OBSERVADOR: OBSERVADOR_2
 
 NORMALIZACIÓN DE LUGARES:
 - LUGAR_PUENTE debe escribirse con el nombre exacto del catálogo.
-- Antes de escribir LUGAR_PUENTE, revisa el vocabulario cerrado de puentes/lugares de Plaud.
+- Antes de escribir LUGAR_PUENTE, revisa el vocabulario cerrado de puentes/lugares de hoja-guía.
 - Si el observador dice un nombre parecido a uno del vocabulario, usa el valor exacto del vocabulario.
 - Si el observador dice "puente de aranzadi", "Aranzadi" o una variante claramente equivalente, escribe exactamente:
   LUGAR_PUENTE: Puente de Aranzadi
 - Si el observador dice "puente prueba uno" o "puente prueba 1", escribe exactamente:
   LUGAR_PUENTE: Puente Prueba 1
-- Si el observador dice otro puente, usa el nombre exacto disponible en el vocabulario cerrado de Plaud.
+- Si el observador dice otro puente, usa el nombre exacto disponible en el vocabulario cerrado de hoja-guía.
 - No escribas nombres de lugar solo en minúsculas si existe una forma normalizada en el catálogo.
 
 NORMALIZACIÓN DE ESPECIES:
 - ESPECIE debe ser la especie detectada usando el nombre exacto del vocabulario cerrado o catálogo.
-- Antes de escribir ESPECIE, revisa el vocabulario cerrado de especies de Plaud.
+- Antes de escribir ESPECIE, revisa el vocabulario cerrado de especies de hoja-guía.
 - Si el observador dice una especie parecida a una del vocabulario, usa el valor exacto del vocabulario.
 - No conviertas nombres comunes a nombres científicos salvo que el observador los diga así.
 - Si el observador dice "nutria", escribe exactamente:
   ESPECIE: Nutria
 - Si el observador dice "garduña", escribe exactamente:
   ESPECIE: Garduña
-- Si el observador dice otra especie, usa el nombre exacto disponible en el vocabulario cerrado de Plaud.
+- Si el observador dice otra especie, usa el nombre exacto disponible en el vocabulario cerrado de hoja-guía.
 - No escribas especies solo en minúsculas si existe una forma normalizada en el catálogo.
 
 NORMALIZACIÓN DE VALORES CERRADOS:
@@ -283,8 +283,8 @@ FECHA: 2026-05-03
 HORA_INICIO: 10:00
 HORA_FIN: 10:20
 LUGAR_PUENTE: Puente de Aranzadi
-OBSERVADOR: Gabi
-OBSERVACIONES_VISITA: prueba real del pipeline mamíferos puentes.
+OBSERVADOR: OBSERVADOR_1
+OBSERVACIONES_VISITA: prueba real del flujo de revisión mamíferos puentes.
 OBSERVACIONES_PUENTE: estamos en el puente de Aranzadi.
 
 ---METEOROLOGIA---
@@ -300,13 +300,13 @@ VISIBILIDAD: BUENA
 ESPECIE: Nutria
 PRESENCIA: PRESENTE
 TIPO_EVIDENCIA: EXCREMENTO
-OBSERVACIONES_MAMIFERO: prueba real del pipeline nutria.
+OBSERVACIONES_MAMIFERO: prueba real del flujo de revisión nutria.
 
 ---MAMIFERO_PUENTE---
 ESPECIE: Garduña
 PRESENCIA: POSIBLE
 TIPO_EVIDENCIA: HUELLA
-OBSERVACIONES_MAMIFERO: prueba real del pipeline garduña.
+OBSERVACIONES_MAMIFERO: prueba real del flujo de revisión garduña.
 
 EJEMPLO DE SALIDA SI FALTA ALGÚN OBLIGATORIO:
 
@@ -316,7 +316,7 @@ FECHA:
 HORA_INICIO: 10:00
 HORA_FIN:
 LUGAR_PUENTE: Puente de Aranzadi
-OBSERVADOR: Gabi
+OBSERVADOR: OBSERVADOR_1
 OBSERVACIONES_PUENTE: barro reciente bajo el puente.
 
 ---MAMIFERO_PUENTE---
@@ -338,7 +338,7 @@ Antes de devolver el texto, comprueba internamente:
 7. Todas las horas están en formato HH:MM si tienen valor.
 8. TIPO_REGISTRO es VISITA_MAMIFEROS_PUENTE.
 9. TIPO_VISITA es MAMIFEROS_PUENTES.
-10. OBSERVADOR es Gabi o Ander.
+10. OBSERVADOR es OBSERVADOR_1 o OBSERVADOR_2.
 11. LUGAR_PUENTE está escrito con el nombre exacto del vocabulario cerrado si hay correspondencia clara.
 12. ESPECIE está escrita con el nombre exacto del vocabulario cerrado si hay correspondencia clara.
 13. PRESENCIA usa solo PRESENTE, AUSENTE o POSIBLE si tiene valor.

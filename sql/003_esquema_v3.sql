@@ -142,7 +142,7 @@ CREATE INDEX idx_visitas_tipo ON visitas(tipo_visita);
 -- meteorologia
 -- 1 visita → N filas (una por hora en Lindus/Trona)
 -- 1 visita → 1 fila para el resto de estudios
--- Los 9 campos de captura Plaud se mantienen; el bloque de campos
+-- Los 9 campos de captura hoja-guía se mantienen; el bloque de campos
 -- históricos solo lo rellena la importación del Excel 2025.
 -- ------------------------------------------------------------
 CREATE TABLE meteorologia (
@@ -160,7 +160,7 @@ CREATE TABLE meteorologia (
     observando          INTEGER,
     visitantes          INTEGER,
     observaciones       TEXT,
-    -- Campos históricos (importación Lindus 2025; el Plaud no los dicta)
+    -- Campos históricos (importación Lindus 2025; el hoja-guía no los dicta)
     humedad_relativa    DOUBLE PRECISION,
     presion_atm         DOUBLE PRECISION,
     precipitacion_tipo  TEXT,

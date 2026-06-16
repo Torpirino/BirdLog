@@ -1,4 +1,4 @@
-"""Parsea archivos TXT estructurados generados por Plaud."""
+"""Parsea archivos TXT con estructura CAMPO: valor."""
 
 TIPOS_REGISTRO = {
     "INICIO_VISITA_LINDUS",
@@ -40,8 +40,8 @@ CAMPOS_BOOLEANOS = {"ocupada", "incuba"}
 PARSERS = {}
 
 
-def parsear_txt_plaud(ruta: str) -> dict:
-    """Lee un TXT de Plaud y devuelve su registro estructurado."""
+def parsear_txt_estructurado(ruta: str) -> dict:
+    """Lee un TXT estructurado CAMPO: valor y devuelve su registro."""
     with open(ruta, encoding="utf-8") as archivo:
         texto_original = archivo.read()
     texto = _texto_parseable(texto_original)
@@ -49,6 +49,7 @@ def parsear_txt_plaud(ruta: str) -> dict:
     registro = PARSERS[tipo](texto)
     registro["_advertencias"] = detectar_advertencias_estructura(texto_original)
     return registro
+
 
 
 def detectar_tipo(texto: str) -> str:
@@ -186,7 +187,7 @@ def _es_tipo_registro(linea: str) -> bool:
 
 
 def _a_snake_case(clave: str) -> str:
-    """Convierte claves de Plaud a snake_case minúscula."""
+    """Convierte claves a snake_case minúscula."""
     return clave.strip().lower().replace(" ", "_")
 
 

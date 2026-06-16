@@ -1,4 +1,4 @@
-"""Diagnósticos legibles para errores del pipeline Plaud."""
+"""Diagnósticos legibles para errores de validación y carga."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class ErrorDetalle:
-    """Describe un problema concreto detectado durante el pipeline."""
+    """Describe un problema concreto detectado durante la validación o carga."""
 
     fase: str
     campo: str
@@ -35,7 +35,7 @@ class ErrorDetalle:
 
     @classmethod
     def desde_dict(cls, datos: dict) -> "ErrorDetalle":
-        """Reconstruye un diagnóstico desde el dict del pipeline."""
+        """Reconstruye un diagnóstico desde su representación en dict."""
         return cls(
             fase=datos.get("fase", ""),
             campo=datos.get("campo", ""),
@@ -70,18 +70,18 @@ class ErrorDetalle:
         return texto
 
 
-class PipelineError(ValueError):
-    """Error controlado del pipeline con diagnósticos estructurados."""
+class ErrorCarga(ValueError):
+    """Error de validación o carga con diagnósticos estructurados."""
 
     def __init__(self, archivo: str, fase: str, errores: list[ErrorDetalle]):
         self.archivo = archivo
         self.fase = fase
         self.errores = errores
-        super().__init__(mensaje_pipeline(archivo, errores))
+        super().__init__(mensaje_error(archivo, errores))
 
 
-def mensaje_pipeline(archivo: str, errores: list[ErrorDetalle]) -> str:
-    """Construye el mensaje principal del pipeline."""
+def mensaje_error(archivo: str, errores: list[ErrorDetalle]) -> str:
+    """Construye el mensaje principal de error."""
     if not errores:
         return f"El archivo {archivo} no se pudo procesar."
     detalle = "\n".join(f"- {error.texto()}" for error in errores)

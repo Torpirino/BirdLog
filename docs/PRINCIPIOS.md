@@ -27,8 +27,8 @@ Cualquier interacción humana con el sistema debe ser:
 
 - Pegar un texto en algún sitio
 - Subir un archivo a una carpeta
-- Pinchar un botón en un dashboard
 - Escribir en una celda de la interfaz web de Supabase
+- Escribirle al agente en lenguaje natural
 
 Nunca: escribir código Python, escribir SQL, editar archivos de
 configuración, ejecutar comandos en terminal.

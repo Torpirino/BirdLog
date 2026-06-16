@@ -104,7 +104,7 @@ Valores de `tipo_visita`: `LINDUS`, `CAJA_NIDO`, `CEBO_AVISPON`,
 `FOTOTRAMPEO`, `CUADERNO_CAMPO`, `CASTOR_RASTROS`.
 
 Nota: en Lindus, `hora_fin` queda vacía mientras la visita larga está
-abierta y se rellena al procesar `Fin_visita_Lindus`.
+abierta y se rellena al cerrar la jornada.
 
 ---
 
@@ -129,13 +129,13 @@ fila por visita.
 | visitantes | Entero | No |
 | observaciones | Texto | No |
 
-Los campos meteorológicos los dicta el observador al Plaud.
+Los campos meteorológicos los anota el observador directamente en campo.
 No se usa la API de AEMET por ser poco fiable.
 `presentes`/`observando`/`visitantes` son conteos de personas en el
 punto de observación (vienen del protocolo Lindus).
 
-**Campos históricos (solo importación del Excel 2025, el Plaud no
-los dicta):** `humedad_relativa`, `presion_atm`, `precipitacion_tipo`,
+**Campos históricos (solo importación del histórico; no se rellenan
+en campo):** `humedad_relativa`, `presion_atm`, `precipitacion_tipo`,
 `mar_nubes_cobertura`, `mar_nubes_altura`, `nubes_n1_cobertura`,
 `nubes_n1_altura`, `nubes_n1_tipo`, `nubes_n2_cobertura`,
 `nubes_n2_tipo`. Todos opcionales. El campo `total_nubes_suma` del
@@ -169,7 +169,7 @@ Valores de `comportamiento`: `MIGRADOR` (dirección sur),
 Nota: cada avistamiento lleva un solo comportamiento. Si el
 observador ve 5 milanos migrando y 2 locales en el mismo momento,
 son dos filas distintas. El `total` del Excel histórico no se
-almacena: es la suma y se calcula en el dashboard.
+almacena: es la suma y se calcula en consultas o informes.
 
 `especie_texto` guarda el nombre tal como se transcribió
 originalmente (traza de auditoría; `id_especie` es el dato bueno).
@@ -233,7 +233,7 @@ tal como lo anota el observador en campo.
 
 ### cebos_avispones
 Una fila por revisión de cebo. El acumulado de crabro se calcula
-en el dashboard sumando las revisiones por periodo — no se guarda
+sumando las revisiones por periodo en consultas o informes — no se guarda
 como campo.
 
 | Campo | Tipo | Obligatorio |
@@ -411,7 +411,7 @@ URLs de Drive asociadas a visitas o registros concretos.
 | 4 tablas nuevas: `fototrampeo`, `cuaderno_campo`, `estudio_campo`, `castor_rastros` | Nuevos tipos de registro del cliente |
 | `estudio_campo` solo guarda detecciones | La sesión va a `visitas` + `meteorologia`; evita duplicar la meteo |
 | `fototrampeo` y `castor_rastros` enlazan imágenes vía `fotos` | `fotos` ya está diseñada para eso (`tabla_origen`/`id_origen`) |
-| `meteorologia`: conteos de personas + observaciones + históricos nullable | Captura Plaud sigue en 9 campos; el histórico 2025 no pierde datos |
+| `meteorologia`: conteos de personas + observaciones + históricos nullable | Captura en campo sigue en 9 campos; el histórico importado no pierde datos |
 | `nidos_rapaces`: `descripcion_nido`, `incuba`, `numero_pollos`, `pollos_volados` | Datos que el observador ya recoge |
 | `cebos_avispones`: `numero_trampa`, `fecha_colocacion`, UTM del nido | Ídem; la UTM de la trampa sigue en `lugares` |
 | `codigo_origen` en tablas con histórico | Trazabilidad de la migración desde el Excel |

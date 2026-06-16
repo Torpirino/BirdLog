@@ -50,7 +50,7 @@ class ClienteFalso:
     def __init__(self):
         self.tablas = {
             "lugares": [{"id_lugar": 10, "nombre_lugar": "Lindus"}],
-            "observadores": [{"id_observador": 2, "nombre_observador": "Gabi"}],
+            "observadores": [{"id_observador": 2, "nombre_observador": "OBSERVADOR_1"}],
             "especies": [{"id_especie": 5, "nombre_comun": "milano negro", "nombre_cientifico": "Milvus migrans"}],
         }
 
@@ -64,7 +64,7 @@ def test_resolver_lugar_devuelve_id():
 
 
 def test_resolver_lugar_tolera_mayusculas_y_minusculas():
-    """Plaud puede transcribir lugares en minúsculas."""
+    """El texto puede transcribir lugares en minúsculas."""
     cliente = ClienteFalso()
     cliente.tablas["lugares"] = [{"id_lugar": 11, "nombre_lugar": "Puente de Aranzadi"}]
     assert resolver_lugar("puente de aranzadi", cliente) == 11
@@ -83,7 +83,7 @@ def test_resolver_lugar_no_resuelve_si_case_insensitive_es_ambiguo():
 
 def test_resolver_observador_devuelve_id():
     """Resuelve un observador existente por nombre_observador."""
-    assert resolver_observador("Gabi", ClienteFalso()) == 2
+    assert resolver_observador("OBSERVADOR_1", ClienteFalso()) == 2
 
 
 def test_resolver_especie_busca_nombre_comun_y_cientifico():
@@ -106,7 +106,7 @@ def test_resolver_especie_lanza_error_claro_si_no_existe():
 
 
 def test_resolver_especie_tolera_minusculas_si_bd_tiene_mayuscula_inicial():
-    """Plaud transcribe en minúsculas; la BD guarda con primera letra en mayúscula."""
+    """El texto puede venir en minúsculas; la BD guarda con primera letra en mayúscula."""
     cliente = ClienteFalso()
     cliente.tablas["especies"] = [
         {"id_especie": 5, "nombre_comun": "Milano negro", "nombre_cientifico": "Milvus migrans"}

@@ -9,7 +9,7 @@ meteorología). `hora_fin` queda en blanco hasta el cierre.
 
 Reglas clave: `comportamiento` ∈ {`MIGRADOR`, `NORTE`, `LOCAL`};
 `especie` en singular del catálogo; `lugar_visita` ∈ catálogo
-(`Lindus`, `Trona`); `observador` ∈ catálogo (`Gabi`, `Ander`).
+(`Lindus`, `Trona`); `observador` ∈ catálogo `observadores`.
 
 ## 1. Inicio de visita
 

@@ -55,7 +55,6 @@ Variables que contiene:
 - `GOOGLE_DRIVE_CREDENTIALS_PATH` (ruta al JSON de service account)
 - `GOOGLE_DRIVE_CARPETA_FOTOS_ID`
 - `GOOGLE_DRIVE_CARPETA_BACKUPS_ID`
-- `PLAUD_CARPETA_TXT_ID`
 
 ### 3.2 Archivo `.env.example`
 
@@ -165,10 +164,7 @@ Supabase da dos claves:
 - **`service_role` key**: acceso completo, salta todas las restricciones.
 
 El sistema usa **`service_role` solo en el script Python local** (que
-corre en el ordenador del observador). Nunca expuesta al exterior. Si
-el dashboard Streamlit en algún momento se publica online, debería usar
-`anon` con políticas RLS configuradas. Por ahora, el dashboard también
-es local, así que también usa `service_role`.
+corre en el ordenador del observador). Nunca expuesta al exterior.
 
 ### Separación dev/prod
 

@@ -1,4 +1,4 @@
-"""Normaliza variantes frecuentes de registros Plaud."""
+"""Normaliza variantes frecuentes de registros hoja-guía."""
 
 from copy import deepcopy
 from datetime import datetime
@@ -120,7 +120,7 @@ def _normalizar_comportamiento(valor: str) -> str:
 
 
 def _normalizar_precipitacion(valor: str) -> str:
-    """Normaliza variantes de precipitación que Plaud devuelve pese al prompt."""
+    """Normaliza variantes de precipitación que hoja-guía devuelve pese al prompt."""
     limpio = valor.strip().lower()
     variantes = {
         "sin lluvia": "NULA",

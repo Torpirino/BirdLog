@@ -1,4 +1,4 @@
-"""Valida registros Plaud ya parseados."""
+"""Valida registros hoja-guía ya parseados."""
 
 from datetime import datetime
 
@@ -99,7 +99,7 @@ def _validar_lista_minima(
                 campo=nombre,
                 contexto=nombre,
                 motivo=f"al menos un bloque {nombre} requerido",
-                sugerencia="revisa que Plaud haya incluido el marcador de bloque correcto",
+                sugerencia="revisa que hoja-guía haya incluido el marcador de bloque correcto",
             )
         )
     for indice, bloque in enumerate(lista, start=1):
@@ -250,7 +250,7 @@ def _faltante(campo: str, contexto: str) -> ErrorDetalle:
         campo=campo,
         contexto=contexto,
         motivo="campo obligatorio ausente",
-        sugerencia="corrige la plantilla o dicta este campo en Plaud",
+        sugerencia="corrige la plantilla o dicta este campo en hoja-guía",
     )
 
 

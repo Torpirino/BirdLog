@@ -1,6 +1,6 @@
-"""Inserta registros Plaud validados en Supabase."""
+"""Inserta registros hoja-guía validados en Supabase."""
 
-from src.diagnosticos import ErrorDetalle, PipelineError
+from src.diagnosticos import ErrorDetalle, ErrorCarga
 from src.insercion.catalogos import resolver_especie, resolver_lugar, resolver_observador
 
 
@@ -43,7 +43,7 @@ def _resolver_referencias(registro: dict, cliente) -> dict:
         "ids_especies": _resolver_especies_datos(tipo, registro["datos"], cliente, errores),
     }
     if errores:
-        raise PipelineError("<registro>", "catálogo/FK", errores)
+        raise ErrorCarga("<registro>", "catálogo/FK", errores)
     return refs
 
 
@@ -210,7 +210,7 @@ def _insertar_datos_especificos(registro: dict, referencias: dict, id_visita: in
 
 
 def _fila_meteo(bloque: dict, id_visita: int) -> dict:
-    """Mapea meteorología Plaud a columnas SQL."""
+    """Mapea meteorología hoja-guía a columnas SQL."""
     return {
         "id_visita": id_visita,
         "hora": bloque["hora_meteo"],
@@ -288,7 +288,7 @@ def _insertar_mamiferos(datos: list[dict], ids_especies: list[int], id_visita: i
 
 
 def _resolver_especie_opcional(dato: dict, cliente, errores: list[ErrorDetalle]) -> int | None:
-    """Resuelve especie solo cuando Plaud la incluyó."""
+    """Resuelve especie solo cuando hoja-guía la incluyó."""
     if not dato.get("especie"):
         return None
     return _resolver_especie_segura(dato["especie"], "especie", cliente, errores)
@@ -299,7 +299,7 @@ def _resolver_especies_lindus(datos: list[dict], cliente) -> list[int]:
     errores = []
     ids = [_resolver_especie_segura(dato["especie"], "especie", cliente, errores) for dato in datos]
     if errores:
-        raise PipelineError("<registro>", "catálogo/FK", errores)
+        raise ErrorCarga("<registro>", "catálogo/FK", errores)
     return ids
 
 

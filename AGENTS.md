@@ -43,7 +43,7 @@ Supabase con backup automático.
 Observador → hojas-guía tabulares (docs/Guias/) o voz/Telegram
     → el agente valida campos, valores cerrados y resuelve FKs
     → avisa si hay fallos antes de insertar
-    → con autorización de Javi: inserta en Supabase
+    → con autorización del usuario: inserta en Supabase
     → backup CSV local
 ```
 
@@ -52,10 +52,6 @@ por hoja-guía o por voz/Telegram. Las reglas de formato y validación
 están en `docs/Guias/formato-guias.md` y hay una plantilla por tipo de
 visita/observación en `docs/Guias/`.
 
-> Histórico: el sistema tuvo un pipeline Plaud→Drive y un dashboard
-> Streamlit. Ambos se retiraron (decisión #50). El parser, la
-> resolución de catálogos, la inserción y el backup de `src/` siguen
-> siendo la base reutilizable.
 
 ### Modelo de datos — 14 tablas (v3)
 Detalle completo en `docs/modelo_datos.md`.
@@ -249,23 +245,23 @@ BirdLog/
 │   ├── config.py          # Carga .env
 │   ├── conexion.py        # Cliente Supabase
 │   ├── diagnosticos.py    # Errores y mensajes claros
-│   ├── parser/            # plaud.py, validacion.py, normalizacion.py
+│   ├── parser/            # texto_estructurado.py, validacion.py, normalizacion.py
 │   ├── insercion/         # catalogos.py (nombre → id), escritura.py
 │   ├── backup/            # exportar.py (CSV local)
 │   ├── drive/             # cliente.py, operaciones.py (utilidades Drive)
 │   └── fotos/             # sincronizar.py
 ├── scripts/               # importar_historico.py, insertar_historico.py
 ├── tests/
-│   ├── test_parser_plaud.py
+│   ├── test_parser_texto_estructurado.py
 │   ├── test_catalogos.py
 │   ├── test_escritura.py
 │   ├── test_backup_exportar.py
-│   └── ejemplos_plaud/
+│   └── ejemplos_texto_estructurado/
 └── backups/               # En .gitignore
 ```
 
-Nota: `src/drive/` y `src/fotos/` son utilidades heredadas del flujo
-anterior; el flujo principal ya no depende de ellas (decisión #50).
+Nota: `src/drive/` y `src/fotos/` son utilidades de soporte que el
+flujo principal no usa directamente.
 
 ---
 
@@ -282,7 +278,7 @@ anterior; el flujo principal ya no depende de ellas (decisión #50).
 ## 11. Tests
 
 Prioridad alta (con tests obligatorios):
-- `src/parser/plaud.py`
+- `src/parser/texto_estructurado.py`
 - `src/insercion/catalogos.py`
 - `src/insercion/escritura.py`
 - `src/backup/exportar.py`

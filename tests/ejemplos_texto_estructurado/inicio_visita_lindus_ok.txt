@@ -66,14 +66,14 @@ Campos opcionales de la visita:
 OBSERVACIONES_VISITA:
 
 REGLA MUY IMPORTANTE SOBRE CATÁLOGOS:
-Algunos campos deben coincidir con nombres existentes en el vocabulario cerrado de Plaud, que corresponde a los catálogos del sistema.
+Algunos campos deben coincidir con nombres existentes en el vocabulario cerrado de hoja-guía, que corresponde a los catálogos del sistema.
 
 Campos de catálogo:
 - LUGAR_VISITA
 - OBSERVADOR
 
 Para estos campos:
-- Revisa siempre el vocabulario cerrado disponible en Plaud.
+- Revisa siempre el vocabulario cerrado disponible en hoja-guía.
 - Si lo dictado por el observador se parece a un valor del vocabulario, usa el valor exacto del vocabulario.
 - No escribas una versión aproximada si existe una opción parecida en el vocabulario.
 - Respeta mayúsculas, minúsculas, tildes, espacios y números tal como aparezcan en el vocabulario.
@@ -88,24 +88,24 @@ VOCABULARIO CERRADO:
   LINDUS
 
 - OBSERVADOR solo puede ser:
-  Gabi
-  Ander
+  OBSERVADOR_1
+  OBSERVADOR_2
 
 NORMALIZACIÓN DE OBSERVADOR:
-- Si el observador dice algo parecido a "Gabi", "Gaby", "Gabriel" o "Gaví", escribe exactamente:
-  OBSERVADOR: Gabi
-- Si el observador dice algo parecido a "Ander", escribe exactamente:
-  OBSERVADOR: Ander
+- Si el observador dice algo parecido a "OBSERVADOR_1", "Gaby", "Gabriel" o "Gaví", escribe exactamente:
+  OBSERVADOR: OBSERVADOR_1
+- Si el observador dice algo parecido a "OBSERVADOR_2", escribe exactamente:
+  OBSERVADOR: OBSERVADOR_2
 
 NORMALIZACIÓN DE LUGAR:
 - LUGAR_VISITA debe escribirse con el nombre exacto del catálogo.
-- Antes de escribir LUGAR_VISITA, revisa el vocabulario cerrado de lugares de Plaud.
+- Antes de escribir LUGAR_VISITA, revisa el vocabulario cerrado de lugares de hoja-guía.
 - Si el observador dice un nombre parecido a uno del vocabulario, usa el valor exacto del vocabulario.
 - Si el observador dice "lindus", escribe exactamente:
   LUGAR_VISITA: Lindus
 - Si el observador dice "trona", escribe exactamente:
   LUGAR_VISITA: Trona
-- Si el observador dice otro lugar, usa el nombre exacto disponible en el vocabulario cerrado de Plaud.
+- Si el observador dice otro lugar, usa el nombre exacto disponible en el vocabulario cerrado de hoja-guía.
 - No escribas nombres de lugar solo en minúsculas si existe una forma normalizada en el catálogo.
 
 FORMATO DE SALIDA:
@@ -132,7 +132,7 @@ TIPO_VISITA: LINDUS
 FECHA: 2026-05-01
 HORA_INICIO: 08:10
 LUGAR_VISITA: Lindus
-OBSERVADOR: Gabi
+OBSERVADOR: OBSERVADOR_1
 OBSERVACIONES_VISITA: empieza la jornada con buena visibilidad.
 
 EJEMPLO DE SALIDA SI FALTA ALGÚN OBLIGATORIO:
@@ -142,7 +142,7 @@ TIPO_VISITA: LINDUS
 FECHA:
 HORA_INICIO: 08:10
 LUGAR_VISITA: Lindus
-OBSERVADOR: Gabi
+OBSERVADOR: OBSERVADOR_1
 
 VALIDACIÓN FINAL ANTES DE RESPONDER:
 Antes de devolver el texto, comprueba internamente:
@@ -156,7 +156,7 @@ Antes de devolver el texto, comprueba internamente:
 6. TIPO_REGISTRO es INICIO_VISITA_LINDUS.
 7. TIPO_VISITA es LINDUS.
 8. LUGAR_VISITA está escrito con el nombre exacto del vocabulario cerrado si hay correspondencia clara.
-9. OBSERVADOR es Gabi o Ander.
+9. OBSERVADOR es OBSERVADOR_1 o OBSERVADOR_2.
 10. No hay texto explicativo.
 11. No hay Markdown.
 12. No hay negrita.

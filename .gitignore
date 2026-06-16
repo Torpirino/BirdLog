@@ -11,7 +11,7 @@ service_account.json
 google-credentials.json
 *.credentials.json
 
-# Streamlit secrets
+# Secretos de herramientas locales
 secrets.toml
 .streamlit/secrets.toml
 
@@ -49,12 +49,6 @@ eggs/
 .eggs/
 lib/
 lib64/
-!dashboard/lib/
-!dashboard/lib/**
-dashboard/lib/__pycache__/
-!app_pipeline/lib/
-!app_pipeline/lib/**
-app_pipeline/lib/__pycache__/
 parts/
 sdist/
 var/

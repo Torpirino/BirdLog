@@ -12,13 +12,6 @@ VARIABLES_DRIVE = [
     "GOOGLE_CREDENTIALS_PATH",
 ]
 
-VARIABLES_PIPELINE = [
-    *VARIABLES_DRIVE,
-    "DRIVE_ENTRADA_ID",
-    "DRIVE_PROCESADOS_ID",
-    "DRIVE_ERRORES_ID",
-]
-
 VARIABLES_FOTOS = [
     *VARIABLES_DRIVE,
     "DRIVE_FOTOS_ID",
@@ -27,7 +20,7 @@ VARIABLES_FOTOS = [
 VARIABLES_OBLIGATORIAS = [
     *VARIABLES_ENTORNO,
     *VARIABLES_SUPABASE,
-    *VARIABLES_PIPELINE,
+    *VARIABLES_DRIVE,
     "DRIVE_BACKUPS_ID",
     "DRIVE_FOTOS_ID",
 ]
@@ -43,15 +36,12 @@ class Config:
     SUPABASE_PROD_URL: str
     SUPABASE_PROD_KEY: str
     GOOGLE_CREDENTIALS_PATH: str
-    DRIVE_ENTRADA_ID: str
-    DRIVE_PROCESADOS_ID: str
-    DRIVE_ERRORES_ID: str
     DRIVE_BACKUPS_ID: str
     DRIVE_FOTOS_ID: str
 
 
 @dataclass(frozen=True)
-class ConfigDashboard:
+class ConfigSupabase:
     """Configuración mínima para consultar Supabase."""
 
     ENTORNO: str = ""
@@ -74,23 +64,6 @@ class ConfigDrive:
 
 
 @dataclass(frozen=True)
-class ConfigPipeline:
-    """Configuración necesaria para procesar archivos Plaud."""
-
-    ENTORNO: str = ""
-    SUPABASE_DEV_URL: str = ""
-    SUPABASE_DEV_KEY: str = ""
-    SUPABASE_PROD_URL: str = ""
-    SUPABASE_PROD_KEY: str = ""
-    GOOGLE_CREDENTIALS_PATH: str = ""
-    DRIVE_ENTRADA_ID: str = ""
-    DRIVE_PROCESADOS_ID: str = ""
-    DRIVE_ERRORES_ID: str = ""
-    DRIVE_BACKUPS_ID: str = ""
-    DRIVE_FOTOS_ID: str = ""
-
-
-@dataclass(frozen=True)
 class ConfigFotos:
     """Configuración necesaria para sincronizar fotos."""
 
@@ -104,29 +77,21 @@ class ConfigFotos:
 
 
 def cargar_config() -> Config:
-    """Carga .env y devuelve la configuración completa histórica."""
+    """Carga .env y devuelve la configuración completa."""
     valores = _cargar_y_validar(VARIABLES_OBLIGATORIAS)
     return Config(**valores)
 
 
-def cargar_config_dashboard() -> ConfigDashboard:
-    """Carga configuración mínima para el dashboard."""
+def cargar_config_supabase() -> ConfigSupabase:
+    """Carga configuración mínima para acceder a Supabase."""
     valores = _cargar_y_validar_perfil([])
-    return ConfigDashboard(**valores)
+    return ConfigSupabase(**valores)
 
 
 def cargar_config_drive() -> ConfigDrive:
     """Carga configuración mínima para autenticar Google Drive."""
     valores = _cargar_y_validar_perfil(VARIABLES_DRIVE)
     return ConfigDrive(**valores)
-
-
-def cargar_config_pipeline() -> ConfigPipeline:
-    """Carga configuración necesaria para el pipeline Plaud."""
-    valores = _cargar_y_validar_perfil(VARIABLES_PIPELINE)
-    valores["DRIVE_BACKUPS_ID"] = os.getenv("DRIVE_BACKUPS_ID", "").strip()
-    valores["DRIVE_FOTOS_ID"] = os.getenv("DRIVE_FOTOS_ID", "").strip()
-    return ConfigPipeline(**valores)
 
 
 def cargar_config_fotos() -> ConfigFotos:
@@ -137,13 +102,13 @@ def cargar_config_fotos() -> ConfigFotos:
 
 def get_supabase_url() -> str:
     """Devuelve la URL Supabase del entorno activo."""
-    config = cargar_config_dashboard()
+    config = cargar_config_supabase()
     return config.SUPABASE_DEV_URL if config.ENTORNO == "dev" else config.SUPABASE_PROD_URL
 
 
 def get_supabase_key() -> str:
     """Devuelve la clave Supabase del entorno activo."""
-    config = cargar_config_dashboard()
+    config = cargar_config_supabase()
     return config.SUPABASE_DEV_KEY if config.ENTORNO == "dev" else config.SUPABASE_PROD_KEY
 
 

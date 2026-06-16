@@ -5,8 +5,8 @@ Reglas de formato y validación: `docs/Guias/formato-guias.md`.
 
 > **Borrador.** Los vocabularios cerrados de `tipo_rastro`,
 > `intensidad_rastro`, `reciente_antiguo` y el significado de
-> `aplicacion` están pendientes de confirmar con el cliente
-> (`docs/Revisar con GABI.md` §5). Hasta entonces se tratan como texto
+> `aplicacion` están pendientes de confirmar con el cliente.
+> Hasta entonces se tratan como texto
 > libre. Las fotos van en la tabla `fotos` (`tabla_origen =
 > 'castor_rastros'`), no en esta hoja.
 

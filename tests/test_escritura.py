@@ -8,12 +8,12 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.insercion.escritura import insertar_registro
-from src.diagnosticos import PipelineError
+from src.diagnosticos import ErrorCarga
 from src.parser.normalizacion import normalizar_registro
-from src.parser.plaud import parsear_txt_plaud
+from src.parser.texto_estructurado import parsear_txt_estructurado
 from src.parser.validacion import validar_registro
 
-EJEMPLOS = Path(__file__).parent / "ejemplos_plaud"
+EJEMPLOS = Path(__file__).parent / "ejemplos_texto_estructurado"
 
 
 class Respuesta:
@@ -108,7 +108,7 @@ class ClienteFalso:
         self.contadores = {"visitas": 100, "meteorologia": 200, "lindus": 300, "cajas_nido": 400}
         self.datos = {
             "lugares": [{"id_lugar": 1, "nombre_lugar": "BAR01"}, {"id_lugar": 2, "nombre_lugar": "Lindus"}],
-            "observadores": [{"id_observador": 7, "nombre_observador": "Gabi"}],
+            "observadores": [{"id_observador": 7, "nombre_observador": "OBSERVADOR_1"}],
             "especies": [
                 {"id_especie": 11, "nombre_comun": "carbonero común", "nombre_cientifico": "Parus major"},
                 {"id_especie": 14, "nombre_comun": "Carbonero común", "nombre_cientifico": "Parus major"},
@@ -136,7 +136,7 @@ class ClienteFalso:
 def test_insertar_visita_caja_nido_crea_visita_meteo_y_dato():
     """Inserta una visita de caja nido completa."""
     cliente = ClienteFalso()
-    registro = parsear_txt_plaud(str(EJEMPLOS / "visita_caja_nido_ok.txt"))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / "visita_caja_nido_ok.txt"))
     resumen = insertar_registro(registro, cliente)
     caja = cliente.datos["cajas_nido"][0]
     assert resumen["id_visita"] == 101
@@ -150,7 +150,7 @@ def test_insertar_visita_caja_nido_crea_visita_meteo_y_dato():
 def test_insertar_observaciones_lindus_usa_visita_abierta():
     """Inserta observaciones en la visita Lindus abierta del día."""
     cliente = ClienteFalso()
-    registro = parsear_txt_plaud(str(EJEMPLOS / "observaciones_lindus_ok.txt"))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / "observaciones_lindus_ok.txt"))
     resumen = insertar_registro(registro, cliente)
     assert resumen["id_visita"] == 50
     assert resumen["insertados"] == {"lindus": 2}
@@ -162,7 +162,7 @@ def test_insertar_observaciones_lindus_usa_visita_cerrada_unica():
     """Permite recuperar observaciones aunque la visita ya esté cerrada."""
     cliente = ClienteFalso()
     cliente.datos["visitas"][0]["hora_fin"] = "12:30"
-    registro = parsear_txt_plaud(str(EJEMPLOS / "observaciones_lindus_ok.txt"))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / "observaciones_lindus_ok.txt"))
 
     resumen = insertar_registro(registro, cliente)
 
@@ -175,7 +175,7 @@ def test_insertar_observaciones_lindus_falla_sin_visita_existente():
     """No inserta Lindus si no existe ninguna visita para esa fecha."""
     cliente = ClienteFalso()
     cliente.datos["visitas"] = []
-    registro = parsear_txt_plaud(str(EJEMPLOS / "observaciones_lindus_ok.txt"))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / "observaciones_lindus_ok.txt"))
 
     with pytest.raises(
         ValueError,
@@ -199,7 +199,7 @@ def test_insertar_observaciones_lindus_falla_con_varias_visitas():
             "id_observador": 7,
         }
     )
-    registro = parsear_txt_plaud(str(EJEMPLOS / "observaciones_lindus_ok.txt"))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / "observaciones_lindus_ok.txt"))
 
     with pytest.raises(
         ValueError,
@@ -224,9 +224,9 @@ def test_insertar_observaciones_lindus_filtra_por_lugar_y_observador_si_vienen()
             "id_observador": 7,
         }
     )
-    registro = parsear_txt_plaud(str(EJEMPLOS / "observaciones_lindus_ok.txt"))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / "observaciones_lindus_ok.txt"))
     registro["visita"]["lugar_visita"] = "Trona"
-    registro["visita"]["observador"] = "Gabi"
+    registro["visita"]["observador"] = "OBSERVADOR_1"
 
     resumen = insertar_registro(registro, cliente)
 
@@ -236,7 +236,7 @@ def test_insertar_observaciones_lindus_filtra_por_lugar_y_observador_si_vienen()
 def test_insertar_observaciones_lindus_no_deduplica_contenido_biologico():
     """Reprocesar el mismo contenido no se bloquea por deduplicación biológica."""
     cliente = ClienteFalso()
-    registro = parsear_txt_plaud(str(EJEMPLOS / "observaciones_lindus_ok.txt"))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / "observaciones_lindus_ok.txt"))
 
     insertar_registro(registro, cliente)
     insertar_registro(registro, cliente)
@@ -248,7 +248,7 @@ def test_insertar_fin_lindus_sin_observaciones_no_borra_las_de_inicio():
     """Un cierre sin observaciones no machaca las dictadas al inicio."""
     cliente = ClienteFalso()
     cliente.datos["visitas"][0]["observaciones"] = "dictadas al inicio"
-    registro = parsear_txt_plaud(str(EJEMPLOS / "fin_visita_lindus_ok.txt"))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / "fin_visita_lindus_ok.txt"))
     registro["visita"].pop("observaciones_visita", None)
 
     resumen = insertar_registro(registro, cliente)
@@ -263,7 +263,7 @@ def test_insertar_fin_lindus_combina_observaciones_de_inicio_y_cierre():
     """Las observaciones del cierre se combinan con las del inicio."""
     cliente = ClienteFalso()
     cliente.datos["visitas"][0]["observaciones"] = "dictadas al inicio"
-    registro = parsear_txt_plaud(str(EJEMPLOS / "fin_visita_lindus_ok.txt"))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / "fin_visita_lindus_ok.txt"))
 
     insertar_registro(registro, cliente)
 
@@ -275,7 +275,7 @@ def test_insertar_fin_lindus_combina_observaciones_de_inicio_y_cierre():
 def test_insertar_fin_lindus_con_observaciones_y_sin_previas_las_guarda():
     """Si el inicio no dejó observaciones, quedan solo las del cierre."""
     cliente = ClienteFalso()
-    registro = parsear_txt_plaud(str(EJEMPLOS / "fin_visita_lindus_ok.txt"))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / "fin_visita_lindus_ok.txt"))
 
     insertar_registro(registro, cliente)
 
@@ -288,7 +288,7 @@ def test_insertar_caja_no_crea_visita_si_falta_especie():
     """Resuelve FKs antes de insertar para no dejar visitas huérfanas."""
     cliente = ClienteFalso()
     cliente.datos["especies"] = []
-    registro = parsear_txt_plaud(str(EJEMPLOS / "visita_caja_nido_ok.txt"))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / "visita_caja_nido_ok.txt"))
     visitas_antes = list(cliente.datos["visitas"])
     with pytest.raises(ValueError, match="especie no encontrada"):
         insertar_registro(registro, cliente)
@@ -297,13 +297,13 @@ def test_insertar_caja_no_crea_visita_si_falta_especie():
 
 
 def test_insertar_nido_rapaz_lugar_no_encontrado_detalla_campo_y_valor():
-    """El error de catálogo indica campo Plaud y valor recibido."""
+    """El error de catálogo indica campo y valor recibido."""
     cliente = ClienteFalso()
-    registro = parsear_txt_plaud(str(EJEMPLOS / "visita_nido_rapaz_ok.txt"))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / "visita_nido_rapaz_ok.txt"))
     registro["visita"]["lugar_nido"] = "Areaxea 1"
     visitas_antes = list(cliente.datos["visitas"])
 
-    with pytest.raises(PipelineError) as excinfo:
+    with pytest.raises(ErrorCarga) as excinfo:
         insertar_registro(registro, cliente)
 
     error = excinfo.value.errores[0]
@@ -326,7 +326,7 @@ def test_insertar_mamiferos_puente_no_descarta_observaciones_puente():
         {"id_especie": 21, "nombre_comun": "garduña", "nombre_cientifico": "Garduña"},
         {"id_especie": 23, "nombre_comun": "Garduña", "nombre_cientifico": "Martes foina"},
     ]
-    registro = parsear_txt_plaud(str(EJEMPLOS / "visita_mamiferos_puente_ok.txt"))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / "visita_mamiferos_puente_ok.txt"))
     insertar_registro(registro, cliente)
     obs = cliente.datos["visitas"][-1].get("observaciones") or ""
     assert "Aranzadi" in obs or "barro reciente en ambas orillas" in obs
@@ -334,7 +334,7 @@ def test_insertar_mamiferos_puente_no_descarta_observaciones_puente():
 
 
 def test_insertar_mamiferos_puente_usa_fecha_normalizada_e_id_lugar():
-    """El payload final no conserva la fecha ni el lugar imperfectos de Plaud."""
+    """El payload final normaliza la fecha y el lugar antes de insertar."""
     cliente = ClienteFalso()
     cliente.datos["lugares"].append({"id_lugar": 9, "nombre_lugar": "Puente de Aranzadi"})
     cliente.datos["especies"] += [
@@ -349,7 +349,7 @@ def test_insertar_mamiferos_puente_usa_fecha_normalizada_e_id_lugar():
             "hora_inicio": "10:00",
             "hora_fin": "10:00",
             "lugar_puente": "puente de aranzadi",
-            "observador": "Gabi",
+            "observador": "OBSERVADOR_1",
         },
         "meteorologia": [],
         "datos": [
@@ -385,7 +385,7 @@ def test_insertar_nido_rapaz_guarda_campos_v3_y_observaciones():
             "hora_inicio": "18:00",
             "hora_fin": "18:20",
             "lugar_nido": "Nido Milano 01",
-            "observador": "Gabi",
+            "observador": "OBSERVADOR_1",
         },
         "meteorologia": [],
         "datos": [
@@ -396,7 +396,7 @@ def test_insertar_nido_rapaz_guarda_campos_v3_y_observaciones():
                 "incuba": True,
                 "numero_pollos": 2,
                 "pollos_volados": 1,
-                "comunicacion_personal": "Ander",
+                "comunicacion_personal": "OBSERVADOR_2",
                 "observaciones_nido": "nota adicional del nido",
             }
         ],
@@ -425,7 +425,7 @@ def test_insertar_cebo_guarda_trampa_fecha_y_utm_del_nido():
             "hora_inicio": "11:00",
             "hora_fin": "11:10",
             "lugar_cebo": "Cebo avispón 1",
-            "observador": "Gabi",
+            "observador": "OBSERVADOR_1",
         },
         "meteorologia": [],
         "datos": [

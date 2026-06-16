@@ -1,4 +1,4 @@
-"""Tests del mini-pipeline de parser Plaud."""
+"""Tests del parser de texto estructurado CAMPO: valor."""
 
 from pathlib import Path
 import sys
@@ -8,10 +8,10 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.parser.normalizacion import normalizar_fecha, normalizar_registro
-from src.parser.plaud import detectar_tipo, parsear_txt_plaud
+from src.parser.texto_estructurado import detectar_tipo, parsear_txt_estructurado
 from src.parser.validacion import validar_registro, validar_registro_detallado
 
-EJEMPLOS = Path(__file__).parent / "ejemplos_plaud"
+EJEMPLOS = Path(__file__).parent / "ejemplos_texto_estructurado"
 ARCHIVOS = {
     "INICIO_VISITA_LINDUS": "inicio_visita_lindus_ok.txt",
     "OBSERVACIONES_LINDUS": "observaciones_lindus_ok.txt",
@@ -56,9 +56,9 @@ def test_detectar_tipo_rechaza_textos_invalidos(texto):
 
 
 @pytest.mark.parametrize("tipo, archivo", ARCHIVOS.items())
-def test_parsear_txt_plaud_round_trip_completo(tipo, archivo):
+def test_parsear_txt_estructurado_round_trip_completo(tipo, archivo):
     """Parsea cada archivo válido con estructura y longitudes esperadas."""
-    registro = parsear_txt_plaud(str(EJEMPLOS / archivo))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / archivo))
     meteo, datos = LONGITUDES[tipo]
     assert registro["tipo_registro"] == tipo
     assert all(campo in registro["visita"] for campo in MINIMOS[tipo])
@@ -69,8 +69,8 @@ def test_parsear_txt_plaud_round_trip_completo(tipo, archivo):
 
 def test_parsear_convierte_tipos_simples():
     """Convierte enteros, float y booleanos básicos."""
-    caja = parsear_txt_plaud(str(EJEMPLOS / "visita_caja_nido_ok.txt"))
-    cebo = parsear_txt_plaud(str(EJEMPLOS / "visita_cebo_avispon_ok.txt"))
+    caja = parsear_txt_estructurado(str(EJEMPLOS / "visita_caja_nido_ok.txt"))
+    cebo = parsear_txt_estructurado(str(EJEMPLOS / "visita_cebo_avispon_ok.txt"))
     assert isinstance(caja["datos"][0]["numero_huevos"], int)
     assert isinstance(caja["meteorologia"][0]["temperatura"], float)
     assert caja["datos"][0]["ocupada"] is True
@@ -79,27 +79,27 @@ def test_parsear_convierte_tipos_simples():
 
 def test_parsear_observaciones_lindus_dos_bloques():
     """Crea dos bloques de observaciones Lindus."""
-    registro = parsear_txt_plaud(str(EJEMPLOS / "observaciones_lindus_ok.txt"))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / "observaciones_lindus_ok.txt"))
     assert len(registro["datos"]) == 2
 
 
 def test_parsear_fin_visita_lindus_tres_meteos():
     """Crea tres bloques de meteorología en el cierre Lindus."""
-    registro = parsear_txt_plaud(str(EJEMPLOS / "fin_visita_lindus_ok.txt"))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / "fin_visita_lindus_ok.txt"))
     assert len(registro["meteorologia"]) in {2, 3}
 
 
 @pytest.mark.parametrize("archivo", ARCHIVOS.values())
 def test_validar_registro_sin_errores_para_ejemplos(archivo):
     """Acepta todos los ejemplos sintéticos válidos."""
-    registro = parsear_txt_plaud(str(EJEMPLOS / archivo))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / archivo))
     assert validar_registro(registro) == []
 
 
 @pytest.mark.parametrize("tipo, campo", [(tipo, campos[0]) for tipo, campos in MINIMOS.items()])
 def test_validar_registro_detecta_minimo_ausente_por_plantilla(tipo, campo):
     """Detecta un campo obligatorio ausente en cada plantilla."""
-    registro = parsear_txt_plaud(str(EJEMPLOS / ARCHIVOS[tipo]))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / ARCHIVOS[tipo]))
     registro["visita"].pop(campo)
     errores = validar_registro(registro)
     assert any(campo.upper() in error for error in errores)
@@ -115,7 +115,7 @@ def test_validar_registro_detecta_minimo_ausente_por_plantilla(tipo, campo):
 )
 def test_validar_registro_detecta_valor_cerrado_invalido(archivo, campo, valor):
     """Detecta valores cerrados inválidos relevantes."""
-    registro = parsear_txt_plaud(str(EJEMPLOS / archivo))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / archivo))
     registro["datos"][0][campo] = valor
     errores = validar_registro(registro)
     assert any(valor in error for error in errores)
@@ -140,7 +140,7 @@ def test_normalizar_registro_ocupada_si():
 
 
 def test_normalizar_registro_precipitacion_sin_lluvia_a_nula():
-    """Normaliza la salida real de Plaud 'SIN LLUVIA' al valor cerrado NULA."""
+    """Normaliza la variante 'SIN LLUVIA' al valor cerrado NULA."""
     registro = {"visita": {}, "meteorologia": [{"precipitacion": "SIN LLUVIA"}], "datos": []}
     assert normalizar_registro(registro)["meteorologia"][0]["precipitacion"] == "NULA"
 
@@ -173,7 +173,7 @@ def test_normalizar_registro_convierte_fecha_a_iso():
 
 def test_validar_registro_mensaje_fecha_invalida_es_claro():
     """Informa los dos formatos de fecha admitidos."""
-    registro = parsear_txt_plaud(str(EJEMPLOS / "visita_mamiferos_puente_ok.txt"))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / "visita_mamiferos_puente_ok.txt"))
     registro["visita"]["fecha"] = "05-03-2026"
     errores = validar_registro(normalizar_registro(registro))
     assert len(errores) == 1
@@ -184,7 +184,7 @@ def test_validar_registro_mensaje_fecha_invalida_es_claro():
 
 def test_validar_registro_acumula_varios_campos_ausentes_nido_rapaz():
     """Devuelve todos los obligatorios ausentes en una visita."""
-    registro = parsear_txt_plaud(str(EJEMPLOS / "visita_nido_rapaz_ok.txt"))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / "visita_nido_rapaz_ok.txt"))
     registro["visita"].pop("hora_fin")
     registro["meteorologia"][0].pop("hora_meteo")
 
@@ -197,7 +197,7 @@ def test_validar_registro_acumula_varios_campos_ausentes_nido_rapaz():
 
 def test_validar_registro_viento_direccion_invalido_detalla_valores():
     """Un valor cerrado inválido indica campo, valor y valores aceptados."""
-    registro = parsear_txt_plaud(str(EJEMPLOS / "visita_nido_rapaz_ok.txt"))
+    registro = parsear_txt_estructurado(str(EJEMPLOS / "visita_nido_rapaz_ok.txt"))
     registro["meteorologia"][0]["viento_direccion"] = "OESTE"
 
     errores = validar_registro_detallado(registro)
@@ -218,7 +218,7 @@ def test_parsear_campo_numerico_invalido_da_mensaje_claro(tmp_path):
         "HORA_INICIO: 20:26\n"
         "HORA_FIN: 20:40\n"
         "LUGAR_NIDO: AREATZEA1\n"
-        "OBSERVADOR: Gabi\n"
+        "OBSERVADOR: OBSERVADOR_1\n"
         "---METEOROLOGIA---\n"
         "HORA_METEO: 20:30\n"
         "NUBOSIDAD: tres\n"
@@ -228,7 +228,7 @@ def test_parsear_campo_numerico_invalido_da_mensaje_claro(tmp_path):
     )
 
     with pytest.raises(ValueError) as excinfo:
-        parsear_txt_plaud(str(ruta))
+        parsear_txt_estructurado(str(ruta))
 
     mensaje = str(excinfo.value)
     assert "NUBOSIDAD" in mensaje
@@ -247,13 +247,13 @@ def test_parsear_txt_ignora_titulo_antes_de_tipo_registro(tmp_path):
         "HORA_INICIO: 20:26\n"
         "HORA_FIN: 20:40\n"
         "LUGAR_NIDO: Areaxea 1\n"
-        "OBSERVADOR: Gabi\n"
+        "OBSERVADOR: OBSERVADOR_1\n"
         "---NIDO_RAPAZ---\n"
         "TEXTO_REVISION: adulto posado cerca del nido.\n",
         encoding="utf-8",
     )
 
-    registro = parsear_txt_plaud(str(ruta))
+    registro = parsear_txt_estructurado(str(ruta))
 
     assert registro["tipo_registro"] == "VISITA_NIDO_RAPAZ"
     assert registro["_advertencias"] == ["Se ignoró texto antes de TIPO_REGISTRO."]
@@ -278,7 +278,7 @@ def test_parsear_campos_v3_convierte_tipos(tmp_path):
         encoding="utf-8",
     )
 
-    registro = parsear_txt_plaud(str(ruta))
+    registro = parsear_txt_estructurado(str(ruta))
 
     meteo = registro["meteorologia"][0]
     assert meteo["presentes"] == 3
@@ -303,7 +303,7 @@ def test_parsear_utm_nido_como_enteros(tmp_path):
         encoding="utf-8",
     )
 
-    registro = parsear_txt_plaud(str(ruta))
+    registro = parsear_txt_estructurado(str(ruta))
 
     cebo = registro["datos"][0]
     assert cebo["utm_x_nido"] == 612340
@@ -335,7 +335,7 @@ def test_validar_fecha_colocacion_invalida_da_diagnostico():
             "hora_inicio": "11:00",
             "hora_fin": "11:10",
             "lugar_cebo": "Cebo avispón 1",
-            "observador": "Gabi",
+            "observador": "OBSERVADOR_1",
         },
         "meteorologia": [],
         "datos": [{"vv": 1, "fecha_colocacion": "1 de junio"}],

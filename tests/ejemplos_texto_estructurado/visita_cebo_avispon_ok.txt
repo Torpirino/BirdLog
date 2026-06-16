@@ -91,14 +91,14 @@ OTROS:
 OBSERVACIONES_CEBO:
 
 REGLA MUY IMPORTANTE SOBRE CATÁLOGOS:
-Algunos campos deben coincidir con nombres existentes en el vocabulario cerrado de Plaud, que corresponde a los catálogos del sistema.
+Algunos campos deben coincidir con nombres existentes en el vocabulario cerrado de hoja-guía, que corresponde a los catálogos del sistema.
 
 Campos de catálogo:
 - LUGAR_CEBO
 - OBSERVADOR
 
 Para estos campos:
-- Revisa siempre el vocabulario cerrado disponible en Plaud.
+- Revisa siempre el vocabulario cerrado disponible en hoja-guía.
 - Si lo dictado por el observador se parece a un valor del vocabulario, usa el valor exacto del vocabulario.
 - No escribas una versión aproximada si existe una opción parecida en el vocabulario.
 - Respeta mayúsculas, minúsculas, tildes, espacios y números tal como aparezcan en el vocabulario.
@@ -113,22 +113,22 @@ VOCABULARIO CERRADO:
   CEBO_AVISPON
 
 - OBSERVADOR solo puede ser:
-  Gabi
-  Ander
+  OBSERVADOR_1
+  OBSERVADOR_2
 
 NORMALIZACIÓN DE OBSERVADOR:
-- Si el observador dice algo parecido a "Gabi", "Gaby", "Gabriel" o "Gaví", escribe exactamente:
-  OBSERVADOR: Gabi
-- Si el observador dice algo parecido a "Ander", escribe exactamente:
-  OBSERVADOR: Ander
+- Si el observador dice algo parecido a "OBSERVADOR_1", "Gaby", "Gabriel" o "Gaví", escribe exactamente:
+  OBSERVADOR: OBSERVADOR_1
+- Si el observador dice algo parecido a "OBSERVADOR_2", escribe exactamente:
+  OBSERVADOR: OBSERVADOR_2
 
 NORMALIZACIÓN DE LUGAR:
 - LUGAR_CEBO debe escribirse con el nombre exacto del catálogo.
-- Antes de escribir LUGAR_CEBO, revisa el vocabulario cerrado de cebos/lugares de Plaud.
+- Antes de escribir LUGAR_CEBO, revisa el vocabulario cerrado de cebos/lugares de hoja-guía.
 - Si el observador dice un nombre parecido a uno del vocabulario, usa el valor exacto del vocabulario.
 - Si el observador dice "cebo avispón uno", "cebo uno" o "cebo 1", escribe exactamente:
   LUGAR_CEBO: Cebo avispón 1
-- Si el observador dice otro cebo, usa el nombre exacto disponible en el vocabulario cerrado de Plaud.
+- Si el observador dice otro cebo, usa el nombre exacto disponible en el vocabulario cerrado de hoja-guía.
 - No escribas nombres de cebo solo en minúsculas si existe una forma normalizada en el catálogo.
 
 REGLAS PARA CEBO_AVISPON:
@@ -200,7 +200,7 @@ FECHA: 2026-05-01
 HORA_INICIO: 13:00
 HORA_FIN: 13:15
 LUGAR_CEBO: Cebo avispón 1
-OBSERVADOR: Ander
+OBSERVADOR: OBSERVADOR_2
 OBSERVACIONES_VISITA: revisión breve del cebo.
 
 ---METEOROLOGIA---
@@ -229,7 +229,7 @@ FECHA:
 HORA_INICIO: 13:00
 HORA_FIN:
 LUGAR_CEBO: Cebo avispón 1
-OBSERVADOR: Ander
+OBSERVADOR: OBSERVADOR_2
 
 ---CEBO_AVISPON---
 VV: 3
@@ -248,7 +248,7 @@ Antes de devolver el texto, comprueba internamente:
 7. TIPO_REGISTRO es VISITA_CEBO_AVISPON.
 8. TIPO_VISITA es CEBO_AVISPON.
 9. LUGAR_CEBO está escrito con nombre exacto de vocabulario si hay correspondencia clara.
-10. OBSERVADOR es Gabi o Ander.
+10. OBSERVADOR es OBSERVADOR_1 o OBSERVADOR_2.
 11. Los recuentos son números enteros si tienen valor.
 12. No hay texto explicativo.
 13. No hay Markdown.

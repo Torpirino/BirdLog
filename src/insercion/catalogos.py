@@ -28,7 +28,7 @@ def resolver_especie(nombre: str, cliente) -> int:
     """Devuelve el id_especie buscando por nombre común o científico.
 
     Prueba primero coincidencia exacta y luego con primera letra en mayúscula,
-    para tolerar que Plaud transcriba los nombres en minúsculas.
+    para tolerar que hoja-guía transcriba los nombres en minúsculas.
     """
     for variante in _variantes_especie(nombre):
         por_comun = _buscar(cliente, "especies", "id_especie", "nombre_comun", variante)
@@ -84,7 +84,7 @@ def _mensaje_lugar(nombre: str) -> str:
     """Construye el mensaje para lugares no encontrados."""
     return (
         f"Lugar no encontrado: '{nombre}'.\n"
-        "Da de alta en Supabase (tabla lugares) y añade el nombre al vocabulario del Plaud."
+        "Da de alta en Supabase (tabla lugares) y añade el nombre al vocabulario del hoja-guía."
     )
 
 
@@ -93,7 +93,7 @@ def _mensaje_lugar_ambiguo(nombre: str, coincidencias: list[dict]) -> str:
     opciones = ", ".join(f"'{fila['nombre_lugar']}'" for fila in coincidencias)
     return (
         f"Lugar ambiguo: '{nombre}' coincide con varios lugares ({opciones}).\n"
-        "Usa exactamente el nombre del catálogo en el vocabulario del Plaud."
+        "Usa exactamente el nombre del catálogo en el vocabulario del hoja-guía."
     )
 
 
@@ -101,7 +101,7 @@ def _mensaje_observador(nombre: str) -> str:
     """Construye el mensaje para observadores no encontrados."""
     return (
         f"Observador no encontrado: '{nombre}'.\n"
-        "Da de alta en Supabase (tabla observadores) y añade el nombre al vocabulario del Plaud."
+        "Da de alta en Supabase (tabla observadores) y añade el nombre al vocabulario del hoja-guía."
     )
 
 
@@ -109,5 +109,5 @@ def _mensaje_especie(nombre: str) -> str:
     """Construye el mensaje para especies no encontradas."""
     return (
         f"Especie no encontrada: '{nombre}'.\n"
-        "Da de alta en Supabase (tabla especies) y añade el nombre al vocabulario del Plaud."
+        "Da de alta en Supabase (tabla especies) y añade el nombre al vocabulario del hoja-guía."
     )

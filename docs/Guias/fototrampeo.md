@@ -4,7 +4,7 @@ Tabla destino: `visitas` + `fototrampeo`.
 Reglas de formato y validación: `docs/Guias/formato-guias.md`.
 
 > **Borrador.** El vocabulario cerrado de `tipo_media` está pendiente de
-> confirmar con el cliente (`docs/Revisar con GABI.md` §5). Hasta
+> confirmar con el cliente. Hasta
 > entonces `tipo_media` se trata como texto libre. Las imágenes/vídeos
 > se registran en la tabla `fotos` (`tabla_origen = 'fototrampeo'`), no
 > en esta hoja.

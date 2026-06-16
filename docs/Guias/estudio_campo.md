@@ -6,7 +6,7 @@ Reglas de formato y validación: `docs/Guias/formato-guias.md`.
 
 > **Borrador.** Los vocabularios cerrados de `deteccion`, `migracion`,
 > `altura` y los lados están pendientes de confirmar con el cliente
-> (`docs/Revisar con GABI.md` §5). Hasta entonces se tratan como texto
+> pendientes de confirmar con el cliente. Hasta entonces se tratan como texto
 > libre.
 
 La **sesión de muestreo** (punto, hora inicio/fin, meteorología) es la

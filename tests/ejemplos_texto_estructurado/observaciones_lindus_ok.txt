@@ -71,13 +71,13 @@ PLUMAJE:
 OBSERVACIONES:
 
 REGLA MUY IMPORTANTE SOBRE CATÁLOGOS:
-Algunos campos deben coincidir con nombres existentes en el vocabulario cerrado de Plaud, que corresponde a los catálogos del sistema.
+Algunos campos deben coincidir con nombres existentes en el vocabulario cerrado de hoja-guía, que corresponde a los catálogos del sistema.
 
 Campos de catálogo:
 - ESPECIE
 
 Para estos campos:
-- Revisa siempre el vocabulario cerrado disponible en Plaud.
+- Revisa siempre el vocabulario cerrado disponible en hoja-guía.
 - Si lo dictado por el observador se parece a un valor del vocabulario, usa el valor exacto del vocabulario.
 - No escribas una versión aproximada si existe una opción parecida en el vocabulario.
 - Respeta mayúsculas, minúsculas, tildes, espacios y números tal como aparezcan en el vocabulario.
@@ -106,13 +106,13 @@ NORMALIZACIÓN DE COMPORTAMIENTO:
 
 NORMALIZACIÓN DE ESPECIES:
 - ESPECIE debe escribirse con el nombre exacto del catálogo.
-- Antes de escribir ESPECIE, revisa el vocabulario cerrado de especies de Plaud.
+- Antes de escribir ESPECIE, revisa el vocabulario cerrado de especies de hoja-guía.
 - Si el observador dice una especie parecida a una del vocabulario, usa el valor exacto del vocabulario.
 - Si el observador dice "milano negro", escribe exactamente:
   ESPECIE: Milano negro
 - Si el observador dice "milano real", escribe exactamente:
   ESPECIE: Milano real
-- Si el observador dice otra especie, usa el nombre exacto disponible en el vocabulario cerrado de Plaud.
+- Si el observador dice otra especie, usa el nombre exacto disponible en el vocabulario cerrado de hoja-guía.
 - No escribas especies solo en minúsculas si existe una forma normalizada en el catálogo.
 
 REGLAS PARA OBSERVACIONES:

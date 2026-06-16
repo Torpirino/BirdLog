@@ -116,7 +116,7 @@ El agente rechaza cualquier valor fuera de estas listas. Se escriben
 
 ### Catálogos (resolución contra Supabase, no son CHECK)
 
-- `observador`: `Gabi`, `Ander` (tabla `observadores`).
+- `observador`: nombre exacto de un observador del catálogo `observadores` (tabla `observadores`).
 - `lugar_visita` / `lugar_caja` / `lugar_cebo` / `lugar_nido` /
   `lugar_puente`: nombre o código exacto de la tabla `lugares`
   (p. ej. `Lindus`, `Trona`, `BAR01`, `Cebo avispón 1`).
@@ -198,7 +198,7 @@ importación del histórico.
 
 Las plantillas de los 4 tipos nuevos del esquema v3 existen como
 borrador, pero sus vocabularios cerrados están **pendientes de confirmar
-con el cliente** (`docs/Revisar con GABI.md` §5). Hasta entonces esos
+con el cliente. Hasta entonces esos
 campos se tratan como texto libre y no como valor cerrado:
 
 | Plantilla | Campos sin vocabulario cerrado |
