@@ -8,17 +8,21 @@
 
 ## Estado actual
 
-- **Fase activa**: Fase 8 — App local de pipeline (pruebas de campo en
-  curso: primer intento de P-01 con hallazgos documentados)
-- **Última sesión**: 2026-06-12
-- **Próxima tarea**: (a) Actualizar en el Plaud el prompt
-  `Observaciones_Lindus` (sección NORMALIZACIÓN DE ESPECIE) y el
-  vocabulario con los plurales de especies, y **repetir P-01**;
-  (b) continuar el plan `docs/Pruebas_pipeline_junio.md`: Fase 0 si
-  falta (clave `service_role` en `.env` + altas de catálogo) y pruebas
-  P-02 a P-10 con Plaud real; (c) recoger del cliente lo pendiente:
-  observador de las 98 visitas, `id_lugar` de V0001, UTM/municipio de
-  Lindus y Trona, vocabularios de las tablas nuevas y quinto ecosistema.
+- **Fase activa**: Nueva arquitectura — versión basada en **hojas-guía**
+  sin Plaud, sin app pipeline y sin dashboard (decisión #50). Primera
+  pasada local hecha en la rama `refactor/guias-sin-plaud`.
+- **Última sesión**: 2026-06-16
+- **Próxima tarea**: (a) revisar las 9 hojas-guía de `docs/Guias/` con el
+  cliente y afinar columnas/ejemplos; (b) diseñar el flujo de revisión
+  por el agente (hoja-guía/voz Telegram → validación → inserción en
+  Supabase con autorización de Javi); (c) cuando se autorice, crear la
+  copia nueva en GitHub; (d) seguir pendiente del cliente: observador de
+  las 98 visitas, `id_lugar` de V0001, UTM/municipio de Lindus y Trona,
+  vocabularios de las tablas nuevas y quinto ecosistema.
+
+> Nota: el flujo Plaud/pipeline/dashboard descrito en las secciones
+> históricas de abajo queda **retirado** (decisión #50). Se conserva como
+> memoria del proyecto; no es el flujo vigente.
 
 ---
 
@@ -100,7 +104,34 @@
 
 ## Tareas completadas
 
-### Sesión 2026-06-12: Guías de campo v1.1, pipeline sin registro textual y fix de edición (completado)
+### Sesión 2026-06-16: Refactor a versión basada en hojas-guía (sin Plaud/pipeline/dashboard) (completado)
+- [x] **Decisión #50** tomada: se retiran Plaud, app pipeline y
+      dashboard; el flujo pasa a hojas-guía/voz Telegram revisadas por el
+      agente antes de insertar en Supabase. Spec en
+      `.hermes/plans/birdlog-guias-sin-plaud.md`.
+- [x] **`docs/Guias/` creado** con la referencia de formato
+      (`formato-guias.md`: campos obligatorios = `MINIMOS_VISITA`,
+      valores cerrados, normalización, validación y resolución de FKs) y
+      **9 plantillas** con tablas de columnas reales: `lindus`,
+      `cajas_nido`, `nidos_rapaces`, `cebos_avispones`,
+      `mamiferos_puentes`, `fototrampeo`, `cuaderno_campo`,
+      `estudio_campo`, `castor_rastros`.
+- [x] **`docs/formato_plaud.md` → `docs/Guias/formato-guias.md`**
+      (renombrado con `git mv` y reescrito: ya no son prompts de Plaud).
+- [x] **Eliminados del repo**: `app_pipeline/`, `dashboard/`,
+      `docs/USO_APP_PIPELINE.md`, `docs/PLAN_APP_PIPELINE.md`,
+      `docs/Pruebas_pipeline_junio.md`, `docs/USO_DASHBOARD.md`,
+      lanzadores/icono Streamlit (`scripts/abrir_*.sh`, dos `*.desktop`,
+      `scripts/icons/birdlog-pipeline.svg`), `.streamlit/config.toml` y
+      los tests de app_pipeline/dashboard/pipeline Drive.
+- [x] **`pyproject.toml`**: fuera `streamlit`, `streamlit-folium`,
+      `folium`, `altair`, `pyproj`; se mantienen `supabase`, `pydantic`,
+      `pandas`, `python-dotenv`, `google-api-python-client`.
+- [x] **README.md, AGENTS.md y CLAUDE.md** actualizados al nuevo flujo
+      (CLAUDE.md sincronizado con `cp`). Reglas de seguridad intactas.
+- [x] **No se tocó `.env`** ni se subió nada a GitHub.
+
+
 - [x] **Guías de campo Plaud actualizadas a v1.1**
       (`docs/GUIA_CAMPO_PLAUD.html` y `.docx`): por cada plantilla se
       indican los campos **obligatorios** (los exactos de

@@ -886,3 +886,52 @@ Petición del usuario tras usar la app.
   la tabla resumen y los diagnósticos (`_tabla_resumen`,
   `_lineas_diagnostico`), incluido el orden lógico de lotes Lindus.
 - `docs/USO_APP_PIPELINE.md` actualizado.
+
+---
+
+## #50 — Retirada de Plaud/pipeline/dashboard: versión basada en hojas-guía revisadas por agente
+**Fecha**: 2026-06-16
+**Contexto**: El flujo Plaud → `.txt` a Drive → pipeline automático →
+Supabase → dashboard Streamlit añadía piezas frágiles (dependencia de
+Plaud, sincronización de Drive, dos apps Streamlit) para un proyecto de
+una sola persona. Se replantea el sistema hacia algo más simple y
+controlado por un agente.
+**Decisión**: BirdLog pasa a una **versión basada en hojas-guía**:
+1. El observador rellena **hojas-guía tabulares** (`docs/Guias/`, una
+   plantilla por tipo de visita/observación con los nombres de columna
+   reales). Lindus llega normalmente en hoja-guía; el resto puede llegar
+   por hoja-guía o por **voz/Telegram**.
+2. **El agente valida** los campos contra las reglas de las guías y el
+   modelo de datos (`docs/Guias/formato-guias.md`), avisa de los fallos
+   antes de insertar y solo sube a Supabase cuando todo es correcto y
+   Javi lo autoriza.
+3. El backup CSV local se conserva (decisión #25); se mantienen las
+   reglas de seguridad y de resolución de FKs.
+**Qué se retira del repo** (rama `refactor/guias-sin-plaud`):
+- `app_pipeline/` y `dashboard/` completos.
+- Docs obsoletos: `USO_APP_PIPELINE.md`, `PLAN_APP_PIPELINE.md`,
+  `Pruebas_pipeline_junio.md`, `USO_DASHBOARD.md`.
+- Lanzadores e icono Streamlit (`scripts/abrir_*.sh`, los dos
+  `*.desktop`, `scripts/icons/birdlog-pipeline.svg`) y
+  `.streamlit/config.toml`.
+- Tests que solo cubrían app_pipeline/dashboard/pipeline Drive
+  (`test_app_pipeline_*`, `test_dashboard_titulos`,
+  `test_pipeline_lindus_order`).
+- Dependencias solo de dashboard en `pyproject.toml`: `streamlit`,
+  `streamlit-folium`, `folium`, `altair`, `pyproj`.
+- `docs/formato_plaud.md` → `docs/Guias/formato-guias.md`, reescrito
+  como referencia de campos/valores cerrados/validación de las
+  hojas-guía (ya no como prompts de Plaud).
+**Qué se conserva**: `src/parser/`, `src/insercion/`, `src/backup/`,
+`src/conexion.py`, `src/config.py`, `src/diagnosticos.py`, el modelo de
+datos, el SQL y la importación del histórico. `src/drive/` y
+`src/fotos/` quedan como utilidades heredadas (el flujo principal ya no
+las usa); por eso se mantiene `google-api-python-client`. `src/pipeline.py`
+sigue siendo lógica reutilizable y testeable.
+**Razón**: simplicidad antes que sofisticación (principio #1) y el
+observador no programa (principio #2). Un agente que revisa antes de
+insertar protege «los datos son sagrados» (principio #3) sin la
+infraestructura del pipeline.
+**Implicaciones**: el flujo Telegram/voz completo y la integración de
+inserción guiada por el agente se implementarán en pasadas posteriores.
+Esta primera pasada es local y no sube nada a GitHub.

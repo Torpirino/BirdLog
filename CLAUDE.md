@@ -33,19 +33,29 @@ Antes de responder al usuario:
 ## 2. El proyecto
 
 ### Qué construimos
-Sistema interno para recoger datos de fauna con Plaud, insertarlos
-en Supabase con backup automático, y visualizarlos en un dashboard
-local Streamlit.
+Sistema interno para recoger datos de fauna mediante **hojas-guía**
+tabulares (o voz/Telegram), que el **agente revisa y valida** contra
+las reglas de las guías y el modelo de datos antes de insertarlos en
+Supabase con backup automático.
 
 ### Flujo
 ```
-Plaud (plantilla + vocabulario cerrado)
-    → .txt a Drive
-Script Python (parsea + resuelve FKs + inserta + backup)
-    → Supabase
-    → backup CSV local + Drive
-Dashboard Streamlit local
+Observador → hojas-guía tabulares (docs/Guias/) o voz/Telegram
+    → el agente valida campos, valores cerrados y resuelve FKs
+    → avisa si hay fallos antes de insertar
+    → con autorización de Javi: inserta en Supabase
+    → backup CSV local
 ```
+
+Lindus llega normalmente en hoja-guía; el resto de tipos puede llegar
+por hoja-guía o por voz/Telegram. Las reglas de formato y validación
+están en `docs/Guias/formato-guias.md` y hay una plantilla por tipo de
+visita/observación en `docs/Guias/`.
+
+> Histórico: el sistema tuvo un pipeline Plaud→Drive y un dashboard
+> Streamlit. Ambos se retiraron (decisión #50). El parser, la
+> resolución de catálogos, la inserción y el backup de `src/` siguen
+> siendo la base reutilizable.
 
 ### Modelo de datos — 14 tablas (v3)
 Detalle completo en `docs/modelo_datos.md`.
@@ -133,7 +143,7 @@ aún aplicado en Supabase dev)
 ## 3. Stack y convenciones
 
 - Python 3.11+
-- `supabase-py`, `pydantic`, `streamlit`, `pytest`,
+- `supabase-py`, `pydantic`, `pandas`, `python-dotenv`, `pytest`,
   `google-api-python-client`
 - Naming: `snake_case` para todo Python. Español para dominio,
   inglés para términos técnicos.
@@ -179,10 +189,9 @@ Ver `docs/SEGURIDAD.md` para detalle completo.
 Tras cada inserción significativa o mínimo diariamente:
 1. Exportar cada tabla a CSV.
 2. Guardar en `backups/backup_YYYY-MM-DD/` local.
-3. Subir a Drive en `Backups Sistema Fauna/`.
 
-Retención: últimos 30 backups. Módulo: `src/backup/`.
-Función pública: `hacer_backup(entorno)`.
+Backup CSV solo local (decisión #25). Retención: últimos 30 backups.
+Módulo: `src/backup/`. Función pública: `hacer_backup(entorno)`.
 
 ---
 
@@ -197,18 +206,18 @@ Reactívalo en supabase.com y vuelve a intentarlo."
 
 ## 8. Resolución de FKs y lugares/especies nuevos
 
-Cuando el script no encuentra un nombre en el catálogo:
+Cuando el agente no encuentra un nombre en el catálogo:
 - No inserta nada.
 - Muestra mensaje claro con pasos: dar de alta en Supabase y
-  añadir al vocabulario del Plaud.
-- Deja el .txt en `pendientes/` para reprocesar.
+  añadir al vocabulario de la hoja-guía.
+- Deja la hoja-guía pendiente para reprocesar.
 
 ---
 
 ## 9. Estructura del repositorio
 
 ```
-sistema-fauna/
+BirdLog/
 ├── AGENTS.md              # Este archivo
 ├── CLAUDE.md              # Copia idéntica
 ├── README.md
@@ -221,40 +230,42 @@ sistema-fauna/
 │   ├── PRINCIPIOS.md
 │   ├── SEGURIDAD.md
 │   ├── modelo_datos.md
-│   └── formato_plaud.md   # (pendiente — Fase 2)
+│   └── Guias/             # Hojas-guía + reglas de formato
+│       ├── formato-guias.md
+│       ├── lindus.md
+│       ├── cajas_nido.md
+│       ├── nidos_rapaces.md
+│       ├── cebos_avispones.md
+│       ├── mamiferos_puentes.md
+│       ├── fototrampeo.md
+│       ├── cuaderno_campo.md
+│       ├── estudio_campo.md
+│       └── castor_rastros.md
 ├── sql/
-│   └── 002_esquema_v2.sql # Esquema definitivo
+│   ├── 002_esquema_v2.sql
+│   ├── 003_esquema_v3.sql              # Esquema vigente
+│   └── 004_observaciones_nidos_rapaces.sql
 ├── src/
 │   ├── config.py          # Carga .env
 │   ├── conexion.py        # Cliente Supabase
-│   ├── parser/
-│   │   └── plaud.py
-│   ├── insercion/
-│   │   ├── catalogos.py   # nombre → id
-│   │   └── escritura.py
-│   ├── backup/
-│   │   ├── exportar.py
-│   │   └── drive.py
-│   └── fotos/
-│       └── drive.py
-├── dashboard/
-│   ├── app.py
-│   ├── paginas/
-│   │   ├── 1_lindus.py
-│   │   ├── 2_avispones.py
-│   │   ├── 3_mamiferos.py
-│   │   ├── 4_rapaces.py
-│   │   ├── 5_cajas_nido.py
-│   │   └── 6_explorador.py
-│   └── lib/
-│       ├── consultas.py
-│       └── graficos.py
+│   ├── diagnosticos.py    # Errores y mensajes claros
+│   ├── parser/            # plaud.py, validacion.py, normalizacion.py
+│   ├── insercion/         # catalogos.py (nombre → id), escritura.py
+│   ├── backup/            # exportar.py (CSV local)
+│   ├── drive/             # cliente.py, operaciones.py (utilidades Drive)
+│   └── fotos/             # sincronizar.py
+├── scripts/               # importar_historico.py, insertar_historico.py
 ├── tests/
-│   ├── test_parser.py
+│   ├── test_parser_plaud.py
 │   ├── test_catalogos.py
+│   ├── test_escritura.py
+│   ├── test_backup_exportar.py
 │   └── ejemplos_plaud/
 └── backups/               # En .gitignore
 ```
+
+Nota: `src/drive/` y `src/fotos/` son utilidades heredadas del flujo
+anterior; el flujo principal ya no depende de ellas (decisión #50).
 
 ---
 
@@ -276,17 +287,17 @@ Prioridad alta (con tests obligatorios):
 - `src/insercion/escritura.py`
 - `src/backup/exportar.py`
 
-Prioridad baja (se valida visualmente o se mockea):
-- Dashboard, conexión real a Supabase.
+Prioridad baja (se valida manualmente o se mockea):
+- Conexión real a Supabase, utilidades Drive/fotos.
 
 ---
 
 ## 12. Reparto Codex / Claude Code
 
-- **Codex**: la mayoría del código Python. Parser, inserción,
-  backup, dashboard.
+- **Codex**: la mayoría del código Python. Parser, validación,
+  inserción y backup.
 - **Claude Code**: refactors amplios, revisión de código
-  existente, tests, documentación técnica.
+  existente, tests, documentación técnica y hojas-guía.
 
 ---
 

@@ -1,1 +1,0 @@
-"""Páginas del dashboard BirdLog."""

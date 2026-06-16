@@ -1,21 +1,22 @@
 # Sistema de gestión de datos de fauna
 
-Sistema interno para recoger, almacenar y visualizar datos de
+Sistema interno para recoger, validar y almacenar datos de
 observación de fauna. Pensado para un único usuario (un observador de
-campo).
+campo) con un agente que revisa los datos antes de insertarlos.
 
 ## Flujo
 
 ```
-Plaud (graba audio + plantilla)
-    → exporta .txt a Drive
-Script Python (parsea + inserta + hace backup automático)
-    → Supabase
-Dashboard Streamlit local
+Observador → hojas-guía tabulares (o voz/Telegram)
+    → el agente valida campos contra las reglas de las guías
+      y el modelo de datos
+    → avisa si hay fallos; con autorización inserta en Supabase
+    → backup CSV local
 ```
 
-Los datos se respaldan automáticamente en tres sitios: Supabase + copia
-local + Google Drive.
+Las hojas-guía y sus reglas de formato/validación viven en
+`docs/Guias/` (una plantilla por tipo de visita/observación).
+Los datos se respaldan en CSV local tras cada inserción significativa.
 
 ## Estado actual
 
@@ -32,6 +33,8 @@ y la próxima tarea.
 - **`docs/DECISIONES.md`** — Decisiones técnicas tomadas.
 - **`docs/BITACORA.md`** — Estado vivo del proyecto.
 - **`docs/modelo_datos.md`** — Modelo de datos detallado.
+- **`docs/Guias/`** — Hojas-guía por tipo de visita y `formato-guias.md`
+  con las reglas de campos, valores cerrados y validación.
 
 ## Antes de tocar nada
 

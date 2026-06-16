@@ -1,1 +1,0 @@
-"""Dashboard local de BirdLog."""
